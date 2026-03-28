@@ -1,0 +1,14 @@
+# Root level ignores
+.gemini/
+.idea/
+.vscode/
+
+# Build folders
+backend/target/
+frontend/dist/
+frontend/node_modules/
+backend/startup_log.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
