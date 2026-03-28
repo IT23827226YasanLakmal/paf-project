@@ -1,12 +1,14 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import CataloguePage from './pages/CataloguePage';
 import { useAuthStore } from './store/authStore';
 
-function App() {
+const AppLayout = () => {
   const { user } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -21,7 +23,7 @@ function App() {
             </div>
             <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-slate-500">Role 1: {user?.name} ({user?.role})</span>
-                <div className="h-8 w-8 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-slate-400 bg-slate-100">
+                <div className="h-8 w-8 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-slate-400">
                     <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
             </div>
@@ -33,6 +35,15 @@ function App() {
         <CataloguePage />
       </main>
     </div>
+  );
+};
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/app/*" element={<AppLayout />} />
+    </Routes>
   );
 }
 
