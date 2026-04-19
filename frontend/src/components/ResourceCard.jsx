@@ -1,7 +1,7 @@
 import React from 'react';
-import { MapPin, Users, Activity, Settings } from 'lucide-react';
+import { MapPin, Users, Activity, Settings, QrCode } from 'lucide-react';
 
-const ResourceCard = ({ resource, onStatusUpdate, onDelete }) => {
+const ResourceCard = ({ resource, onStatusUpdate, onDelete, onShowQR }) => {
     const isLab = resource.type === 'LAB';
     const isHall = resource.type === 'LECTURE_HALL';
     
@@ -46,6 +46,13 @@ const ResourceCard = ({ resource, onStatusUpdate, onDelete }) => {
                         className="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors border border-slate-200"
                     >
                         Toggle Status
+                    </button>
+                    <button 
+                        onClick={() => onShowQR(resource)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                        title="Generate QR Code"
+                    >
+                        <QrCode className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={() => onDelete(resource.id)}
