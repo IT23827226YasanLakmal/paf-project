@@ -87,4 +87,17 @@ public class ResourceServiceTest {
 
         verify(resourceRepository, times(1)).deleteById(1L);
     }
+
+    @Test
+    @DisplayName("Should update resource image successfully")
+    void shouldUpdateResourceImage() {
+        when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
+        when(resourceRepository.save(any(Resource.class))).thenReturn(resource);
+
+        ResourceDTO result = resourceService.updateResourceImage(1L, "/uploads/test.jpg");
+
+        assertNotNull(result);
+        assertEquals("/uploads/test.jpg", result.getImageUrl());
+        verify(resourceRepository, times(1)).save(any(Resource.class));
+    }
 }
