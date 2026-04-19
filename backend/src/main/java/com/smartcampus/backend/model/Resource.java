@@ -29,4 +29,6 @@ public class Resource {
 
     @Column(nullable = false)
     private String status; // ACTIVE, OUT_OF_SERVICE
+
+    private String imageUrl;
 }

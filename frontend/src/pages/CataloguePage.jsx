@@ -41,7 +41,9 @@ const CataloguePage = () => {
         }
     });
 
-    const handleCreate = (data) => createMutation.mutate(data);
+    const handleCreate = async (data) => {
+        return await createMutation.mutateAsync(data);
+    };
     
     const handleStatusUpdate = (id, newStatus) => {
         updateStatusMutation.mutate({ id, status: newStatus });
