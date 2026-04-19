@@ -54,6 +54,16 @@ Successfully verified the following user flows on the live application:
 
 ---
 
+## 🚀 Innovation Spotlight: QR Code Generation
+To fulfill the **Creativity & Innovation** requirements of the project, I have implemented a standalone **QR Code Management System** within Role 1:
+
+*   **Dynamic Generation:** Every facility and asset (e.g., G604, Laboratories) has a unique QR code generated on-the-fly.
+*   **Encapsulated URL:** Each QR code encodes a unique booking URL, preparing the system for Role 2's mobile check-in and scheduling features.
+*   **Downloadable Assets:** Admins can download high-resolution PNG versions of each QR code. 
+*   **Physical Integration:** These codes are intended to be printed and attached to classroom doors or equipment, allowing students to "Scan to Book" instantly from their mobile devices.
+
+---
+
 ## 🎓 Defense / Viva Key Points
 When explaining your contribution, emphasize these points:
 1.  **"Foundation of the System":** Explain that Role 1 provides the unique IDs for all facilities. Without this catalog, the Booking system would have no assets to schedule.
