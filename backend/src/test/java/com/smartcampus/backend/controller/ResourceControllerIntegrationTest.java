@@ -5,37 +5,30 @@ import com.smartcampus.backend.service.ResourceService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.core.io.FileSystemResource;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 public class ResourceControllerIntegrationTest {
 
-    @LocalServerPort
-    private int port;
-
     @Autowired
-    private TestRestTemplate restTemplate;
+    private MockMvc mockMvc;
 
     @Autowired
     private ResourceService resourceService;
 
+
     @Test
     @DisplayName("Should successfully upload an image via the Multipart API")
-    void testImageUpload() throws IOException {
+    void testImageUpload() throws Exception {
         // 1. Create a dummy resource first
         ResourceDTO dto = new ResourceDTO();
         dto.setName("Integration Test Lab");
@@ -45,28 +38,21 @@ public class ResourceControllerIntegrationTest {
         Long id = created.getId();
 
         // 2. Prepare mock file
-        File tempFile = File.createTempFile("test_upload", ".jpg");
-        Files.write(tempFile.toPath(), "fake image data".getBytes());
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test_upload.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "fake image data".getBytes()
+        );
 
-        // 3. Prepare Multipart request
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        // 3. Execute POST via MockMvc
+        mockMvc.perform(multipart("/api/resources/" + id + "/image")
+                .file(file))
+                .andExpect(status().isOk());
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", new FileSystemResource(tempFile));
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        // 4. Execute POST
-        String url = "http://localhost:" + port + "/api/resources/" + id + "/image";
-        ResponseEntity<ResourceDTO> response = restTemplate.postForEntity(url, requestEntity, ResourceDTO.class);
-
-        // 5. Assertions
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().getImageUrl().contains("/uploads/"));
-        
-        // Cleanup
-        tempFile.delete();
+        // 4. Verification
+        ResourceDTO updated = resourceService.getResourceById(id);
+        assertNotNull(updated.getImageUrl());
+        assertTrue(updated.getImageUrl().contains("/uploads/"));
     }
 }
