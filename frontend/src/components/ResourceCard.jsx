@@ -1,13 +1,37 @@
 import React from 'react';
-import { MapPin, Users, Activity, Settings } from 'lucide-react';
+import { MapPin, Users, Activity, Settings, QrCode } from 'lucide-react';
 
-const ResourceCard = ({ resource, onStatusUpdate, onDelete }) => {
+const ResourceCard = ({ resource, onStatusUpdate, onDelete, onShowQR }) => {
     const isLab = resource.type === 'LAB';
     const isHall = resource.type === 'LECTURE_HALL';
     
     return (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-            <div className="p-5">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">
+            {/* Image Header */}
+            <div className="relative aspect-video w-full bg-slate-100 overflow-hidden border-b border-slate-100">
+                {resource.imageUrl ? (
+                    <img 
+                        src={`http://localhost:8080${resource.imageUrl}`} 
+                        alt={resource.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                        {isLab && <Activity className="w-12 h-12 mb-2" />}
+                        {isHall && <Users className="w-12 h-12 mb-2" />}
+                        {!isLab && !isHall && <Settings className="w-12 h-12 mb-2" />}
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400">No Photo</span>
+                    </div>
+                )}
+                <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                    resource.status === 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+                }`}>
+                    {resource.status.replace('_', ' ')}
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 flex-1 flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-3
@@ -17,10 +41,6 @@ const ResourceCard = ({ resource, onStatusUpdate, onDelete }) => {
                         </span>
                         <h3 className="text-lg font-bold text-slate-900 border-b border-transparent hover:border-slate-300 pb-1">{resource.name}</h3>
                     </div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${resource.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
-                        {resource.status.replace('_', ' ')}
-                    </span>
                 </div>
                 
                 <div className="space-y-2 mb-6">
@@ -46,6 +66,13 @@ const ResourceCard = ({ resource, onStatusUpdate, onDelete }) => {
                         className="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors border border-slate-200"
                     >
                         Toggle Status
+                    </button>
+                    <button 
+                        onClick={() => onShowQR(resource)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                        title="Generate QR Code"
+                    >
+                        <QrCode className="w-4 h-4" />
                     </button>
                     <button 
                         onClick={() => onDelete(resource.id)}

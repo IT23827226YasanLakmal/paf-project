@@ -42,7 +42,16 @@ public class ResourceService {
         resource.setLocation(dto.getLocation());
         resource.setAvailabilityWindows(dto.getAvailabilityWindows());
         resource.setStatus(dto.getStatus());
+        resource.setImageUrl(dto.getImageUrl());
 
+        resource = resourceRepository.save(resource);
+        return mapToDTO(resource);
+    }
+
+    public ResourceDTO updateResourceImage(Long id, String imageUrl) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Resource not found"));
+        resource.setImageUrl(imageUrl);
         resource = resourceRepository.save(resource);
         return mapToDTO(resource);
     }
@@ -60,6 +69,7 @@ public class ResourceService {
         dto.setLocation(resource.getLocation());
         dto.setAvailabilityWindows(resource.getAvailabilityWindows());
         dto.setStatus(resource.getStatus());
+        dto.setImageUrl(resource.getImageUrl());
         return dto;
     }
 
@@ -71,6 +81,7 @@ public class ResourceService {
         resource.setLocation(dto.getLocation());
         resource.setAvailabilityWindows(dto.getAvailabilityWindows());
         resource.setStatus(dto.getStatus());
+        resource.setImageUrl(dto.getImageUrl());
         return resource;
     }
 }

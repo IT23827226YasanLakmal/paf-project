@@ -138,3 +138,13 @@ export const deleteBooking = async ({ id }) => {
 
   if (!response.ok) throw new Error('Failed to delete booking');
 };
+export const uploadResourceImage = async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/resources/${id}/image`, {
+        method: 'POST',
+        body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to upload image');
+    return response.json();
+};

@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchResources, createResource, updateResourceStatus, deleteResource } from '../services/api';
 import ResourceCard from '../components/ResourceCard';
 import ResourceForm from '../components/ResourceForm';
+import QRModal from '../components/QRModal';
 import { Plus, Filter } from 'lucide-react';
 
 const CataloguePage = () => {
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
     const [filterType, setFilterType] = useState('');
+    const [selectedResourceForQR, setSelectedResourceForQR] = useState(null);
 
     // Queries
     const { data: resources = [], isLoading } = useQuery({
@@ -39,7 +41,9 @@ const CataloguePage = () => {
         }
     });
 
-    const handleCreate = (data) => createMutation.mutate(data);
+    const handleCreate = async (data) => {
+        return await createMutation.mutateAsync(data);
+    };
     
     const handleStatusUpdate = (id, newStatus) => {
         updateStatusMutation.mutate({ id, status: newStatus });
@@ -49,6 +53,10 @@ const CataloguePage = () => {
         if(window.confirm('Are you sure you want to delete this resource?')) {
             deleteMutation.mutate(id);
         }
+    };
+
+    const handleShowQR = (resource) => {
+        setSelectedResourceForQR(resource);
     };
 
     return (
@@ -94,6 +102,7 @@ const CataloguePage = () => {
                             resource={resource} 
                             onStatusUpdate={handleStatusUpdate}
                             onDelete={handleDelete}
+                            onShowQR={handleShowQR}
                         />
                     ))}
                     {resources.length === 0 && (
@@ -104,6 +113,12 @@ const CataloguePage = () => {
                     )}
                 </div>
             )}
+
+            <QRModal 
+                isOpen={!!selectedResourceForQR} 
+                onClose={() => setSelectedResourceForQR(null)} 
+                resource={selectedResourceForQR} 
+            />
         </div>
     );
 };
