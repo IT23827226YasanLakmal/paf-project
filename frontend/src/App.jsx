@@ -2,7 +2,11 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import CataloguePage from './pages/CataloguePage';
+import MyBookingsPage from './pages/MyBookingsPage';
+import AdminBookingReview from './pages/AdminBookingReview';
+import VerifyQrPage from './pages/VerifyQrPage';
 import { useAuthStore } from './store/authStore';
+
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -43,6 +47,9 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/app/*" element={<AppLayout />} />
+      <Route path="my-bookings"  element={<MyBookingsPage />} />
+      <Route path="admin-review"  element={<AdminBookingReview />} />
+      <Route path="/verify-qr/:token"    element={<VerifyQrPage />} />
     </Routes>
   );
 }
