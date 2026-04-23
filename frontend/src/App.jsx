@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import CataloguePage from './pages/CataloguePage';
 import { useAuthStore } from './store/authStore';
+import Login from './pages/Login';
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -42,6 +43,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/app/*" element={<AppLayout />} />
     </Routes>
   );
