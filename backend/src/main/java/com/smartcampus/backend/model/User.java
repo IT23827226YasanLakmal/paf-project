@@ -28,7 +28,8 @@ public class User implements UserDetails {
     private Role role;
 
     // Constructors
-    public User() {}
+    public User() {
+    }
 
     public User(String email, String password, String name, Role role) {
         this.email = email;
@@ -38,18 +39,37 @@ public class User implements UserDetails {
     }
 
     // Getters & Setters
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
+    public String getName() {
+        return name;
+    }
 
-    public void setPassword(String password) { this.password = password; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     // UserDetails methods
     @Override
@@ -68,14 +88,22 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return true;
+    }
 }
