@@ -6,6 +6,7 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import AdminBookingReview from './pages/AdminBookingReview';
 import VerifyQrPage from './pages/VerifyQrPage';
 import { useAuthStore } from './store/authStore';
+import Login from './pages/Login';
 
 
 const AppLayout = () => {
@@ -46,6 +47,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/app/*" element={<AppLayout />} />
       <Route path="my-bookings"  element={<MyBookingsPage />} />
       <Route path="admin-review"  element={<AdminBookingReview />} />

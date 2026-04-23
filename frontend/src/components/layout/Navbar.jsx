@@ -25,7 +25,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-5">
-            <Link to="/app" className="text-white hover:text-gray-300 transition-colors">Sign In</Link>
+            <Link to="/login" className="text-white hover:text-gray-300 transition-colors">Sign In</Link>
             <Link to="/app" className="bg-white text-black px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200">
               Get Started
             </Link>
