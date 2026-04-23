@@ -22,7 +22,10 @@ public class JwtService {
             String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
 
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> claims = mapper.readValue(payload, Map.class);
+            Map<String, Object> claims = mapper.readValue(
+                    payload,
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                    });
 
             String email = (String) claims.get("email");
 
