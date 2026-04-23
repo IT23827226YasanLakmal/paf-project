@@ -16,15 +16,13 @@ public class ResourceService {
     private ResourceRepository resourceRepository;
 
     public List<ResourceDTO> getAllResources(String type) {
-        List<Resource> resources = (type != null) ? 
-            resourceRepository.findByType(type) : 
-            resourceRepository.findAll();
+        List<Resource> resources = (type != null) ? resourceRepository.findByType(type) : resourceRepository.findAll();
         return resources.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     public ResourceDTO getResourceById(Long id) {
         Resource resource = resourceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Resource not found"));
+                .orElseThrow(() -> new RuntimeException("Resource not found"));
         return mapToDTO(resource);
     }
 
@@ -36,15 +34,15 @@ public class ResourceService {
 
     public ResourceDTO updateResource(Long id, ResourceDTO dto) {
         Resource resource = resourceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Resource not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Resource not found"));
+
         resource.setName(dto.getName());
         resource.setType(dto.getType());
         resource.setCapacity(dto.getCapacity());
         resource.setLocation(dto.getLocation());
         resource.setAvailabilityWindows(dto.getAvailabilityWindows());
         resource.setStatus(dto.getStatus());
-        
+
         resource = resourceRepository.save(resource);
         return mapToDTO(resource);
     }
