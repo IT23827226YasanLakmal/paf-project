@@ -72,34 +72,31 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            // 🔥 ENABLE CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 🔥 ENABLE CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // ❌ Disable CSRF
-            .csrf(csrf -> csrf.disable())
+                // ❌ Disable CSRF
+                .csrf(csrf -> csrf.disable())
 
-            // 🔒 Stateless session
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                // 🔒 Stateless session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                // 🔓 PUBLIC (important for login / Supabase testing)
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/users/**").hasRole("ADMIN") 
-                // ⚠️ TEMP (for testing)
+                        // 🔓 PUBLIC (important for login / Supabase testing)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        // ⚠️ TEMP (for testing)
 
-                // 🔐 ROLE-BASED
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/technician/**").hasRole("TECHNICIAN")
+                        // 🔐 ROLE-BASED
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/technician/**").hasRole("TECHNICIAN")
 
-                // Everything else requires auth
-                .anyRequest().authenticated()
-            )
+                        // Everything else requires auth
+                        .anyRequest().authenticated())
 
-            //  ADD JWT FILTER
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                // ADD JWT FILTER
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
