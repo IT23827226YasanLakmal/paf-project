@@ -3,6 +3,9 @@ package com.smartcampus.backend.service;
 import com.smartcampus.backend.model.Role;
 import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.repository.UserRepository;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,5 +34,9 @@ public class UserService {
         }
 
         return userRepo.save(user);
+    }
+
+    public List<User> getAllUsers() {
+    return userRepo.findAll();
     }
 }
