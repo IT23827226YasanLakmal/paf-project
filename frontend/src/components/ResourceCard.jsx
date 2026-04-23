@@ -1,9 +1,10 @@
 import React from 'react';
 import { MapPin, Users, Activity, Settings, QrCode } from 'lucide-react';
 
-const ResourceCard = ({ resource, onStatusUpdate, onDelete, onShowQR }) => {
+const ResourceCard = ({ resource, userRole, onStatusUpdate, onDelete, onShowQR }) => {
     const isLab = resource.type === 'LAB';
     const isHall = resource.type === 'LECTURE_HALL';
+    const isAdmin = ['FACILITY_MANAGER', 'SYSTEM_ADMIN'].includes(userRole);
     
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">
@@ -60,26 +61,42 @@ const ResourceCard = ({ resource, onStatusUpdate, onDelete, onShowQR }) => {
                     </div>
                 </div>
                 
-                <div className="flex items-center space-x-2 pt-4 border-t border-slate-100">
-                    <button 
-                        onClick={() => onStatusUpdate(resource.id, resource.status === 'ACTIVE' ? 'OUT_OF_SERVICE' : 'ACTIVE')}
-                        className="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors border border-slate-200"
-                    >
-                        Toggle Status
-                    </button>
-                    <button 
-                        onClick={() => onShowQR(resource)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
-                        title="Generate QR Code"
-                    >
-                        <QrCode className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={() => onDelete(resource.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
-                    >
-                        <Settings className="w-4 h-4" />
-                    </button>
+                <div className="flex items-center space-x-2 pt-4 border-t border-slate-100 mt-auto">
+                    {isAdmin ? (
+                        <>
+                            <button 
+                                onClick={() => onStatusUpdate(resource.id, resource.status === 'ACTIVE' ? 'OUT_OF_SERVICE' : 'ACTIVE')}
+                                className="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors border border-slate-200"
+                            >
+                                Toggle Status
+                            </button>
+                            <button 
+                                onClick={() => onShowQR(resource)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
+                                title="Generate QR Code"
+                            >
+                                <QrCode className="w-4 h-4" />
+                            </button>
+                            <button 
+                                onClick={() => onDelete(resource.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                            >
+                                <Settings className="w-4 h-4" />
+                            </button>
+                        </>
+                    ) : (
+                        <button 
+                            onClick={() => alert('Booking integration coming in Role 2!')}
+                            disabled={resource.status !== 'ACTIVE'}
+                            className={`flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
+                                resource.status === 'ACTIVE' 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' 
+                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            }`}
+                        >
+                            {resource.status === 'ACTIVE' ? 'Request Booking' : 'Currently Unavailable'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

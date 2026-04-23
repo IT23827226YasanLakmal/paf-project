@@ -60,7 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 User user = userRepository.findByEmail(email)
                         .orElse(null);
 
-                if (user != null) {
+                if (user != null && jwtService.isTokenValid(token, user)) {
 
                     // 🔥 IMPORTANT: Spring requires ROLE_ prefix
                     String role = "ROLE_" + user.getRole().name();
@@ -78,12 +78,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     null,
                                     authorities
                             );
+                    
+                    authToken.setDetails(
+                            new org.springframework.security.web.authentication.WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
                     // 🔥 Set authentication
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 } else {
-                    System.out.println("User NOT found in DB for email: " + email);
+                    System.out.println("User NOT found in DB or token invalid for email: " + email);
                 }
             }
 

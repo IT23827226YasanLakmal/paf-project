@@ -1,38 +1,18 @@
 import { create } from 'zustand';
 
 export const useAuthStore = create((set) => ({
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    token: localStorage.getItem('token') || null,
 
-    //  Mock users (for testing roles)
-    mockUsers: [
-        {
-            id: 1,
-            name: "Normal User",
-            role: "USER",
-        },
-        {
-            id: 2,
-            name: "Tech Guy",
-            role: "TECHNICIAN",
-        },
-        {
-            id: 3,
-            name: "Admin User",
-            role: "ADMIN",
-        },
-    ],
+    login: (user, token) => {
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+        set({ user, token });
+    },
 
-    // Current logged user
-    user: null,
-
-    // Set real user (from login later)
-    setUser: (user) => set({ user }),
-
-    //  Switch user manually (FOR TESTING)
-    switchUser: (role) =>
-        set((state) => ({
-            user: state.mockUsers.find((u) => u.role === role)
-        })),
-
-    // Logout
-    logout: () => set({ user: null }),
-}));
+    logout: () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        set({ user: null, token: null });
+    },
+}));

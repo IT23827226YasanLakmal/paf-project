@@ -1,16 +1,55 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+const authFetch = async (url, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+        ...options.headers,
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Default to application/json if no Content-Type is provided and it's not FormData
+    if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    } else if (options.body instanceof FormData) {
+        delete headers['Content-Type']; // Let browser set multipart/form-data with boundary
+    }
+
+    const response = await fetch(url, { ...options, headers });
+    return response;
+};
+
+export const login = async (credentials) => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+    });
+    if (!response.ok) throw new Error('Login failed');
+    return response.json();
+};
+
+export const register = async (userData) => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    });
+    if (!response.ok) throw new Error('Registration failed');
+    return response.json();
+};
+
 export const fetchResources = async (type = null) => {
     const url = type ? `${API_BASE_URL}/resources?type=${type}` : `${API_BASE_URL}/resources`;
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) throw new Error('Failed to fetch resources');
     return response.json();
 };
 
 export const createResource = async (resource) => {
-    const response = await fetch(`${API_BASE_URL}/resources`, {
+    const response = await authFetch(`${API_BASE_URL}/resources`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(resource),
     });
     if (!response.ok) throw new Error('Failed to create resource');
@@ -18,14 +57,13 @@ export const createResource = async (resource) => {
 };
 
 export const updateResourceStatus = async (id, status) => {
-    const resourceResponse = await fetch(`${API_BASE_URL}/resources/${id}`);
+    const resourceResponse = await authFetch(`${API_BASE_URL}/resources/${id}`);
     if (!resourceResponse.ok) throw new Error('Failed to fetch resource details');
     const resource = await resourceResponse.json();
     
     resource.status = status;
-    const response = await fetch(`${API_BASE_URL}/resources/${id}`, {
+    const response = await authFetch(`${API_BASE_URL}/resources/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(resource),
     });
     if (!response.ok) throw new Error('Failed to update resource');
@@ -33,16 +71,15 @@ export const updateResourceStatus = async (id, status) => {
 };
 
 export const deleteResource = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/resources/${id}`, {
+    const response = await authFetch(`${API_BASE_URL}/resources/${id}`, {
         method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete resource');
 };
 
 export const createBooking = async (data) => {
-  const response = await fetch(`${API_BASE_URL}/bookings`, {
+  const response = await authFetch(`${API_BASE_URL}/bookings`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
 
@@ -64,9 +101,8 @@ export const createBooking = async (data) => {
 };
 
 export const updateBooking = async (id, data) => {
-  const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/bookings/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
 
@@ -96,19 +132,14 @@ export const fetchBookings = async ({ userId, resourceId, status } = {}) => {
   const qs = params.toString();
   const url = `${API_BASE_URL}/bookings${qs ? `?${qs}` : ''}`;
 
-  const response = await fetch(url);
+  const response = await authFetch(url);
   if (!response.ok) throw new Error('Failed to fetch bookings');
   return response.json();
 };
 
 export const updateBookingStatus = async ({ id, status, rejectionReason, adminNote }) => {
-  const response = await fetch(`${API_BASE_URL}/bookings/${id}/status`, {
+  const response = await authFetch(`${API_BASE_URL}/bookings/${id}/status`, {
     method: 'PATCH',
-    headers: { 
-      'Content-Type': 'application/json',
-      'X-User-Id': '1',        
-      'X-Is-Admin': 'true'   
-    },
     body: JSON.stringify({ status, rejectionReason, adminNote }),
   });
 
@@ -128,20 +159,17 @@ export const updateBookingStatus = async ({ id, status, rejectionReason, adminNo
 };
 
 export const deleteBooking = async ({ id }) => {
-  const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/bookings/${id}`, {
     method: 'DELETE',
-    headers: {
-      'X-User-Id': '1',
-      'X-Is-Admin': 'true'
-    }
   });
 
   if (!response.ok) throw new Error('Failed to delete booking');
 };
+
 export const uploadResourceImage = async (id, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await fetch(`${API_BASE_URL}/resources/${id}/image`, {
+    const response = await authFetch(`${API_BASE_URL}/resources/${id}/image`, {
         method: 'POST',
         body: formData,
     });

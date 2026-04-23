@@ -1,111 +1,81 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login, register } from "../services/api";
+import { useAuthStore } from "../store/authStore";
 
 export default function Login() {
-
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("USER");
+  const [error, setError] = useState("");
+  
   const navigate = useNavigate();
+  const authLogin = useAuthStore(state => state.login);
 
-  //  sync user to backend
-  const syncUserToBackend = async () => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
-
-      if (!user) return;
-
-      await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: user.email,
-          name: user.user_metadata?.full_name || "User",
-          oauthId: user.id,
-        }),
-      });
-
-      console.log("User synced to backend");
-    } catch (err) {
-      console.error("Sync error:", err);
-    }
-  };
-
-  //  Check session (Google redirect)
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-
-      if (data.session) {
-        const token = data.session.access_token;
-
-        //  Save JWT
-        localStorage.setItem("token", token);
-
-        console.log("JWT saved:", token);
-
-        //  SYNC USER
-        await syncUserToBackend();
-
-        navigate("/app/admin/users"); // Redirect to admin dashboard after google login
-      }
-    };
-
-    checkSession();
-  }, [navigate]);
-
-  //  Email login
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      localStorage.setItem("token", data.session.access_token);
-
-      //  SYNC USER
-      await syncUserToBackend();
-
+    try {
+      if (isLogin) {
+        const response = await login({ email, password });
+        authLogin(
+          { id: response.id, name: response.name, email: response.email, role: response.role },
+          response.token
+        );
+      } else {
+        const response = await register({ name, email, password, role });
+        authLogin(
+          { id: response.id, name: response.name, email: response.email, role: response.role },
+          response.token
+        );
+      }
       navigate("/app");
-    }
-  };
-
-  //  Google login
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "http://localhost:5173/login",
-        queryParams: {
-          prompt: "select_account",
-        },
-      },
-    });
-
-    if (error) {
-      console.error(error);
-      alert(error.message);
+    } catch (err) {
+      setError(err.message || "Authentication failed");
     }
   };
 
   return (
     <div className="bg-black min-h-screen flex items-center justify-center text-white px-4">
-
       <div className="w-full max-w-md bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl p-8">
-
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Smart Campus Login
+          {isLogin ? "Smart Campus Login" : "Register Account"}
         </h2>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        {error && (
+          <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-lg mb-4 text-sm text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {!isLogin && (
+            <>
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+                required
+              >
+                <option value="USER" className="text-black">Standard User</option>
+                <option value="FACILITY_MANAGER" className="text-black">Facility Manager</option>
+                <option value="BOOKING_OFFICER" className="text-black">Booking Officer</option>
+                <option value="TECHNICIAN" className="text-black">Technician</option>
+                <option value="SYSTEM_ADMIN" className="text-black">System Admin</option>
+              </select>
+            </>
+          )}
 
           <input
             type="email"
@@ -127,26 +97,21 @@ export default function Login() {
 
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 transition rounded-lg py-2 font-medium"
+            className="bg-blue-600 hover:bg-blue-700 transition rounded-lg py-2 font-medium mt-2"
           >
-            Login
+            {isLogin ? "Login" : "Register"}
           </button>
         </form>
 
-        <div className="text-center my-4 text-sm text-gray-400">OR</div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-lg py-2 font-medium hover:bg-gray-200 transition"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          Sign in with Google
-        </button>
-
+        <div className="text-center mt-6 text-sm text-gray-400">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="ml-2 text-blue-400 hover:text-blue-300 font-medium transition"
+          >
+            {isLogin ? "Register here" : "Login here"}
+          </button>
+        </div>
       </div>
     </div>
   );

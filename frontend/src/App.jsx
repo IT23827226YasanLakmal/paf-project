@@ -6,11 +6,17 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import AdminBookingReview from './pages/AdminBookingReview';
 import VerifyQrPage from './pages/VerifyQrPage';
 import { useAuthStore } from './store/authStore';
+import { useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 
-
 const AppLayout = () => {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+      logout();
+      navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
@@ -27,9 +33,17 @@ const AppLayout = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium text-slate-500">Role 1: {user?.name} ({user?.role})</span>
+                <span className="text-sm font-medium text-slate-600">
+                    {user?.name} <span className="text-slate-400">({user?.role})</span>
+                </span>
+                <button 
+                    onClick={handleLogout}
+                    className="text-xs font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
+                >
+                    Logout
+                </button>
                 <div className="h-8 w-8 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-slate-400">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} alt="Avatar" className="w-full h-full object-cover" />
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Guest'}`} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
             </div>
           </div>

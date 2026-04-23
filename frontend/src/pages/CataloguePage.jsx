@@ -5,8 +5,12 @@ import ResourceCard from '../components/ResourceCard';
 import ResourceForm from '../components/ResourceForm';
 import QRModal from '../components/QRModal';
 import { Plus, Filter } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 const CataloguePage = () => {
+    const { user } = useAuthStore();
+    const isAdmin = ['FACILITY_MANAGER', 'SYSTEM_ADMIN'].includes(user?.role);
+
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
     const [filterType, setFilterType] = useState('');
@@ -63,17 +67,21 @@ const CataloguePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Facilities & Assets</h1>
-                    <p className="text-slate-500 mt-2">Manage all university bookable resources.</p>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                        {isAdmin ? 'Facilities & Assets' : 'Resource Catalogue'}
+                    </h1>
+                    <p className="text-slate-500 mt-2">
+                        {isAdmin ? 'Manage all university bookable resources.' : 'Browse and book university resources.'}
+                    </p>
                 </div>
-                {!showForm && (
+                {isAdmin && !showForm && (
                     <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer hover:shadow-md">
                         <Plus className="w-4 h-4 mr-2" /> Add Resource
                     </button>
                 )}
             </div>
 
-            {showForm && (
+            {isAdmin && showForm && (
                 <div className="mb-8">
                     <ResourceForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
                 </div>
@@ -100,6 +108,7 @@ const CataloguePage = () => {
                         <ResourceCard 
                             key={resource.id} 
                             resource={resource} 
+                            userRole={user?.role}
                             onStatusUpdate={handleStatusUpdate}
                             onDelete={handleDelete}
                             onShowQR={handleShowQR}
