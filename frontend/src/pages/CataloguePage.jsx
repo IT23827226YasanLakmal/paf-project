@@ -6,6 +6,7 @@ import ResourceForm from '../components/ResourceForm';
 import QRModal from '../components/QRModal';
 import { Plus, Filter } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useCatalogueUiStore } from '../store/catalogueUiStore';
 
 const CataloguePage = () => {
     const { user } = useAuthStore();
@@ -13,8 +14,7 @@ const CataloguePage = () => {
 
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
-    const [filterType, setFilterType] = useState('');
-    const [selectedResourceForQR, setSelectedResourceForQR] = useState(null);
+    const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR } = useCatalogueUiStore();
 
     // Queries
     const { data: resources = [], isLoading } = useQuery({
