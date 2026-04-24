@@ -38,6 +38,7 @@ async function createAccounts() {
         console.log(`✅ Created account for ${account.role} (${account.email})`);
       } else {
         console.log(`❌ Failed to create ${account.email}: Status ${response.status}`);
+        console.log(`Response body: ${response.data}`);
       }
     } catch (error) {
       console.log(`❌ Error connecting to backend: ${error.message}`);
