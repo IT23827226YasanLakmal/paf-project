@@ -2,9 +2,14 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 const authFetch = async (url, options = {}) => {
     const token = localStorage.getItem('token');
+    
     const headers = {
         ...options.headers,
+        //  FAKE HEADERS FOR TESTING
+        'X-User-Id': '1', 
+        'X-Is-Admin': 'true' // Change to 'false' if you want to test the normal User view
     };
+    
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
@@ -145,9 +150,7 @@ export const updateBookingStatus = async ({ id, status, rejectionReason, adminNo
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-
-    console.error(" Backend error:", errData); // helpful debug
-
+    console.error(" Backend error:", errData); 
     const err = new Error(
       errData.message || errData.error || 'Failed to update booking status'
     );
