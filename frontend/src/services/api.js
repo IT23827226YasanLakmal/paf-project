@@ -177,6 +177,26 @@ export const uploadResourceImage = async (id, file) => {
     return response.json();
 };
 
+export const fetchUsers = async () => {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch users");
+  return response.json();
+};
+
+export const updateUserRole = async (id, role) => {
+  const response = await fetch(`${API_BASE_URL}/users/${id}/role`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ role }),
+  });
+
+  if (!response.ok) throw new Error("Failed to update user role");
+  return response.json();
+};
+
 //  NOTIFICATIONS
 export const fetchNotifications = async () => {
   const response = await fetch(`${API_BASE_URL}/notifications`, {

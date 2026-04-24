@@ -12,6 +12,8 @@ import UserManagement from './pages/UserManagement';
 import { useAuthStore } from './store/authStore';
 import RoleNav from './components/layout/RoleNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import AdminUserRoles from "./pages/AdminUserRoles";
+import { Toaster } from "react-hot-toast";
 
 const AppLayout = () => {
   const { user, logout } = useAuthStore();
@@ -91,6 +93,32 @@ const AppLayout = () => {
 
 function App() {
   return (
+    <>
+      {/*  TOASTER  */}
+      <Toaster 
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: "#111",
+            color: "#fff",
+            border: "1px solid #333",
+          },
+          success: {
+            iconTheme: {
+              primary: "green",
+              secondary: "black",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "red",
+              secondary: "black",
+            },
+          },
+        }}
+      />
+
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
@@ -102,6 +130,7 @@ function App() {
           </ProtectedRoute>
       } />
     </Routes>
+    </>
   );
 }
 
