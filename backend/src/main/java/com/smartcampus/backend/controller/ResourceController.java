@@ -18,7 +18,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/resources")
-@CrossOrigin(origins = "*") // Allow React to connect
 public class ResourceController {
 
     @Autowired

@@ -2,7 +2,9 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import CataloguePage from './pages/CataloguePage';
+import TicketingPage from './pages/TicketingPage';
 import { useAuthStore } from './store/authStore';
+import { NavLink } from 'react-router-dom';
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -20,6 +22,20 @@ const AppLayout = () => {
                 <span className="font-bold text-xl text-slate-900 tracking-tight">Smart Campus</span>
                 <span className="ml-2 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">Hub</span>
               </div>
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                 <NavLink 
+                    to="/app/catalogue" 
+                    className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${isActive ? 'border-blue-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'}`}
+                 >
+                    Catalogue
+                 </NavLink>
+                 <NavLink 
+                    to="/app/tickets" 
+                    className={({ isActive }) => `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${isActive ? 'border-blue-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'}`}
+                 >
+                    Ticketing
+                 </NavLink>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium text-slate-500">Role 1: {user?.name} ({user?.role})</span>
@@ -32,7 +48,11 @@ const AppLayout = () => {
       </nav>
 
       <main>
-        <CataloguePage />
+        <Routes>
+           <Route path="" element={<CataloguePage />} />
+           <Route path="catalogue" element={<CataloguePage />} />
+           <Route path="tickets" element={<TicketingPage />} />
+        </Routes>
       </main>
     </div>
   );
