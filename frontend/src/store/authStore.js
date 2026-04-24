@@ -1,12 +1,18 @@
 import { create } from 'zustand';
 
-// State for Role & Auth later
 export const useAuthStore = create((set) => ({
-    user: {
-        id: 1,
-        name: 'Admin User',
-        role: 'ADMIN',
-    }, // Mock user for now
-    setUser: (user) => set({ user }),
-    logout: () => set({ user: null }),
-}));
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    token: localStorage.getItem('token') || null,
+
+    login: (user, token) => {
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+        set({ user, token });
+    },
+
+    logout: () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        set({ user: null, token: null });
+    },
+}));

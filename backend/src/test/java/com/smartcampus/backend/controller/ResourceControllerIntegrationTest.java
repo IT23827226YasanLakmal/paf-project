@@ -25,7 +25,6 @@ public class ResourceControllerIntegrationTest {
     @Autowired
     private ResourceService resourceService;
 
-
     @Test
     @DisplayName("Should successfully upload an image via the Multipart API")
     void testImageUpload() throws Exception {
@@ -42,8 +41,7 @@ public class ResourceControllerIntegrationTest {
                 "file",
                 "test_upload.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "fake image data".getBytes()
-        );
+                "fake image data".getBytes());
 
         // 3. Execute POST via MockMvc
         mockMvc.perform(multipart("/api/resources/" + id + "/image")

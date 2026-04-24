@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.smartcampus.backend.service.BookingServiceImpl.BookingConflictException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,5 +31,14 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BookingConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleBookingConflict(BookingConflictException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", ex.getMessage());
+        response.put("conflictingBookings", ex.getConflicts());
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 }

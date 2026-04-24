@@ -3,15 +3,27 @@ package com.smartcampus.backend.service;
 import com.smartcampus.backend.model.Role;
 import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.repository.UserRepository;
+
+import java.util.List;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepo;
 
     public UserService(UserRepository userRepo) {
         this.userRepo = userRepo;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepo.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }
 
     //  ADMIN updates user role
@@ -31,5 +43,9 @@ public class UserService {
         }
 
         return userRepo.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepo.findAll();
     }
 }

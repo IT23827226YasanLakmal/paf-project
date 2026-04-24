@@ -4,6 +4,8 @@ import com.smartcampus.backend.dto.RoleDTO;
 import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.service.UserService;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +19,12 @@ public class UserController {
         this.userService = userService;
     }
 
-     //  ADMIN only
+    @GetMapping
+    public List<User> getAllUsers() {
+    return userService.getAllUsers();
+    }
+
+    //  ADMIN only
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/role")
     public User updateUserRole(
