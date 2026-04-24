@@ -176,3 +176,40 @@ export const uploadResourceImage = async (id, file) => {
     if (!response.ok) throw new Error('Failed to upload image');
     return response.json();
 };
+
+//  NOTIFICATIONS
+export const fetchNotifications = async () => {
+  const response = await fetch(`${API_BASE_URL}/notifications`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch notifications");
+  return response.json();
+};
+
+export const deleteNotification = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) throw new Error("Failed to delete notification");
+};
+
+export const markAsRead = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) throw new Error("Failed to mark as read");
+};
+
+export const getCurrentUser = async () => {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch user");
+  return response.json();
+};

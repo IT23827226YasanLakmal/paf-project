@@ -1,14 +1,16 @@
 package com.smartcampus.backend.controller;
 
 import com.smartcampus.backend.model.Notification;
+import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.service.NotificationService;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/notifications")
 public class NotificationController {
 
     private final NotificationService service;
@@ -17,14 +19,32 @@ public class NotificationController {
         this.service = service;
     }
 
-    //  USER: get their notifications
-    @GetMapping("/notifications/{userId}")
-    public List<Notification> getUserNotifications(@PathVariable Long userId) {
-        return service.getUserNotifications(userId);
+    //  Get logged-in user's notifications
+    @GetMapping
+    public List<Notification> getUserNotifications() {
+
+        User user = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        return service.getUserNotifications(user.getId());
     }
 
-    //  ADMIN: create notification
-    @PostMapping("/admin/notifications")
+    //  Delete notification
+    @DeleteMapping("/{id}")
+    public void deleteNotification(@PathVariable Long id) {
+        service.deleteNotification(id);
+    }
+
+    //  Mark as read
+    @PutMapping("/{id}/read")
+    public void markAsRead(@PathVariable Long id) {
+        service.markAsRead(id);
+    }
+
+    // (Optional) Admin create
+    @PostMapping("/admin")
     public Notification createNotification(@RequestBody Map<String, String> body) {
 
         Long userId = Long.parseLong(body.get("userId"));

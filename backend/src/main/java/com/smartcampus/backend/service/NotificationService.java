@@ -19,7 +19,6 @@ public class NotificationService {
         this.userRepo = userRepo;
     }
 
-    //  ADMIN creates notification for a user
     public Notification createNotification(Long userId, String message) {
 
         User user = userRepo.findById(userId)
@@ -30,8 +29,19 @@ public class NotificationService {
         return notificationRepo.save(notification);
     }
 
-    //  USER gets their notifications
     public List<Notification> getUserNotifications(Long userId) {
-        return notificationRepo.findByUserId(userId);
+        return notificationRepo.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public void deleteNotification(Long id) {
+        notificationRepo.deleteById(id);
+    }
+
+    public void markAsRead(Long id) {
+        Notification n = notificationRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        n.setRead(true);
+        notificationRepo.save(n);
     }
 }
