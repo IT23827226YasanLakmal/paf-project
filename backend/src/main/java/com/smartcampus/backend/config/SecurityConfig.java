@@ -14,11 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
-
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
@@ -57,7 +55,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174")); // Added 5174 just in case
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -68,36 +66,22 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // 🔥 ENABLE CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // ❌ Disable CSRF
                 .csrf(csrf -> csrf.disable())
-
-                // 🔒 Stateless session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
-
-                        // 🔓 PUBLIC
+                        // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // QR public verification
-                        .requestMatchers("/api/bookings/verify-qr/**").permitAll()
-
+                        .requestMatchers("/api/tickets/**").permitAll()
                         .requestMatchers("/api/resources/**").permitAll()
 
-                        // 🔓 TEMP BYPASS FOR BOOKINGS (Fake Header Testing)
-                        .requestMatchers("/api/bookings/**").permitAll()
-
-                        // 🔐 ROLE BASED
+                        // Role-based access
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/technician/**").hasRole("TECHNICIAN")
 
-                        // everything else
+                        // All others require login
                         .anyRequest().authenticated())
-                // ADD JWT FILTER
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

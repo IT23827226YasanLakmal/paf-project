@@ -24,6 +24,14 @@ public class UserController {
     return userService.getAllUsers();
     }
 
+    @GetMapping("/me")
+    public User getCurrentUser() {
+    return (User) org.springframework.security.core.context.SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getPrincipal();
+    }
+
     //  ADMIN only
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/role")
