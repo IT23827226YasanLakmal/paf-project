@@ -4,7 +4,7 @@ import { MapPin, Users, Activity, Settings, QrCode } from 'lucide-react';
 const ResourceCard = ({ resource, userRole, onStatusUpdate, onDelete, onShowQR }) => {
     const isLab = resource.type === 'LAB';
     const isHall = resource.type === 'LECTURE_HALL';
-    const isAdmin = ['FACILITY_MANAGER', 'SYSTEM_ADMIN'].includes(userRole);
+    const isAdmin = ['FACILITY_MANAGER', 'ADMIN'].includes(userRole);
     
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">

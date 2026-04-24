@@ -5,7 +5,7 @@ const accounts = [
   { name: 'Facility Admin', email: 'facility@smartcampus.com', password: 'password123', role: 'FACILITY_MANAGER' },
   { name: 'Booking Admin', email: 'booking@smartcampus.com', password: 'password123', role: 'BOOKING_OFFICER' },
   { name: 'Tech Support', email: 'tech@smartcampus.com', password: 'password123', role: 'TECHNICIAN' },
-  { name: 'Super Admin', email: 'admin@smartcampus.com', password: 'password123', role: 'SYSTEM_ADMIN' }
+  { name: 'Super Admin', email: 'admin@smartcampus.com', password: 'password123', role: 'ADMIN' }
 ];
 
 async function createAccounts() {

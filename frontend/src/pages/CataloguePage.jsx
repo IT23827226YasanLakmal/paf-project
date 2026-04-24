@@ -9,7 +9,7 @@ import { useAuthStore } from '../store/authStore';
 
 const CataloguePage = () => {
     const { user } = useAuthStore();
-    const isAdmin = ['FACILITY_MANAGER', 'SYSTEM_ADMIN'].includes(user?.role);
+    const isAdmin = ['FACILITY_MANAGER', 'ADMIN'].includes(user?.role);
 
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);

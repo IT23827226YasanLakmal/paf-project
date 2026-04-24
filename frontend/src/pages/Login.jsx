@@ -72,7 +72,7 @@ export default function Login() {
                 <option value="FACILITY_MANAGER" className="text-black">Facility Manager</option>
                 <option value="BOOKING_OFFICER" className="text-black">Booking Officer</option>
                 <option value="TECHNICIAN" className="text-black">Technician</option>
-                <option value="SYSTEM_ADMIN" className="text-black">System Admin</option>
+                <option value="ADMIN" className="text-black">System Admin</option>
               </select>
             </>
           )}
