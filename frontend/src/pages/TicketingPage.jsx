@@ -3,8 +3,12 @@ import TicketBoard from '../components/ticketing/TicketBoard';
 import IncidentReportForm from '../components/ticketing/IncidentReportForm';
 import { Wrench, PlusCircle, LayoutDashboard } from 'lucide-react';
 
+import { useAuthStore } from '../store/authStore';
+
 const TicketingPage = () => {
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('board'); // 'board' or 'report'
+  const isTechOrAdmin = ['TECHNICIAN', 'ADMIN'].includes(user?.role);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -12,10 +16,12 @@ const TicketingPage = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <Wrench className="w-8 h-8 text-blue-600" />
-            Maintenance & Ticketing
+            {isTechOrAdmin ? "Maintenance & Ticketing" : "My Support Tickets"}
           </h1>
           <p className="text-slate-500 mt-1 flex items-center gap-1">
-            Manage incident reports, assign technicians, and track resolution.
+            {isTechOrAdmin 
+              ? "Manage incident reports, assign technicians, and track resolution." 
+              : "Track your reported issues or submit a new incident."}
           </p>
         </div>
 
@@ -29,7 +35,7 @@ const TicketingPage = () => {
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
-            Ticket Board
+            {isTechOrAdmin ? "Ticket Board" : "My Tickets"}
           </button>
           <button
             onClick={() => setActiveTab('report')}
