@@ -213,3 +213,14 @@ export const getCurrentUser = async () => {
   if (!response.ok) throw new Error("Failed to fetch user");
   return response.json();
 };
+
+const API = {
+  fetchUsers,
+  updateUserRole,
+  fetchNotifications,
+  deleteNotification,
+  markAsRead,
+  getCurrentUser
+};
+
+export default API;
