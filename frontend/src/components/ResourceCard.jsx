@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Users, Activity, Settings, QrCode } from 'lucide-react';
 
-const ResourceCard = ({ resource, userRole, onStatusUpdate, onDelete, onShowQR }) => {
+const ResourceCard = ({ resource, userRole, onStatusUpdate, onDelete, onShowQR, onBook }) => {
     const isLab = resource.type === 'LAB';
     const isHall = resource.type === 'LECTURE_HALL';
     const isAdmin = ['FACILITY_MANAGER', 'ADMIN'].includes(userRole);
@@ -86,7 +86,7 @@ const ResourceCard = ({ resource, userRole, onStatusUpdate, onDelete, onShowQR }
                         </>
                     ) : (
                         <button 
-                            onClick={() => alert('Booking integration coming in Role 2!')}
+                            onClick={() => onBook(resource)}
                             disabled={resource.status !== 'ACTIVE'}
                             className={`flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm ${
                                 resource.status === 'ACTIVE' 

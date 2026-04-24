@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchResources, createResource, updateResourceStatus, deleteResource } from '../services/api';
 import ResourceCard from '../components/ResourceCard';
 import ResourceForm from '../components/ResourceForm';
+import BookingForm from '../components/BookingForm';
 import QRModal from '../components/QRModal';
 import { Plus, Filter } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -14,7 +15,7 @@ const CataloguePage = () => {
 
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
-    const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR } = useCatalogueUiStore();
+    const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR, selectedResourceForBooking, setSelectedResourceForBooking } = useCatalogueUiStore();
 
     // Queries
     const { data: resources = [], isLoading } = useQuery({
@@ -61,6 +62,10 @@ const CataloguePage = () => {
 
     const handleShowQR = (resource) => {
         setSelectedResourceForQR(resource);
+    };
+
+    const handleBook = (resource) => {
+        setSelectedResourceForBooking(resource);
     };
 
     return (
@@ -112,6 +117,7 @@ const CataloguePage = () => {
                             onStatusUpdate={handleStatusUpdate}
                             onDelete={handleDelete}
                             onShowQR={handleShowQR}
+                            onBook={handleBook}
                         />
                     ))}
                     {resources.length === 0 && (
@@ -128,6 +134,14 @@ const CataloguePage = () => {
                 onClose={() => setSelectedResourceForQR(null)} 
                 resource={selectedResourceForQR} 
             />
+
+            {selectedResourceForBooking && (
+                <BookingForm 
+                    resource={selectedResourceForBooking} 
+                    onClose={() => setSelectedResourceForBooking(null)} 
+                    onSuccess={() => alert('Booking requested successfully! Navigate to My Bookings to view its status.')}
+                />
+            )}
         </div>
     );
 };
