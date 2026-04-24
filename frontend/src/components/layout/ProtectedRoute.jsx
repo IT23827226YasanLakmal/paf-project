@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
-const ProtectedRoute = ({ allowedRoles }) => {
-    const { user, isAuthenticated } = useAuthStore();
+const ProtectedRoute = ({ allowedRoles, children }) => {
+    const { user, token } = useAuthStore();
 
-    if (!isAuthenticated) {
+    if (!token || !user) {
         return <Navigate to="/login" replace />;
     }
 
@@ -12,7 +12,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
         return <Navigate to="/app" replace />;
     }
 
-    return <Outlet />;
+    return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

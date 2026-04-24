@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTickets, updateTicketStatus } from '../../services/ticketApi';
 import { Clock, Hammer, CheckCircle, Package, MoreVertical, Search, Image as ImageIcon } from 'lucide-react';
 import TicketDetailsModal from './TicketDetailsModal';
-
+import { useAuthStore } from '../../store/authStore';
 const COLUMNS = [
   { id: 'OPEN', label: 'Open Issues', icon: <Package className="w-5 h-5 text-amber-500" />, bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
   { id: 'IN_PROGRESS', label: 'In Progress', icon: <Hammer className="w-5 h-5 text-blue-500" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
@@ -11,6 +11,8 @@ const COLUMNS = [
 ];
 
 const TicketBoard = () => {
+  const { user } = useAuthStore();
+  const canManageTickets = ['TECHNICIAN', 'ADMIN'].includes(user?.role);
   const queryClient = useQueryClient();
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [draggedTicket, setDraggedTicket] = useState(null);
@@ -52,8 +54,8 @@ const TicketBoard = () => {
             <div 
               key={column.id} 
               className={`flex-1 min-w-[320px] rounded-2xl border bg-slate-50 flex flex-col ${column.borderColor}`}
-              onDragOver={onDragOver}
-              onDrop={(e) => onDrop(column.id, e)}
+              onDragOver={canManageTickets ? onDragOver : undefined}
+              onDrop={(e) => canManageTickets && onDrop(column.id, e)}
             >
               <div className={`p-4 border-b ${column.borderColor} flex items-center justify-between ${column.bgColor} rounded-t-2xl`}>
                 <div className="flex items-center gap-2">
@@ -69,10 +71,10 @@ const TicketBoard = () => {
                 {columnTickets.map(ticket => (
                   <div
                     key={ticket.id}
-                    draggable
-                    onDragStart={() => onDragStart(ticket)}
+                    draggable={canManageTickets}
+                    onDragStart={() => canManageTickets && onDragStart(ticket)}
                     onClick={() => setSelectedTicket(ticket)}
-                    className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-md transition-all group relative"
+                    className={`bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all group relative ${canManageTickets ? 'cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-md' : 'cursor-pointer hover:shadow-md'}`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-xs font-bold px-2 py-1 rounded bg-slate-100 text-slate-600">
@@ -108,7 +110,7 @@ const TicketBoard = () => {
                   <div className="flex-1 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl p-6 bg-slate-50/50">
                     <Package className="w-8 h-8 mb-2 opacity-50 text-slate-300" />
                     <p className="text-sm font-medium">No tickets here</p>
-                    <p className="text-xs mt-1">Drag tickets to change status</p>
+                    {canManageTickets && <p className="text-xs mt-1">Drag tickets to change status</p>}
                   </div>
                 )}
               </div>
