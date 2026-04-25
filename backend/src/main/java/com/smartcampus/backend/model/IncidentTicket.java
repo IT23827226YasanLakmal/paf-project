@@ -37,6 +37,12 @@ public class IncidentTicket {
     @Column(name = "image_url")
     private String imageUrl; // URL from Supabase Storage
 
+    @Column(name = "first_response_at")
+    private LocalDateTime firstResponseAt;
+
+    @Column(name = "resolved_at")
+    private LocalDateTime resolvedAt;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

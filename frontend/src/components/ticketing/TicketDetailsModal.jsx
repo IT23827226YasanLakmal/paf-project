@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTicketComments, createTicketComment, deleteTicketComment } from '../../services/ticketApi';
-import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon, MessageSquare, Timer, Zap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const TicketDetailsModal = ({ ticket, onClose }) => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+
+  const formatDuration = (start, end) => {
+    if (!start || !end) return null;
+    const diff = new Date(end) - new Date(start);
+    if (diff < 0) return "0m";
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h`;
+    if (hours > 0) return `${hours}h ${mins % 60}m`;
+    return `${mins}m`;
+  };
+
+  const responseTime = formatDuration(ticket.createdAt, ticket.firstResponseAt);
+  const resolutionTime = formatDuration(ticket.createdAt, ticket.resolvedAt);
   const [newComment, setNewComment] = useState('');
 
   const { data: comments = [], isLoading } = useQuery({
@@ -110,9 +126,25 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
               </div>
             )}
             
-            <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-               <Clock className="w-3.5 h-3.5" />
-               Created: {new Date(ticket.createdAt).toLocaleString()}
+            <div className="flex flex-wrap items-center gap-4 py-4 border-t border-slate-100 mt-4">
+               <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+                  <Clock className="w-3.5 h-3.5" />
+                  Created: {new Date(ticket.createdAt).toLocaleString()}
+               </div>
+               
+               {responseTime && (
+                 <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[10px] font-bold uppercase tracking-tight border border-blue-100 shadow-sm">
+                    <Zap className="w-3 h-3" />
+                    First Response: {responseTime}
+                 </div>
+               )}
+
+               {resolutionTime && (
+                 <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md text-[10px] font-bold uppercase tracking-tight border border-emerald-100 shadow-sm">
+                    <Timer className="w-3 h-3" />
+                    Resolved in: {resolutionTime}
+                 </div>
+               )}
             </div>
           </div>
         </div>
