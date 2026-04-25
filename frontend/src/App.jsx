@@ -53,14 +53,7 @@ const AppLayout = () => {
           className="sticky top-0 z-30 h-16 flex items-center px-6 gap-4 glass-card"
           style={{ borderBottom: '1px solid var(--border-subtle)' }}
         >
-          {/* Search bar */}
-          <div
-            className="flex items-center gap-2.5 flex-1 max-w-md rounded-xl px-3.5 py-2 text-sm cursor-text transition-colors bg-raised"
-            style={{ border: '1px solid var(--border-subtle)' }}
-          >
-            <Search className="w-4 h-4 text-muted" strokeWidth={1.8} />
-            <span className="text-muted text-sm select-none">Search resources, bookings...</span>
-          </div>
+          {/* Removed top navbar search bar */}
 
           {/* Right controls */}
           <div className="flex items-center gap-3 ml-auto">

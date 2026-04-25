@@ -124,25 +124,9 @@ const AssetsPage = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8 space-y-6">
             
-            {/* ── Page Title ── */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-primary tracking-tight">
-                        {isAdmin ? 'Equipment Asset Control' : 'Equipment Assets'}
-                    </h1>
-                    <p className="text-secondary mt-1 text-sm">
-                        {isAdmin ? 'Onboard, assign, and oversee real-time operational device arrays.' : 'Browse and book operational equipment.'}
-                    </p>
-                </div>
-                {isAdmin && (
-                    <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2.5 bg-accent hover-bg-accent text-white text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer border-none">
-                        <Plus className="w-4 h-4 mr-2" strokeWidth={2.5} /> 
-                        Add Asset
-                    </button>
-                )}
-            </div>
+            {/* Removed upper title floating constraints */}
 
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (
@@ -190,6 +174,13 @@ const AssetsPage = () => {
                         <option value="PROJECTORS" className="bg-surface">Projectors & AV</option>
                         <option value="CAMERAS" className="bg-surface">Cameras & Media</option>
                     </select>
+
+                    {isAdmin && (
+                        <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2.5 bg-accent hover-bg-accent text-white text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer border-none flex-shrink-0">
+                            <Plus className="w-4 h-4 mr-2" strokeWidth={2.5} /> 
+                            Add Asset
+                        </button>
+                    )}
                 </div>
             </div>
 

@@ -120,23 +120,7 @@ const FacilitiesPage = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
             
-            {/* ── Page Title ── */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-primary tracking-tight">
-                        {isAdmin ? 'Facilities Administration' : 'University Facilities'}
-                    </h1>
-                    <p className="text-secondary mt-1 text-sm">
-                        {isAdmin ? 'Provision and oversee real-time university infrastructure.' : 'Browse and book study rooms, labs & event halls.'}
-                    </p>
-                </div>
-                {isAdmin && (
-                    <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2.5 bg-accent hover-bg-accent text-white text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer border-none">
-                        <Plus className="w-4 h-4 mr-2" strokeWidth={2.5} /> 
-                        Add Facility
-                    </button>
-                )}
-            </div>
+            {/* Removed top floating row */}
 
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (
@@ -205,6 +189,13 @@ const FacilitiesPage = () => {
                         <option value="LECTURE_HALL" className="bg-surface">Lecture Halls</option>
                         <option value="LAB" className="bg-surface">Laboratories</option>
                     </select>
+
+                    {isAdmin && (
+                        <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2.5 bg-accent hover-bg-accent text-white text-sm font-semibold rounded-xl transition-all shadow-sm cursor-pointer border-none flex-shrink-0">
+                            <Plus className="w-4 h-4 mr-2" strokeWidth={2.5} /> 
+                            Add Facility
+                        </button>
+                    )}
                 </div>
             </div>
 
