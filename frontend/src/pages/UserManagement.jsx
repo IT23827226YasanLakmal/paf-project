@@ -65,66 +65,66 @@ export default function UserManagement() {
   const technicians = users.filter(u => u.role === "TECHNICIAN").length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-primary">
 
       {/* TITLE */}
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-2xl font-bold text-primary mb-6">
         User Management
       </h1>
 
       {/* CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
-        <div className="bg-white rounded-2xl shadow-sm border p-4">
-          <div className="flex items-center gap-2 text-slate-600">
-            <Users size={18} />
-            <p>Total Users</p>
+        <div className="bg-surface rounded-3xl shadow-md border border-subtle p-6 hover:border-accent/40 transition-all duration-300">
+          <div className="flex items-center gap-2 text-secondary mb-2">
+            <Users size={20} className="text-accent" />
+            <p className="text-xs font-bold uppercase tracking-wider">Total Users</p>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">{totalUsers}</h2>
+          <h2 className="text-3xl font-black text-primary">{totalUsers}</h2>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border p-4">
-          <div className="flex items-center gap-2 text-slate-600">
-            <ShieldCheck size={18} />
-            <p>Admins</p>
+        <div className="bg-surface rounded-3xl shadow-md border border-subtle p-6 hover:border-accent/40 transition-all duration-300">
+          <div className="flex items-center gap-2 text-secondary mb-2">
+            <ShieldCheck size={20} className="text-accent" />
+            <p className="text-xs font-bold uppercase tracking-wider">Admins</p>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">{admins}</h2>
+          <h2 className="text-3xl font-black text-primary">{admins}</h2>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border p-4">
-          <div className="flex items-center gap-2 text-slate-600">
-            <Wrench size={18} />
-            <p>Technicians</p>
+        <div className="bg-surface rounded-3xl shadow-md border border-subtle p-6 hover:border-accent/40 transition-all duration-300">
+          <div className="flex items-center gap-2 text-secondary mb-2">
+            <Wrench size={20} className="text-accent" />
+            <p className="text-xs font-bold uppercase tracking-wider">Technicians</p>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">{technicians}</h2>
+          <h2 className="text-3xl font-black text-primary">{technicians}</h2>
         </div>
 
       </div>
 
       {/* SIMPLE CHART SECTION */}
-      <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+      <div className="bg-surface rounded-3xl shadow-md border border-subtle p-6 mb-6">
 
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        <h3 className="text-lg font-bold text-primary mb-4">
           User Distribution
         </h3>
 
         <div className="space-y-4">
 
           <div>
-            <p className="text-sm text-slate-600">Admins</p>
-            <div className="w-full bg-slate-200 rounded h-2">
+            <p className="text-xs text-secondary font-bold uppercase tracking-wider mb-1">Admins</p>
+            <div className="w-full bg-muted rounded-xl h-3 overflow-hidden">
               <div
-                className="bg-blue-500 h-2 rounded"
+                className="bg-accent h-3 rounded-xl transition-all duration-500"
                 style={{ width: `${(admins / totalUsers) * 100 || 0}%` }}
               />
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-slate-600">Technicians</p>
-            <div className="w-full bg-slate-200 rounded h-2">
+            <p className="text-xs text-secondary font-bold uppercase tracking-wider mb-1">Technicians</p>
+            <div className="w-full bg-muted rounded-xl h-3 overflow-hidden">
               <div
-                className="bg-green-500 h-2 rounded"
+                className="bg-green-500 h-3 rounded-xl transition-all duration-500"
                 style={{ width: `${(technicians / totalUsers) * 100 || 0}%` }}
               />
             </div>
@@ -140,86 +140,92 @@ export default function UserManagement() {
         <input
           type="text"
           placeholder="Search user..."
-          className="px-4 py-2 border rounded-lg w-full"
+          className="px-4 py-2.5 bg-surface border border-subtle text-primary rounded-xl w-full text-sm font-medium focus:ring-2 focus:ring-accent focus:outline-none shadow-sm placeholder:text-muted"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <select
-          className="px-4 py-2 border rounded-lg"
+          className="px-4 py-2.5 bg-surface border border-subtle text-primary rounded-xl text-sm font-bold shadow-sm focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer"
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
         >
-          <option value="">All Roles</option>
-          <option value="USER">USER</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="TECHNICIAN">TECHNICIAN</option>
-          <option value="BOOKING_OFFICER">BOOKING_OFFICER</option>
-          <option value="FACILITY_MANAGER">FACILITY_MANAGER</option>
+          <option value="" className="bg-surface">All Roles</option>
+          <option value="USER" className="bg-surface">USER</option>
+          <option value="ADMIN" className="bg-surface">ADMIN</option>
+          <option value="TECHNICIAN" className="bg-surface">TECHNICIAN</option>
+          <option value="BOOKING_OFFICER" className="bg-surface">BOOKING_OFFICER</option>
+          <option value="FACILITY_MANAGER" className="bg-surface">FACILITY_MANAGER</option>
         </select>
 
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+      <div className="bg-surface rounded-3xl shadow-md border border-subtle overflow-hidden">
 
-        <div className="p-6 border-b flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-slate-900">
+        <div className="p-6 border-b border-subtle flex justify-between items-center bg-surface">
+          <h2 className="text-lg font-bold text-primary">
             System Users
           </h2>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
+          <button className="bg-accent hover:bg-accent-hover text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm border-none cursor-pointer">
             Add User
           </button>
         </div>
 
         <div className="overflow-x-auto">
 
-          <table className="w-full">
+          <table className="w-full text-left">
 
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="p-3 text-left">User</th>
-                <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-left">Role</th>
+            <thead className="bg-raised">
+              <tr className="text-[10px] font-bold text-muted uppercase tracking-widest">
+                <th className="px-6 py-4">User</th>
+                <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Role</th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className="divide-y divide-subtle">
 
               {loading ? (
                 <tr>
-                  <td colSpan="3" className="text-center p-4">
-                    Loading...
+                  <td colSpan="3" className="text-center px-6 py-8 text-muted italic text-sm">
+                    Loading users...
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="text-center px-6 py-8 text-muted italic text-sm">
+                    No users matching criteria.
                   </td>
                 </tr>
               ) : filteredUsers.map(user => (
-                <tr key={user.id} className="border-t">
+                <tr key={user.id} className="hover:bg-raised/40 transition-colors">
 
-                  <td className="p-3 flex items-center gap-3">
+                  <td className="px-6 py-4 flex items-center gap-3 text-sm font-bold text-primary">
                     <img
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 rounded-full bg-raised"
                       alt="avatar"
                     />
                     {user.name}
                   </td>
 
-                  <td className="p-3 text-slate-600">{user.email}</td>
+                  <td className="px-6 py-4 text-xs text-secondary font-medium">{user.email}</td>
 
-                  <td className="p-3">
+                  <td className="px-6 py-4">
                     <select
                       value={user.role}
                       onChange={(e) =>
                         handleRoleChange(user.id, e.target.value)
                       }
-                      className="border px-3 py-1 rounded-lg"
+                      className="bg-surface border border-subtle text-primary font-bold px-3 py-1.5 rounded-xl text-xs focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer shadow-sm"
                     >
-                      <option value="USER">USER</option>
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="TECHNICIAN">TECHNICIAN</option>
-                      <option value="BOOKING_OFFICER">BOOKING_OFFICER</option>
-                      <option value="FACILITY_MANAGER">FACILITY_MANAGER</option>
+                      <option value="USER" className="bg-surface">USER</option>
+                      <option value="ADMIN" className="bg-surface">ADMIN</option>
+                      <option value="TECHNICIAN" className="bg-surface">TECHNICIAN</option>
+                      <option value="BOOKING_OFFICER" className="bg-surface">BOOKING_OFFICER</option>
+                      <option value="FACILITY_MANAGER" className="bg-surface">FACILITY_MANAGER</option>
                     </select>
                   </td>
 

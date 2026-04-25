@@ -18,6 +18,7 @@ const AssetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [subCategory, setSubCategory] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
     const itemsPerPage = 6;
     const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR, selectedResourceForBooking, setSelectedResourceForBooking } = useCatalogueUiStore();
 
@@ -85,9 +86,7 @@ const AssetsPage = () => {
     };
 
     const handleDelete = (id) => {
-        if(window.confirm('Are you sure you want to delete this asset?')) {
-            deleteMutation.mutate(id);
-        }
+        setDeleteConfirmId(id);
     };
 
     const handleShowQR = (resource) => {
@@ -382,6 +381,30 @@ const AssetsPage = () => {
                     onClose={() => setSelectedResourceForBooking(null)} 
                     onSuccess={() => alert('Booking requested successfully! Navigate to My Bookings to view its status.')}
                 />
+            {deleteConfirmId && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-overlay border border-subtle glass-card p-6 rounded-2xl max-w-sm w-full text-center shadow-xl flex flex-col gap-4">
+                        <h3 className="text-lg font-bold text-primary">Confirm Deletion</h3>
+                        <p className="text-sm text-secondary">Are you completely sure you want to permanently delete this item? This operation cannot be undone.</p>
+                        <div className="flex gap-3 justify-center mt-2">
+                            <button 
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="px-4 py-2 text-xs font-bold rounded-xl bg-raised border border-subtle text-muted hover:text-primary cursor-pointer transition-all border-none"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    deleteMutation.mutate(deleteConfirmId);
+                                    setDeleteConfirmId(null);
+                                }}
+                                className="px-4 py-2 text-xs font-bold rounded-xl bg-red-500 hover:bg-red-600 text-white cursor-pointer transition-all border-none"
+                            >
+                                Delete Permanently
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

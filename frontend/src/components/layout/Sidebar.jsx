@@ -85,7 +85,7 @@ const Sidebar = () => {
 
   return (
     <aside
-      className="fixed left-0 top-0 h-full w-56 z-40 flex flex-col bg-sidebar border-r border-sidebar transition-colors duration-200"
+      className="fixed left-0 top-0 h-full w-56 z-40 flex flex-col glass-card border-r border-sidebar transition-colors duration-200"
       style={{ boxShadow: '1px 0 0 0 var(--sidebar-border)' }}
     >
       {/* ── Logo ── */}

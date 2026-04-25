@@ -29,6 +29,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import { Search } from 'lucide-react';
 import BookingOfficerOverview from './pages/BookingOfficerOverview';
+import ReportsPage from './pages/ReportsPage';
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -45,11 +46,11 @@ const AppLayout = () => {
       <Sidebar />
 
       {/* ── Main content area offset by sidebar ── */}
-      <div className="flex-1 ml-56 flex flex-col min-h-screen">
+      <div className="flex-1 ml-56 flex flex-col min-h-screen glossy-mesh">
 
         {/* ── Top Header ── */}
         <header
-          className="sticky top-0 z-30 h-16 flex items-center px-6 gap-4 bg-surface"
+          className="sticky top-0 z-30 h-16 flex items-center px-6 gap-4 glass-card"
           style={{ borderBottom: '1px solid var(--border-subtle)' }}
         >
           {/* Search bar */}
@@ -135,8 +136,8 @@ const AppLayout = () => {
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
               <Route path="users" element={<UserManagement />} />
             </Route>
-            <Route element={<ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']} />}>
-              <Route path="reports" element={<div className="p-8 text-center text-slate-400">Reports Module coming soon...</div>} />
+            <Route element={<ProtectedRoute allowedRoles={['USER', 'TECHNICIAN', 'ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER']} />}>
+              <Route path="reports" element={<ReportsPage />} />
             </Route>
           </Routes>
         </main>

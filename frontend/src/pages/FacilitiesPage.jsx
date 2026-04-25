@@ -4,9 +4,10 @@ import { fetchResources, createResource, updateResourceStatus, updateResource, d
 import FacilityForm from '../components/FacilityForm';
 import BookingForm from '../components/BookingForm';
 import QRModal from '../components/QRModal';
-import { Plus, Filter, Search, Trash2, AlertCircle, RefreshCcw, CalendarCheck, Building2, X, Pencil } from 'lucide-react';
+import { Plus, Filter, Search, Trash2, AlertCircle, RefreshCcw, CalendarCheck, Building2, X, Pencil, Map, Layout } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCatalogueUiStore } from '../store/catalogueUiStore';
+import SpaceCadView from '../components/SpaceCadView';
 
 const FacilitiesPage = () => {
     const { user } = useAuthStore();
@@ -16,7 +17,9 @@ const FacilitiesPage = () => {
     const [showForm, setShowForm] = useState(false);
     const [editingResource, setEditingResource] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState('GRID'); // 'GRID', 'CAD'
     const [currentPage, setCurrentPage] = useState(1);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
     const itemsPerPage = 6;
     const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR, selectedResourceForBooking, setSelectedResourceForBooking } = useCatalogueUiStore();
 
@@ -84,9 +87,7 @@ const FacilitiesPage = () => {
     };
 
     const handleDelete = (id) => {
-        if(window.confirm('Are you sure you want to delete this facility?')) {
-            deleteMutation.mutate(id);
-        }
+        setDeleteConfirmId(id);
     };
 
     const handleShowQR = (resource) => {
@@ -160,15 +161,37 @@ const FacilitiesPage = () => {
 
             {/* ── Controls Toolbar ── */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-surface p-3.5 rounded-2xl shadow-sm border border-subtle">
-                <div className="flex flex-1 items-center gap-3 w-full md:max-w-md bg-raised border border-subtle rounded-xl px-3 py-2">
-                    <Search className="w-4 h-4 text-muted" />
-                    <input 
-                        type="text" 
-                        placeholder="Search halls, labs, locations..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-transparent border-none text-sm text-primary outline-none focus:ring-0 w-full"
-                    />
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="flex flex-1 items-center gap-3 w-full md:w-80 bg-raised border border-subtle rounded-xl px-3 py-2">
+                        <Search className="w-4 h-4 text-muted" />
+                        <input 
+                            type="text" 
+                            placeholder="Search halls, labs, locations..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-transparent border-none text-sm text-primary outline-none focus:ring-0 w-full"
+                        />
+                    </div>
+
+                    {/* View Mode Switcher */}
+                    <div className="flex bg-raised border border-subtle p-1 rounded-xl">
+                        <button
+                            onClick={() => setViewMode('GRID')}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all border-none flex items-center gap-1.5 ${
+                                viewMode === 'GRID' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary bg-transparent'
+                            }`}
+                        >
+                            <Layout className="w-3.5 h-3.5" /> Grid
+                        </button>
+                        <button
+                            onClick={() => setViewMode('CAD')}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all border-none flex items-center gap-1.5 ${
+                                viewMode === 'CAD' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary bg-transparent'
+                            }`}
+                        >
+                            <Map className="w-3.5 h-3.5" /> CAD Map
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
@@ -190,6 +213,12 @@ const FacilitiesPage = () => {
                 <div className="flex justify-center items-center h-64">
                     <RefreshCcw className="animate-spin text-accent w-8 h-8" />
                 </div>
+            ) : viewMode === 'CAD' ? (
+                <SpaceCadView 
+                    resources={filteredResources} 
+                    onBookResource={handleBook} 
+                    isAdmin={isAdmin} 
+                />
             ) : (
                 <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -380,6 +409,30 @@ const FacilitiesPage = () => {
                     onClose={() => setSelectedResourceForBooking(null)} 
                     onSuccess={() => alert('Booking requested successfully! Navigate to My Bookings to view its status.')}
                 />
+            {deleteConfirmId && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-overlay border border-subtle glass-card p-6 rounded-2xl max-w-sm w-full text-center shadow-xl flex flex-col gap-4">
+                        <h3 className="text-lg font-bold text-primary">Confirm Deletion</h3>
+                        <p className="text-sm text-secondary">Are you completely sure you want to permanently delete this asset? This operation cannot be undone.</p>
+                        <div className="flex gap-3 justify-center mt-2">
+                            <button 
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="px-4 py-2 text-xs font-bold rounded-xl bg-raised border border-subtle text-muted hover:text-primary cursor-pointer transition-all border-none"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    deleteMutation.mutate(deleteConfirmId);
+                                    setDeleteConfirmId(null);
+                                }}
+                                className="px-4 py-2 text-xs font-bold rounded-xl bg-red-500 hover:bg-red-600 text-white cursor-pointer transition-all border-none"
+                            >
+                                Delete Permanently
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
