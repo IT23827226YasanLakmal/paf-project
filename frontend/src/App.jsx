@@ -28,7 +28,7 @@ import UserDropdown from './components/layout/UserDropdown';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import { Search } from 'lucide-react';
-import BookingOfficerDashboard from './pages/BookingOfficerDashboard';
+import BookingOfficerOverview from './pages/BookingOfficerOverview';
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -129,7 +129,7 @@ const AppLayout = () => {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['BOOKING_OFFICER', 'ADMIN']} />}>
-              <Route path="bookings" element={<BookingOfficerDashboard />} />
+              <Route path="bookings" element={<BookingOfficerOverview />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
