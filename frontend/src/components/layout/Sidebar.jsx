@@ -5,7 +5,8 @@ import { useThemeStore } from '../../store/themeStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
 import {
   LayoutGrid, LayoutDashboard, BookOpen, CalendarCheck,
-  Ticket, Users, Settings, Sun, Moon, Headphones, Bell, BarChart3
+  Ticket, Users, Settings, Sun, Moon, Headphones, Bell, BarChart3,
+  Building2, Laptop, Wrench
 } from 'lucide-react';
 
 const NavItem = ({ to, icon: Icon, label, end = false }) => (
@@ -37,27 +38,28 @@ const NavItem = ({ to, icon: Icon, label, end = false }) => (
 const ROLE_NAV_CONFIG = {
   USER: [
     { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
     { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
   ],
   ADMIN: [
     { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/facilities", icon: Building2, label: "Facilities" },
+    { to: "/app/assets", icon: Laptop, label: "Equipments" },
     { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
     { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
     { to: "/app/users", icon: Users, label: "Users" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
+    { to: "/app/maintenance", icon: Wrench, label: "Maintenance" },
   ],
   FACILITY_MANAGER: [
-    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
-    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/facility", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/facilities", icon: Building2, label: "Facilities" },
+    { to: "/app/assets", icon: Laptop, label: "Equipments" },
   ],
   TECHNICIAN: [
-    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/technician-dashboard", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],

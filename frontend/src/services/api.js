@@ -1,15 +1,12 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
-const authFetch = async (url, options = {}) => {
+const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
     const token = localStorage.getItem('token');
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
     
     const headers = {};
-    
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     
     if (user) {
         headers['X-User-Id'] = String(user.id);
@@ -18,18 +15,34 @@ const authFetch = async (url, options = {}) => {
         }
     }
     
-    // Merge options.headers
     Object.assign(headers, options.headers);
     
-    // Default to application/json if no Content-Type is provided and it's not FormData
     if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
     } else if (options.body instanceof FormData) {
-        delete headers['Content-Type']; // Let browser set multipart/form-data with boundary
+        delete headers['Content-Type'];
     }
 
-    const response = await fetch(url, { ...options, headers });
-    return response;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(url, { ...options, headers });
+            
+            // Intercept 401 Unauthenticated sessions
+            if (response.status === 401) {
+                console.warn('[Resilience] Unauthorized endpoint access. Resetting session...');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return response;
+            }
+
+            return response;
+        } catch (error) {
+            console.error(`[Resilience] Attempt ${attempt} failed for ${url}. Error:`, error);
+            if (attempt === retries) throw error;
+            await new Promise(res => setTimeout(res, backoff * Math.pow(2, attempt - 1)));
+        }
+    }
 };
 
 export const login = async (credentials) => {
@@ -65,6 +78,20 @@ export const createResource = async (resource) => {
         body: JSON.stringify(resource),
     });
     if (!response.ok) throw new Error('Failed to create resource');
+    return response.json();
+};
+
+export const updateResource = async (id, updatedData) => {
+    const resourceResponse = await authFetch(`${API_BASE_URL}/resources/${id}`);
+    if (!resourceResponse.ok) throw new Error('Failed to fetch resource details');
+    const existing = await resourceResponse.json();
+    
+    const payload = { ...existing, ...updatedData };
+    const response = await authFetch(`${API_BASE_URL}/resources/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error('Failed to update resource');
     return response.json();
 };
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
-import CataloguePage from './pages/CataloguePage';
+import FacilitiesPage from './pages/FacilitiesPage';
+import AssetsPage from './pages/AssetsPage';
 import TicketingPage from './pages/TicketingPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminBookingReview from './pages/AdminBookingReview';
@@ -10,7 +11,10 @@ import Login from './pages/Login';
 import FacilityDashboard from './pages/FacilityDashboard';
 import UserManagement from './pages/UserManagement';
 import DashboardPage from './pages/DashboardPage';
-import TechnicianDashboard from './pages/TechnicianDashboard';
+import TechnicianOverview from './pages/TechnicianOverview';
+import UserOverview from './pages/UserOverview';
+import AdminOverview from './pages/AdminOverview';
+import MaintenancePage from './pages/MaintenancePage';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 import Sidebar from './components/layout/Sidebar';
@@ -70,18 +74,33 @@ const AppLayout = () => {
           <Routes>
             <Route
               path=""
-              element={<Navigate to="/app/dashboard" replace />}
+              element={
+                ['USER', 'ADMIN'].includes(user?.role)
+                  ? <Navigate to="/app/dashboard" replace />
+                  : user?.role === 'FACILITY_MANAGER'
+                    ? <Navigate to="/app/facility" replace />
+                    : user?.role === 'TECHNICIAN'
+                      ? <Navigate to="/app/technician-dashboard" replace />
+                      : <Navigate to="/app/admin-review" replace />
+              }
             />
 
             <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER', 'TECHNICIAN']} />}>
               <Route
                 path="dashboard"
-                element={<DashboardPage onBookResource={(r) => setBookingTarget(r)} />}
+                element={
+                  user?.role === 'USER'
+                    ? <UserOverview />
+                    : user?.role === 'ADMIN'
+                      ? <AdminOverview />
+                      : <DashboardPage onBookResource={(r) => setBookingTarget(r)} />
+                }
               />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['USER', 'FACILITY_MANAGER', 'ADMIN']} />}>
-              <Route path="catalogue" element={<CataloguePage />} />
+            <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
+              <Route path="facilities" element={<FacilitiesPage />} />
+              <Route path="assets" element={<AssetsPage />} />
             </Route>
 
             {/* Profile — accessible by all authenticated users */}
@@ -94,7 +113,11 @@ const AppLayout = () => {
 
             <Route element={<ProtectedRoute allowedRoles={['USER', 'TECHNICIAN', 'ADMIN']} />}>
               <Route path="tickets" element={<TicketingPage />} />
-              <Route path="technician-dashboard" element={<TechnicianDashboard />} />
+              <Route path="technician-dashboard" element={<TechnicianOverview />} />
+            </Route>
+
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+              <Route path="maintenance" element={<MaintenancePage />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
@@ -139,14 +162,14 @@ function App() {
         toastOptions={{
           style: { background: '#111', color: '#fff', border: '1px solid #333' },
           success: { iconTheme: { primary: 'green', secondary: 'black' } },
-          error:   { iconTheme: { primary: 'red',   secondary: 'black' } },
+          error: { iconTheme: { primary: 'red', secondary: 'black' } },
         }}
       />
       <Routes>
-        <Route path="/"              element={<LandingPage />} />
-        <Route path="/login"         element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/verify-qr/:token" element={<VerifyQrPage />} />
-        <Route path="/signup"        element={<Signup />} />
+        <Route path="/signup" element={<Signup />} />
         <Route
           path="/app/*"
           element={
