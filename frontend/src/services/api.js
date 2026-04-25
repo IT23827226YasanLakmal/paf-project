@@ -205,7 +205,7 @@ export const updateBookingStatus = async ({ id, status, rejectionReason, adminNo
   return response.json();
 };
 
-export const deleteBooking = async ({ id }) => {
+export const deleteBooking = async (id) => {
   const response = await authFetch(`${API_BASE_URL}/bookings/${id}`, {
     method: 'DELETE',
   });

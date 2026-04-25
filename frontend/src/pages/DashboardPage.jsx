@@ -245,7 +245,7 @@ const DashboardPage = ({ onBookResource }) => {
           </div>
 
           <div className="h-[180px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minHeight={180}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
                 <XAxis

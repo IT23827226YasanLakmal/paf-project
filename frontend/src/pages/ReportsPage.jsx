@@ -245,7 +245,7 @@ const ReportsPage = () => {
           <div className="lg:col-span-2 bg-surface border border-subtle rounded-3xl p-6 shadow-md">
             <h4 className="text-sm font-black text-primary mb-4">Daily Reservation Trend</h4>
             <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={288}>
                 <AreaChart data={reportData.timelineTrend}>
                   <defs>
                     <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
@@ -270,7 +270,7 @@ const ReportsPage = () => {
             <h4 className="text-sm font-black text-primary mb-6">Issue Category Mix</h4>
             <div className="h-56 w-full flex-1">
               {reportData.categoryBreakdown.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minHeight={224}>
                   <PieChart>
                     <Pie data={reportData.categoryBreakdown} innerRadius={50} outerRadius={75} paddingAngle={6} dataKey="value">
                       {reportData.categoryBreakdown.map((entry, index) => (
@@ -292,7 +292,7 @@ const ReportsPage = () => {
           <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
             <h4 className="text-sm font-black text-primary mb-4">Fulfillment Ratios</h4>
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={256}>
                 <BarChart data={reportData.bookingStatusData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
@@ -310,7 +310,7 @@ const ReportsPage = () => {
           <div className="lg:col-span-2 bg-surface border border-subtle rounded-3xl p-6 shadow-md">
             <h4 className="text-sm font-black text-primary mb-4">Pipeline Breakdown</h4>
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={256}>
                 <BarChart data={reportData.ticketStatusData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />

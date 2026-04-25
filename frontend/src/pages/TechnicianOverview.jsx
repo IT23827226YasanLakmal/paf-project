@@ -121,7 +121,7 @@ const TechnicianOverview = () => {
           
           <div className="h-64 w-full min-h-[256px]">
             {tickets.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                 <LineChart data={[
                   { name: 'Mon', solved: 4, open: 6 },
                   { name: 'Tue', solved: 7, open: 5 },
@@ -150,7 +150,7 @@ const TechnicianOverview = () => {
           <h3 className="font-bold text-primary mb-6">Ticket Priority</h3>
           <div className="flex-1 min-h-[200px]">
             {tickets.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
                 <PieChart>
                   <Pie
                     data={priorityData}
@@ -189,7 +189,7 @@ const TechnicianOverview = () => {
           <h3 className="font-bold text-primary mb-6">Average tickets created</h3>
           <div className="h-64 min-h-[256px]">
             {tickets.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                 <BarChart data={categoryData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />

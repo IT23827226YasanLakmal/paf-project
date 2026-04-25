@@ -155,7 +155,7 @@ const BookingOfficerOverview = () => {
           
           <div className="h-64 w-full min-h-[256px]">
             {trendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                 <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
@@ -176,7 +176,7 @@ const BookingOfficerOverview = () => {
           <h3 className="font-bold text-primary mb-6">Top Resources</h3>
           <div className="flex-1 min-h-[200px]">
             {topResources.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
                 <PieChart>
                   <Pie
                     data={topResources}
@@ -218,7 +218,7 @@ const BookingOfficerOverview = () => {
           <h3 className="font-bold text-primary mb-6">Peak Booking Days</h3>
           <div className="h-64 min-h-[256px]">
             {filteredBookings.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                 <BarChart data={dayOfWeekData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />

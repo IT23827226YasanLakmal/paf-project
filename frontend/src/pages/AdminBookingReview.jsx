@@ -421,7 +421,7 @@ const AdminBookingReview = () => {
       {/* Modals */}
       {rejectTarget && <RejectModal onConfirm={reject} onClose={() => setRejectTarget(null)} isPending={statusMutation.isPending} />}
       {cancelTarget && <CancelModal booking={cancelTarget} onConfirm={cancel} onClose={() => setCancelTarget(null)} isPending={statusMutation.isPending} />}
-      {deleteTarget && <DeleteModal booking={deleteTarget} onConfirm={() => deleteMutation.mutate({ id: deleteTarget.id })} onClose={() => setDeleteTarget(null)} isPending={deleteMutation.isPending} />}
+      {deleteTarget && <DeleteModal booking={deleteTarget} onConfirm={() => deleteMutation.mutate(deleteTarget.id)} onClose={() => setDeleteTarget(null)} isPending={deleteMutation.isPending} />}
       {editTarget   && <BookingEditForm booking={editTarget} onClose={() => setEditTarget(null)} onSuccess={() => setEditTarget(null)} />}
       {viewTarget   && <BookingDetailModal booking={viewTarget} onClose={() => setViewTarget(null)} />}
     </div>

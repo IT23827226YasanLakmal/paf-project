@@ -43,6 +43,7 @@ const TicketBoard = () => {
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [actionMenuId, setActionMenuId] = useState(null);
+  const [ticketToDelete, setTicketToDelete] = useState(null);
 
   const { data: tickets = [], isLoading, isError } = useQuery({
     queryKey: ['tickets'],
@@ -63,6 +64,7 @@ const TicketBoard = () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       toast.success('Ticket deleted');
       setActionMenuId(null);
+      setTicketToDelete(null);
     }
   });
 
@@ -365,7 +367,7 @@ const TicketBoard = () => {
                               </button>
                               <div className="border-t border-subtle my-1" />
                               <button
-                                onClick={() => { if(window.confirm('Delete this ticket?')) deleteMutation.mutate(ticket.id); }}
+                                onClick={() => { setTicketToDelete(ticket); setActionMenuId(null); }}
                                 className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-raised transition-colors cursor-pointer"
                               >
                                 Delete
@@ -479,6 +481,40 @@ const TicketBoard = () => {
           ticket={selectedTicket}
           onClose={clearSelectedTicket}
         />
+      )}
+
+      {ticketToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm bg-overlay rounded-2xl shadow-2xl overflow-hidden p-6 border border-subtle">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-500/10 text-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-primary">Delete Ticket</h3>
+                <p className="text-xs text-muted mt-0.5">This action cannot be undone.</p>
+              </div>
+            </div>
+            <p className="text-sm text-secondary mb-6">
+              Are you sure you want to delete ticket <span className="font-bold text-accent">#{ticketToDelete.id}</span>?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setTicketToDelete(null)}
+                className="flex-1 px-4 py-2.5 bg-surface hover:bg-muted-fill text-secondary hover:text-primary text-sm font-bold rounded-xl border border-subtle transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(ticketToDelete.id)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl disabled:opacity-50 transition-colors flex items-center justify-center gap-2 cursor-pointer border-none"
+              >
+                {deleteMutation.isPending ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Close action menu on outside click ── */}

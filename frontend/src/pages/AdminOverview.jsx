@@ -134,7 +134,7 @@ const AdminOverview = () => {
                     </div>
 
                     <div className="h-64 flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={256}>
                             <AreaChart data={[
                                 { name: 'P1', val: 12 },
                                 { name: 'P2', val: 24 },

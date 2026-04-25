@@ -106,6 +106,7 @@ export default function Login() {
       
       // Redirect based on role
       if (userObj.role === "ADMIN") navigate("/app/dashboard");
+      else if (userObj.role === "TECHNICIAN") navigate("/app/technician-dashboard");
       else if (userObj.role === "FACILITY_MANAGER") navigate("/app/facility");
       else navigate("/app/dashboard");
     } catch (err) {

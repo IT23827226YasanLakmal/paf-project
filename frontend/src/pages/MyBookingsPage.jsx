@@ -115,56 +115,7 @@ const DeleteModal = ({ booking, onConfirm, onClose, isPending }) => (
   </div>
 );
 
-//Resource selector
-const ResourceSelectorModal = ({ onSelect, onClose }) => {
-  const { data: resources = [], isLoading } = useQuery({
-    queryKey: ['resources'],
-    queryFn:  () => fetchResources(null),
-  });
-  const active = resources.filter(r => r.status === 'ACTIVE');
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-overlay rounded-2xl shadow-2xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
-        <div className="px-6 py-5 bg-raised flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-          <div>
-            <h2 className="text-lg font-bold text-primary">Select a Resource</h2>
-            <p className="text-sm text-muted mt-0.5">Choose which resource to book</p>
-          </div>
-          <button onClick={onClose} className="text-muted hover:text-primary p-1.5 rounded-xl hover:bg-muted-fill transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="p-4 max-h-72 overflow-y-auto space-y-2 bg-overlay">
-          {isLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-muted animate-spin" /></div>
-          ) : active.length === 0 ? (
-            <p className="text-center text-muted py-8 text-sm">No active resources available.</p>
-          ) : active.map(r => (
-            <button 
-              key={r.id} 
-              onClick={() => onSelect(r)}
-              className="w-full text-left p-3.5 bg-raised hover:bg-accent-subtle rounded-xl transition-all group"
-              style={{ border: '1px solid var(--border-subtle)' }}
-            >
-              <div className="flex justify-between items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-primary group-hover:text-accent">{r.name}</p>
-                  <p className="text-xs text-muted mt-0.5">
-                    {r.type.replace('_', ' ')}
-                    {r.location ? ` · ${r.location}` : ''}
-                    {r.capacity ? ` · Capacity: ${r.capacity}` : ''}
-                  </p>
-                </div>
-                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-xs font-semibold rounded-full flex-shrink-0">Active</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 //Skeleton
 const SkeletonRow = () => (
@@ -474,7 +425,7 @@ const MyBookingsPage = () => {
           booking={cancelTarget} 
           onConfirm={handleCancelConfirm} 
           onClose={() => setCancelTarget(null)} 
-          isPending={cancelMutation.isLoading} 
+          isPending={cancelMutation.isPending} 
         />
       )}
 
@@ -483,14 +434,14 @@ const MyBookingsPage = () => {
           booking={deleteTarget} 
           onConfirm={() => deleteMutation.mutate(deleteTarget.id)} 
           onClose={() => setDeleteTarget(null)} 
-          isPending={deleteMutation.isLoading} 
+          isPending={deleteMutation.isPending} 
         />
       )}
 
       {showSelector && (
-        <ResourceSelectorModal 
-          onSelect={r => { setShowSelector(false); setBookingTarget(r); }} 
+        <BookingForm 
           onClose={() => setShowSelector(false)} 
+          onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['bookings'] }); setShowSelector(false); }} 
         />
       )}
 
