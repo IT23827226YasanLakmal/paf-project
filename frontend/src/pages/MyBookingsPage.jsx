@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 
 //Helpers
-const fmtBid  = id  => `B${String(id).padStart(4, '0')}`;
-const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const fmtTime = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+const shortenId = id => (id && String(id).length > 8) ? `${String(id).slice(0, 4)}...${String(id).slice(-4)}` : id;
+const fmtBid    = id => `B${shortenId(String(id).padStart(4, '0'))}`;
+const fmtDate   = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtTime   = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
 const STATUS_CFG = {
   PENDING:   { label: 'Pending',   bg: 'bg-amber-500/10',  text: 'text-amber-500',  border: 'border-amber-500/20' },
@@ -330,7 +331,7 @@ const MyBookingsPage = () => {
                         </td>
                         <td className="px-4 py-3.5">
                           <p className="text-sm font-semibold text-primary">
-                            {booking.resourceName || `Resource #${booking.resourceId}`}
+                            {booking.resourceName || `Resource #${shortenId(booking.resourceId)}`}
                           </p>
                           <p className="text-xs text-muted mt-0.5 truncate max-w-[160px]">{booking.purpose}</p>
                         </td>

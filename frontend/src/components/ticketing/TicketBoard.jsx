@@ -11,6 +11,8 @@ import { useAuthStore } from '../../store/authStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
 import toast from 'react-hot-toast';
 
+const shortenId = id => (id && String(id).length > 8) ? `${String(id).slice(0, 4)}...${String(id).slice(-4)}` : id;
+
 /* ── Priority Config ── */
 const PRIORITY_CONFIG = {
   URGENT: { label: 'High',   dot: 'bg-red-500',    badge: 'bg-red-500/10 text-red-500 border-red-500/20' },
@@ -255,7 +257,7 @@ const TicketBoard = () => {
 
                     {/* Ticket ID */}
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-xs font-black text-accent">#{String(ticket.id).padStart(3, '0')}</span>
+                      <span className="text-xs font-black text-accent">#{shortenId(String(ticket.id).padStart(3, '0'))}</span>
                     </td>
 
                     {/* Subject */}
@@ -495,7 +497,7 @@ const TicketBoard = () => {
               </div>
             </div>
             <p className="text-sm text-secondary mb-6">
-              Are you sure you want to delete ticket <span className="font-bold text-accent">#{ticketToDelete.id}</span>?
+              Are you sure you want to delete ticket <span className="font-bold text-accent">#{shortenId(ticketToDelete.id)}</span>?
             </p>
             <div className="flex gap-3">
               <button

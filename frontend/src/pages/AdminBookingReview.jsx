@@ -11,9 +11,10 @@ import {
 } from 'lucide-react';
 
 // Helpers 
-const fmtBid  = id  => `B${String(id).padStart(4, '0')}`;
-const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const fmtTime = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+const shortenId = id => (id && String(id).length > 8) ? `${String(id).slice(0, 4)}...${String(id).slice(-4)}` : id;
+const fmtBid    = id => `B${shortenId(String(id).padStart(4, '0'))}`;
+const fmtDate   = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtTime   = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
 const STATUS_CFG = {
   PENDING:   { label: 'Pending',   bg: 'bg-amber-500/10',  text: 'text-amber-500',  dot: 'bg-amber-400',  border: 'border-amber-500/20' },
@@ -248,7 +249,7 @@ const AdminBookingReview = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 animate-in fade-in duration-500 min-h-0 text-primary">
+    <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 py-8 flex flex-col gap-6 animate-in fade-in duration-500 min-h-0 text-primary">
 
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -319,7 +320,7 @@ const AdminBookingReview = () => {
               <thead>
                 <tr className="bg-raised border-b border-subtle">
                   {['Booking ID', 'Resource', 'User', 'Date & Time', 'Attendees', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -341,30 +342,30 @@ const AdminBookingReview = () => {
                   return (
                     <tr key={booking.id} className="border-b border-subtle hover:bg-raised/30 transition-all duration-200">
 
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-1 bg-raised text-secondary text-xs font-mono font-semibold rounded-lg border border-subtle">
                           {fmtBid(booking.id)}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-accent/5 text-accent rounded-xl border border-accent/10">
                             <Building2 className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-primary">{booking.resourceName || `Resource #${booking.resourceId}`}</p>
-                            <p className="text-xs text-muted mt-0.5 truncate max-w-[160px] font-medium">{booking.purpose || 'No purpose stated'}</p>
+                            <p className="text-sm font-semibold text-primary">{booking.resourceName || `Resource #${shortenId(booking.resourceId)}`}</p>
+                            <p className="text-xs text-muted mt-0.5 truncate max-w-[250px] font-medium">{booking.purpose || 'No purpose stated'}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center" title={`User #${booking.userId}`}>
-                          <div className="w-8 h-8 bg-raised rounded-full flex items-center justify-center text-secondary font-bold text-xs border border-subtle">
-                            U{booking.userId}
+                          <div className="w-auto px-2 min-w-[32px] h-8 bg-raised rounded-lg flex items-center justify-center text-secondary font-bold text-xs border border-subtle">
+                            U{shortenId(booking.userId)}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-secondary whitespace-nowrap">
+                      <td className="px-4 py-4 text-sm text-secondary whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-raised/50 rounded-lg text-muted">
                             <Clock3 className="w-4 h-4" />
@@ -375,15 +376,15 @@ const AdminBookingReview = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="px-4 py-4 whitespace-nowrap text-center">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-raised/50 rounded-xl text-xs font-bold text-secondary border border-subtle">
                           <Users className="w-3.5 h-3.5 text-muted" /> {booking.attendees ?? '0'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={booking.status} /></td>
+                      <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={booking.status} /></td>
 
                       {/* Actions */}
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
 
                           {/* View — always enabled */}
