@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import FacilityDashboard from './pages/FacilityDashboard';
 import UserManagement from './pages/UserManagement';
 import DashboardPage from './pages/DashboardPage';
+import TechnicianDashboard from './pages/TechnicianDashboard';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 import Sidebar from './components/layout/Sidebar';
@@ -73,6 +74,8 @@ const AppLayout = () => {
                   ? <Navigate to="/app/dashboard" replace />
                   : user?.role === 'FACILITY_MANAGER'
                   ? <Navigate to="/app/facility" replace />
+                  : user?.role === 'TECHNICIAN'
+                  ? <Navigate to="/app/technician-dashboard" replace />
                   : <Navigate to="/app/catalogue" replace />
               }
             />
@@ -98,6 +101,7 @@ const AppLayout = () => {
 
             <Route element={<ProtectedRoute allowedRoles={['USER', 'TECHNICIAN', 'ADMIN']} />}>
               <Route path="tickets" element={<TicketingPage />} />
+              <Route path="technician-dashboard" element={<TechnicianDashboard />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
@@ -110,6 +114,9 @@ const AppLayout = () => {
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
               <Route path="users" element={<UserManagement />} />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']} />}>
+              <Route path="reports" element={<div className="p-8 text-center text-slate-400">Reports Module coming soon...</div>} />
             </Route>
           </Routes>
         </main>
