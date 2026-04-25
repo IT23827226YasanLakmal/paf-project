@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateBooking } from '../services/api';
-import { X, Calendar, Clock, Users, FileText, AlertTriangle, Loader2, Save } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { updateBooking, fetchResources } from '../services/api'; // ✅ Added fetchResources
+import { X, Calendar, Clock, Users, FileText, AlertTriangle, Loader2, Save, Info } from 'lucide-react';
 
 const calcDuration = (startTime, endTime) => {
   if (!startTime || !endTime) return '';
@@ -27,8 +27,18 @@ const ConflictCard = ({ b }) => {
   );
 };
 
+// ✅ Removed 'resource' from props. The component will find it itself!
 const BookingEditForm = ({ booking, onClose, onSuccess }) => {
   const queryClient = useQueryClient();
+
+  // ✅ Fetch all resources (cached instantly if already loaded elsewhere)
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources'],
+    queryFn: () => fetchResources(null)
+  });
+
+  // ✅ Find the specific resource for this booking to check capacity
+  const resource = resources.find(r => r.id === booking.resourceId);
 
   const [form, setForm] = useState({
     date: booking.startTime ? booking.startTime.split('T')[0] : '',
@@ -50,7 +60,6 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
       onClose();
     },
 
-    // EXACT same as BookingForm
     onError: (err) => {
       if (err.response?.status === 409) {
         setConflictData(err.response.data);
@@ -71,10 +80,27 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
     if (!form.date) e.date = 'Required';
     if (!form.startTime) e.startTime = 'Required';
     if (!form.endTime) e.endTime = 'Required';
-    if (form.startTime && form.endTime && form.startTime >= form.endTime) e.endTime = 'Must be after start';
+    
+    // 🚨 Strict Time logic validation
+    if (form.startTime && form.endTime) {
+      const start = new Date(`2000-01-01T${form.startTime}`);
+      const end = new Date(`2000-01-01T${form.endTime}`);
+      const diffMins = (end - start) / 1000 / 60;
+      
+      if (start >= end) e.endTime = 'Must be after start time';
+      else if (diffMins < 30) e.endTime = 'Minimum 30 minutes required';
+      else if (diffMins > 480) e.endTime = 'Maximum 8 hours allowed';
+    }
+
     if (!form.purpose.trim()) e.purpose = 'Required';
     if (form.purpose.trim().length < 10) e.purpose = 'Min 10 characters';
     if (Number(form.attendees) < 1) e.attendees = 'Min 1';
+    
+    // Validate against resource capacity
+    if (resource?.capacity && Number(form.attendees) > resource.capacity) {
+      e.attendees = `Max ${resource.capacity}`;
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -98,6 +124,10 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
     `w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-400 text-gray-900 
      ${errors[f] ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white hover:border-gray-300'}`;
 
+  // 🚨 Dynamic Capacity Alert Logic (now uses the found resource)
+  const isOverCapacity = resource?.capacity && Number(form.attendees) > resource.capacity;
+  const isNearCapacity = resource?.capacity && Number(form.attendees) >= resource.capacity * 0.9 && !isOverCapacity;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
@@ -105,7 +135,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
           <div>
             <h2 className="text-lg font-bold text-gray-900">Edit Booking</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              #{booking.id} · {booking.resourceName || `Resource #${booking.resourceId}`}
+              #{booking.id} · {booking.resourceName || resource?.name || `Resource #${booking.resourceId}`}
             </p>
             <span className="mt-1.5 inline-block px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold rounded-full">
               PENDING — editable
@@ -116,22 +146,42 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
           </button>
         </div>
 
-        {/* Conflict Alert — identical to BookingForm */}
-        {conflictData && (
-          <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <p className="text-sm font-semibold text-red-800">Scheduling Conflict</p>
+        <div className="px-6 pt-4 space-y-3">
+          {/* Conflict Alert */}
+          {conflictData && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+                <p className="text-sm font-semibold text-red-800">Scheduling Conflict</p>
+              </div>
+              <p className="text-red-700 text-sm mb-2">{conflictData.message}</p>
+              <div className="space-y-1.5">
+                {conflictData.conflictingBookings?.map(b => <ConflictCard key={b.id} b={b} />)}
+              </div>
+              <p className="text-xs text-red-400 mt-2">Choose a different time slot.</p>
             </div>
-            <p className="text-red-700 text-sm mb-2">{conflictData.message}</p>
-            <div className="space-y-1.5">
-              {conflictData.conflictingBookings?.map(b => <ConflictCard key={b.id} b={b} />)}
-            </div>
-            <p className="text-xs text-red-400 mt-2">Choose a different time slot.</p>
-          </div>
-        )}
+          )}
 
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          {/* 🚨 Dynamic Capacity Alerts */}
+          {isOverCapacity && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-700">
+                <strong>Capacity Exceeded:</strong> This resource allows a maximum of {resource.capacity} attendees. Please reduce the number.
+              </p>
+            </div>
+          )}
+          {isNearCapacity && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-700">
+                <strong>Near Capacity:</strong> You are booking close to the maximum room capacity of {resource.capacity}.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               <Calendar className="w-3.5 h-3.5 inline mr-1" /> Date
@@ -165,7 +215,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
 
           {calcDuration(form.startTime, form.endTime) && (
             <span className="inline-block px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold rounded-full">
-              ⏱ {calcDuration(form.startTime, form.endTime)}
+              ⏱ Duration: {calcDuration(form.startTime, form.endTime)}
             </span>
           )}
 
@@ -193,7 +243,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
             <input
               type="number"
               min={1}
-              max={1000}
+              max={resource?.capacity || 1000}
               value={form.attendees}
               onChange={e => handleChange('attendees', e.target.value)}
               className={inp('attendees')}
@@ -201,7 +251,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
             {errors.attendees && <p className="text-red-500 text-xs mt-1">{errors.attendees}</p>}
           </div>
 
-          <div className="flex gap-3 pt-2 border-t border-gray-100">
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
@@ -211,8 +261,8 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
             </button>
             <button
               type="submit"
-              disabled={mutation.isPending}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 rounded-xl transition-colors flex items-center justify-center gap-2"
+              disabled={mutation.isPending || isOverCapacity}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               {mutation.isPending ? (
                 <>
