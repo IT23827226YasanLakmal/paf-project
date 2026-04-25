@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchBookings, updateBookingStatus, deleteBooking } from '../services/api';
 import BookingDetailModal from '../components/BookingDetailModal';
 import BookingEditForm from '../components/BookingEditForm';
+import { useAuthStore } from '../store/authStore';
 import {
-  Search, Eye, Pencil, Trash2, RefreshCw, ChevronRight,
-  Loader2, CheckCircle, XCircle, Clock3, Ban, AlertCircle,
+  Search, Eye, Pencil, Trash2, RefreshCw, 
+  Loader2, CheckCircle, XCircle, Clock3, Ban, AlertCircle, Shield, Calendar,
+  Users, Building2, Laptop
 } from 'lucide-react';
 
 // Helpers 
@@ -151,6 +153,7 @@ const SkeletonRow = () => (
 // AdminBookingReview
 const AdminBookingReview = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch]             = useState('');
@@ -159,6 +162,13 @@ const AdminBookingReview = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, search]);
 
   const { data: bookings = [], isLoading, refetch } = useQuery({
     queryKey: ['bookings', 'admin', statusFilter],
@@ -224,6 +234,13 @@ const AdminBookingReview = () => {
     );
   }, [bookings, search]);
 
+  const paginatedBookings = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(startIndex, startIndex + itemsPerPage);
+  }, [filtered, currentPage]);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
   const TABS = [
     { key: '', label: 'All' }, { key: 'PENDING', label: 'Pending' },
     { key: 'APPROVED', label: 'Approved' }, { key: 'REJECTED', label: 'Rejected' },
@@ -231,32 +248,28 @@ const AdminBookingReview = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-primary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 animate-in fade-in duration-500 min-h-0 text-primary">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-muted mb-3">
-          <span>Admin</span><ChevronRight className="w-4 h-4" />
-          <span className="text-secondary font-medium">Booking Management</span>
-        </div>
-
-        {/* Header */}
-        <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+        {/* ── Header ── */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-primary">Booking Management</h1>
-            <p className="text-muted text-sm mt-1">Review, approve, and manage all booking requests.</p>
+            <h1 className="text-3xl font-black text-primary flex items-center gap-2">
+              <Calendar className="w-8 h-8 text-accent animate-pulse" />
+              Booking Control Center
+            </h1>
+            <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+            </p>
           </div>
-            <button onClick={async () => {
-              // Manual refresh triggered
-
           
-              await queryClient.removeQueries({ queryKey: ['bookings'], exact: false });
-              await refetch();
-              }}
-              className="flex items-center gap-2 px-3 py-2 bg-surface border border-subtle rounded-xl text-sm text-secondary hover:bg-raised transition-colors shadow-sm cursor-pointer"
-              >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
+          <button onClick={async () => {
+            await queryClient.removeQueries({ queryKey: ['bookings'], exact: false });
+            await refetch();
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-subtle rounded-xl text-xs font-bold text-secondary hover:text-primary hover:bg-raised transition-all shadow-sm cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4 text-accent" />
+            Refresh Data
           </button>
         </div>
 
@@ -306,7 +319,7 @@ const AdminBookingReview = () => {
               <thead>
                 <tr className="bg-raised border-b border-subtle">
                   {['Booking ID', 'Resource', 'User', 'Date & Time', 'Attendees', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-6 py-4 text-left text-xs font-bold text-muted uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -323,36 +336,60 @@ const AdminBookingReview = () => {
                       <p className="text-muted text-sm mt-1">{search ? 'Try a different search.' : 'No bookings match this filter.'}</p>
                     </div>
                   </td></tr>
-                ) : filtered.map(booking => {
+                ) : paginatedBookings.map(booking => {
                   const busy = statusMutation.isPending && statusMutation.variables?.id === booking.id;
                   return (
-                    <tr key={booking.id} className="border-b border-subtle hover:bg-accent-subtle transition-colors">
+                    <tr key={booking.id} className="border-b border-subtle hover:bg-raised/30 transition-all duration-200">
 
-                      <td className="px-4 py-3.5">
-                        <span className="inline-flex items-center px-2.5 py-1 bg-muted-fill text-secondary text-xs font-mono font-semibold rounded-lg">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-1 bg-raised text-secondary text-xs font-mono font-semibold rounded-lg border border-subtle">
                           {fmtBid(booking.id)}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <p className="text-sm font-semibold text-primary">{booking.resourceName || `Resource #${booking.resourceId}`}</p>
-                        <p className="text-xs text-muted mt-0.5 truncate max-w-[140px]">{booking.purpose}</p>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-accent/5 text-accent rounded-xl border border-accent/10">
+                            <Building2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-primary">{booking.resourceName || `Resource #${booking.resourceId}`}</p>
+                            <p className="text-xs text-muted mt-0.5 truncate max-w-[160px] font-medium">{booking.purpose || 'No purpose stated'}</p>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-secondary">User #{booking.userId}</td>
-                      <td className="px-4 py-3.5 text-sm text-secondary whitespace-nowrap">
-                        <div>{fmtDate(booking.startTime)}</div>
-                        <div className="text-xs text-muted">{fmtTime(booking.startTime)} – {fmtTime(booking.endTime)}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center" title={`User #${booking.userId}`}>
+                          <div className="w-8 h-8 bg-raised rounded-full flex items-center justify-center text-secondary font-bold text-xs border border-subtle">
+                            U{booking.userId}
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-secondary text-center">{booking.attendees ?? '—'}</td>
-                      <td className="px-4 py-3.5"><StatusBadge status={booking.status} /></td>
+                      <td className="px-6 py-4 text-sm text-secondary whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-raised/50 rounded-lg text-muted">
+                            <Clock3 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-primary text-xs">{fmtDate(booking.startTime)}</div>
+                            <div className="text-[10px] text-muted font-medium mt-0.5">{fmtTime(booking.startTime)} – {fmtTime(booking.endTime)}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-raised/50 rounded-xl text-xs font-bold text-secondary border border-subtle">
+                          <Users className="w-3.5 h-3.5 text-muted" /> {booking.attendees ?? '0'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap"><StatusBadge status={booking.status} /></td>
 
                       {/* Actions */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1 flex-wrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 whitespace-nowrap">
 
                           {/* View — always enabled */}
                           <button onClick={() => setViewTarget(booking)} title="View details"
-                            className="p-1.5 text-blue-500 hover:bg-accent-subtle rounded-lg transition-colors cursor-pointer">
-                            <Eye className="w-3.5 h-3.5" />
+                            className="p-2 text-blue-500 hover:bg-raised rounded-xl transition-all cursor-pointer bg-transparent border-none">
+                            <Eye className="w-4 h-4" />
                           </button>
 
                           {/* Edit — PENDING only */}
@@ -360,8 +397,8 @@ const AdminBookingReview = () => {
                             onClick={() => !editDisabled(booking) && setEditTarget(booking)}
                             disabled={editDisabled(booking)}
                             title={editDisabled(booking) ? 'Only PENDING bookings can be edited' : 'Edit booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${editDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-indigo-500 hover:bg-accent-subtle cursor-pointer'}`}>
-                            <Pencil className="w-3.5 h-3.5" />
+                            className={`p-2 rounded-xl transition-all border-none ${editDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-indigo-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
+                            <Pencil className="w-4 h-4" />
                           </button>
 
                           {/* Approve — PENDING only */}
@@ -369,10 +406,10 @@ const AdminBookingReview = () => {
                             onClick={() => !approveDisabled(booking) && approve(booking.id)}
                             disabled={approveDisabled(booking) || busy}
                             title={approveDisabled(booking) ? 'Can only approve PENDING bookings' : 'Approve — generates QR code'}
-                            className={`p-1.5 rounded-lg transition-colors ${approveDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-green-600 hover:bg-accent-subtle cursor-pointer'}`}>
+                            className={`p-2 rounded-xl transition-all border-none ${approveDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-green-600 hover:bg-raised cursor-pointer bg-transparent'}`}>
                             {busy && !approveDisabled(booking)
-                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              : <CheckCircle className="w-3.5 h-3.5" />}
+                              ? <Loader2 className="w-4 h-4 animate-spin" />
+                              : <CheckCircle className="w-4 h-4" />}
                           </button>
 
                           {/* Reject — PENDING only */}
@@ -380,8 +417,8 @@ const AdminBookingReview = () => {
                             onClick={() => !rejectDisabled(booking) && setRejectTarget(booking)}
                             disabled={rejectDisabled(booking)}
                             title={rejectDisabled(booking) ? 'Can only reject PENDING bookings' : 'Reject booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${rejectDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-red-500 hover:bg-accent-subtle cursor-pointer'}`}>
-                            <XCircle className="w-3.5 h-3.5" />
+                            className={`p-2 rounded-xl transition-all border-none ${rejectDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-red-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
+                            <XCircle className="w-4 h-4" />
                           </button>
 
                           {/* Cancel — APPROVED only */}
@@ -389,8 +426,8 @@ const AdminBookingReview = () => {
                             onClick={() => !cancelDisabled(booking) && setCancelTarget(booking)}
                             disabled={cancelDisabled(booking)}
                             title={cancelDisabled(booking) ? 'Cancel is only for APPROVED bookings' : 'Cancel approved booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${cancelDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-orange-500 hover:bg-accent-subtle cursor-pointer'}`}>
-                            <Ban className="w-3.5 h-3.5" />
+                            className={`p-2 rounded-xl transition-all border-none ${cancelDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-orange-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
+                            <Ban className="w-4 h-4" />
                           </button>
 
                           {/* Delete — REJECTED / CANCELLED / overdue APPROVED */}
@@ -410,13 +447,29 @@ const AdminBookingReview = () => {
             </table>
           </div>
           {!isLoading && filtered.length > 0 && (
-            <div className="px-4 py-3 border-t border-subtle text-xs text-muted">
-              Showing {filtered.length} of {bookings.length} booking{bookings.length !== 1 ? 's' : ''}
-              {search && ` matching "${search}"`}
+            <div className="px-6 py-4 border-t border-subtle flex items-center justify-between bg-raised/10">
+              <p className="text-xs text-muted font-medium">
+                Showing <span className="font-bold text-primary">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-bold text-primary">{filtered.length}</span> results
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 bg-surface border border-subtle rounded-xl text-xs font-bold text-secondary hover:text-primary hover:bg-raised transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 bg-surface border border-subtle rounded-xl text-xs font-bold text-secondary hover:text-primary hover:bg-raised transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>
-      </div>
 
       {/* Modals */}
       {rejectTarget && <RejectModal onConfirm={reject} onClose={() => setRejectTarget(null)} isPending={statusMutation.isPending} />}

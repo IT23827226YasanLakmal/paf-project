@@ -61,13 +61,15 @@ export default function Login() {
 
           // Role-based redirect
           if (userObj.role === "ADMIN") {
-            navigate("/app/dashboard");
+            navigate("/app/admin/overview");
           } else if (userObj.role === "TECHNICIAN") {
-            navigate("/app/technician-dashboard");
+            navigate("/app/technician/overview");
           } else if (userObj.role === "FACILITY_MANAGER") {
-            navigate("/app/facility");
+            navigate("/app/facility-manager/overview");
+          } else if (userObj.role === "BOOKING_OFFICER") {
+            navigate("/app/booking-officer/overview");
           } else {
-            navigate("/app/dashboard");
+            navigate("/app/user/overview");
           }
         } catch (err) {
           console.error("Failed to fetch user role", err);
@@ -105,10 +107,11 @@ export default function Login() {
       login(userObj, token);
       
       // Redirect based on role
-      if (userObj.role === "ADMIN") navigate("/app/dashboard");
-      else if (userObj.role === "TECHNICIAN") navigate("/app/technician-dashboard");
-      else if (userObj.role === "FACILITY_MANAGER") navigate("/app/facility");
-      else navigate("/app/dashboard");
+      if (userObj.role === "ADMIN") navigate("/app/admin/overview");
+      else if (userObj.role === "TECHNICIAN") navigate("/app/technician/overview");
+      else if (userObj.role === "FACILITY_MANAGER") navigate("/app/facility-manager/overview");
+      else if (userObj.role === "BOOKING_OFFICER") navigate("/app/booking-officer/overview");
+      else navigate("/app/user/overview");
     } catch (err) {
       console.error("Login profile fetch failed", err);
     }

@@ -7,8 +7,8 @@ import {
   PieChart, Pie, Cell, BarChart, Bar 
 } from 'recharts';
 import { 
-  ChevronRight, MoreHorizontal, Clock3, CheckCircle2, 
-  XCircle, Ban, BookOpen 
+  MoreHorizontal, Clock3, CheckCircle2, 
+  XCircle, Ban, BookOpen, Shield, BarChart3, ChevronRight
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -100,26 +100,40 @@ const BookingOfficerOverview = () => {
   if (isLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-500 min-h-0 p-6 bg-canvas text-primary">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 animate-in fade-in duration-500 min-h-0 text-primary">
       
-      {/* ── Breadcrumbs & Top Action ── */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <span className="text-muted">Dashboard</span>
-          <ChevronRight className="w-4 h-4 text-muted" />
-          <span className="text-primary font-bold">Booking Officer</span>
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-primary flex items-center gap-2">
+            <BarChart3 className="w-8 h-8 text-accent animate-pulse" />
+            Booking Operations Control
+          </h1>
+          <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+            <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+          </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <select 
-            value={range} 
-            onChange={(e) => setRange(e.target.value)}
-            className="bg-surface border border-subtle text-primary px-3 py-2 rounded-xl text-sm font-bold shadow-sm outline-none focus:ring-2 focus:ring-accent cursor-pointer"
-          >
-            <option value="7" className="bg-surface text-primary">Last 7 days</option>
-            <option value="30" className="bg-surface text-primary">Last 30 days</option>
-            <option value="365" className="bg-surface text-primary">All time</option>
-          </select>
+          <div className="flex bg-raised border border-subtle p-1 rounded-xl">
+            {[
+              { id: '7', label: '7D' },
+              { id: '30', label: '30D' },
+              { id: '365', label: '1Y' }
+            ].map(r => (
+              <button
+                key={r.id}
+                onClick={() => setRange(r.id)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg cursor-pointer transition-all border-none ${
+                  range === r.id
+                    ? 'bg-accent text-white shadow-md'
+                    : 'text-muted hover:text-primary bg-transparent'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

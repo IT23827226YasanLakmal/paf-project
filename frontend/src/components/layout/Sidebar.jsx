@@ -39,35 +39,36 @@ const NavItem = ({ to, icon: Icon, label, end = false }) => (
 
 const ROLE_NAV_CONFIG = {
   USER: [
-    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/user/overview", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/user/bookings", icon: CalendarCheck, label: "Bookings" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
   ],
   ADMIN: [
-    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/facilities", icon: Building2, label: "Facilities" },
-    { to: "/app/assets", icon: Laptop, label: "Equipments" },
-    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/admin/overview", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/facility-manager/facilities", icon: Building2, label: "Facilities" },
+    { to: "/app/facility-manager/assets", icon: Laptop, label: "Equipments" },
+    { to: "/app/user/bookings", icon: CalendarCheck, label: "Bookings" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
-    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
-    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
-    { to: "/app/users", icon: Users, label: "Users" },
+    { to: "/app/booking-officer/review", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/facility-manager/overview", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/admin/users", icon: Users, label: "Users" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
-    { to: "/app/maintenance", icon: Wrench, label: "Maintenance" },
+    { to: "/app/admin/maintenance", icon: Wrench, label: "Maintenance" },
   ],
   FACILITY_MANAGER: [
-    { to: "/app/facility", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/facilities", icon: Building2, label: "Facilities" },
-    { to: "/app/assets", icon: Laptop, label: "Equipments" },
+    { to: "/app/facility-manager/overview", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/facility-manager/facilities", icon: Building2, label: "Facilities" },
+    { to: "/app/facility-manager/assets", icon: Laptop, label: "Equipments" },
   ],
   TECHNICIAN: [
-    { to: "/app/technician-dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/technician/overview", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],
   BOOKING_OFFICER: [
-    { to: "/app/bookings", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
+    { to: "/app/booking-officer/overview", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/booking-officer/review", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],
 };
 

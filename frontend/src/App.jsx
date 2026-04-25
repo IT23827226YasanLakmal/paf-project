@@ -54,68 +54,58 @@ const AppLayout = () => {
             <Route
               path=""
               element={
-                ['USER', 'ADMIN'].includes(user?.role)
-                  ? <Navigate to="/app/dashboard" replace />
-                  : user?.role === 'FACILITY_MANAGER'
-                    ? <Navigate to="/app/facility" replace />
-                    : user?.role === 'TECHNICIAN'
-                      ? <Navigate to="/app/technician-dashboard" replace />
-                      : <Navigate to="/app/admin-review" replace />
+                user?.role === 'USER'
+                  ? <Navigate to="/app/user/overview" replace />
+                  : user?.role === 'ADMIN'
+                    ? <Navigate to="/app/admin/overview" replace />
+                    : user?.role === 'FACILITY_MANAGER'
+                      ? <Navigate to="/app/facility-manager/overview" replace />
+                      : user?.role === 'TECHNICIAN'
+                        ? <Navigate to="/app/technician/overview" replace />
+                        : user?.role === 'BOOKING_OFFICER'
+                          ? <Navigate to="/app/booking-officer/overview" replace />
+                          : <Navigate to="/login" replace />
               }
             />
 
+            {/* Shared Routes */}
             <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER', 'TECHNICIAN']} />}>
-              <Route
-                path="dashboard"
-                element={
-                  user?.role === 'USER'
-                    ? <UserOverview />
-                    : user?.role === 'ADMIN'
-                      ? <AdminOverview />
-                      : <DashboardPage onBookResource={(r) => setBookingTarget(r)} />
-                }
-              />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
-              <Route path="facilities" element={<FacilitiesPage />} />
-              <Route path="assets" element={<AssetsPage />} />
-            </Route>
-
-            {/* Profile — accessible by all authenticated users */}
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="settings" element={<SettingsPage />} />
-
-            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN']} />}>
-              <Route path="my-bookings" element={<MyBookingsPage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['USER', 'TECHNICIAN', 'ADMIN']} />}>
-              <Route path="tickets" element={<TicketingPage />} />
-              <Route path="technician-dashboard" element={<TechnicianOverview />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-              <Route path="maintenance" element={<MaintenancePage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
-              <Route path="facility" element={<FacilityDashboard />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['BOOKING_OFFICER', 'ADMIN']} />}>
-              <Route path="admin-review" element={<AdminBookingReview />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['BOOKING_OFFICER', 'ADMIN']} />}>
-              <Route path="bookings" element={<BookingOfficerOverview />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-              <Route path="users" element={<UserManagement />} />
-            </Route>
-            <Route element={<ProtectedRoute allowedRoles={['USER', 'TECHNICIAN', 'ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER']} />}>
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="settings" element={<SettingsPage />} />
               <Route path="reports" element={<ReportsPage />} />
+              <Route path="tickets" element={<TicketingPage />} />
+              <Route path="dashboard" element={<DashboardPage onBookResource={(r) => setBookingTarget(r)} />} />
+            </Route>
+
+            {/* User Domain */}
+            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN']} />}>
+              <Route path="user/overview" element={<UserOverview />} />
+              <Route path="user/bookings" element={<MyBookingsPage />} />
+            </Route>
+
+            {/* Admin Domain */}
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+              <Route path="admin/overview" element={<AdminOverview />} />
+              <Route path="admin/users" element={<UserManagement />} />
+              <Route path="admin/maintenance" element={<MaintenancePage />} />
+            </Route>
+
+            {/* Booking Officer Domain */}
+            <Route element={<ProtectedRoute allowedRoles={['BOOKING_OFFICER', 'ADMIN']} />}>
+              <Route path="booking-officer/overview" element={<BookingOfficerOverview />} />
+              <Route path="booking-officer/review" element={<AdminBookingReview />} />
+            </Route>
+
+            {/* Technician Domain */}
+            <Route element={<ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']} />}>
+              <Route path="technician/overview" element={<TechnicianOverview />} />
+            </Route>
+
+            {/* Facility Manager Domain */}
+            <Route element={<ProtectedRoute allowedRoles={['FACILITY_MANAGER', 'ADMIN']} />}>
+              <Route path="facility-manager/overview" element={<FacilityDashboard />} />
+              <Route path="facility-manager/facilities" element={<FacilitiesPage />} />
+              <Route path="facility-manager/assets" element={<AssetsPage />} />
             </Route>
           </Routes>
         </main>
