@@ -63,9 +63,16 @@ const RoleNav = () => {
             )}
         </div>
 
-        {/* RIGHT SIDE ICONS (NOTIFICATION + DP) */}
-        <div className="flex items-center space-x-4">
-            <NotificationBell />
+        {/* RIGHT SIDE (NOTIFICATION + USER AREA) */}
+        <div className="flex items-center space-x-4 ml-auto">
+
+            {/* NOTIFICATION BELL */}
+            <div className="relative">
+                <NotificationBell />
+            </div>
+
+            
+
         </div>
 
     </div>
