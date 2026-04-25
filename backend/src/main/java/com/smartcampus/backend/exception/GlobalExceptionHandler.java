@@ -19,7 +19,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        
+        // Only return 404 if the message explicitly says "not found"
+        HttpStatus status = (ex.getMessage() != null && ex.getMessage().toLowerCase().contains("not found")) 
+            ? HttpStatus.NOT_FOUND 
+            : HttpStatus.INTERNAL_SERVER_ERROR;
+            
+        return new ResponseEntity<>(response, status);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

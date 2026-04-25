@@ -38,7 +38,8 @@ export default function AdminUserRoles() {
           table: "users",
         },
         (payload) => {
-          console.log("Realtime update:", payload);
+          // Realtime update payload received
+
 
           //  smarter update
           if (payload.eventType === "UPDATE") {

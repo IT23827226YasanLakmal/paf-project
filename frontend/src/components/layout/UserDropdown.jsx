@@ -2,17 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../../store/authStore';
-import { useThemeStore } from '../../store/themeStore';
 import {
-  User, Settings, LogOut, Sun, Moon, ChevronDown, Shield,
+  User, LogOut, ChevronDown,
 } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
 
-const UserDropdown = () => {
+const UserDropdown = ({ direction = 'down' }) => {
+  // Main dropdown state
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { darkMode, toggleDarkMode } = useThemeStore();
 
   useEffect(() => {
     const handler = (e) => {
@@ -22,119 +22,67 @@ const UserDropdown = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setOpen(false);
+    await supabase.auth.signOut();
     logout();
     navigate('/login');
   };
 
-  const go = (path) => { setOpen(false); navigate(path); };
-
-  const menuItems = [
-    {
-      group: 'account',
-      items: [
-        { icon: User,     label: 'My Profile', action: () => go('/app/profile') },
-        { icon: Settings, label: 'Settings',   action: () => go('/app/settings') },
-        { icon: Shield,   label: 'Privacy',    action: () => go('/app/settings') },
-      ],
-    },
-    {
-      group: 'preferences',
-      items: [
-        {
-          icon: darkMode ? Sun : Moon,
-          label: darkMode ? 'Light Mode' : 'Dark Mode',
-          action: toggleDarkMode,
-          isToggle: true,
-        },
-      ],
-    },
-  ];
+  const isUp = direction === 'up';
 
   return (
     <div className="relative" ref={ref}>
       {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 cursor-pointer group px-2 py-1 rounded-xl transition-colors"
-        style={{ ':hover': { backgroundColor: 'var(--bg-raised)' } }}
+        className="flex items-center gap-2.5 cursor-pointer group p-1 pr-2 rounded-full transition-all duration-200 hover:bg-white/10 active:scale-95"
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-accent/20 shadow-sm flex-shrink-0">
+        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/20 shadow-sm group-hover:border-blue-500/50">
           <img
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Guest'}`}
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'Guest'}`}
             alt="Avatar"
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="hidden md:block leading-tight text-left">
-          <p className="text-sm font-semibold text-primary">{user?.name}</p>
-          <p className="text-[10px] text-muted">{user?.role}</p>
+        <div className="hidden sm:block text-left">
+          <p className="text-[11px] font-bold text-gray-300 group-hover:text-white transition-colors uppercase tracking-tight">
+            {user?.name?.split(' ')[0] || 'User'}
+          </p>
         </div>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-muted hidden md:block transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          strokeWidth={2}
+          className={`w-3 h-3 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180 text-blue-500' : 'group-hover:text-white'}`}
         />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown Overlay */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.97 }}
+            initial={{ opacity: 0, y: isUp ? -8 : 8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+            exit={{ opacity: 0, y: isUp ? -8 : 8, scale: 0.98 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 mt-2.5 w-56 bg-overlay rounded-2xl shadow-2xl z-50 overflow-hidden"
-            style={{ border: '1px solid var(--border-subtle)' }}
+            style={{ originX: isUp ? 0 : 1, originY: isUp ? 1 : 0 }}
+            className={`absolute ${isUp ? 'inset-x-0 bottom-full mb-3 w-48' : 'right-0 top-full mt-2 w-48'} bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-[999] overflow-hidden p-1`}
           >
-            {/* User info header */}
-            <div
-              className="flex items-center gap-3 px-4 py-3.5 bg-raised"
-              style={{ borderBottom: '1px solid var(--border-subtle)' }}
+            <button
+              onClick={() => { setOpen(false); navigate('/app/profile'); }}
+              className="flex items-center gap-2.5 w-full p-2 rounded-xl transition-all hover:bg-white/5 text-left group/item"
             >
-              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-accent/20 shadow-sm flex-shrink-0">
-                <img
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Guest'}`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-primary truncate">{user?.name}</p>
-                <p className="text-xs text-muted truncate">{user?.email || user?.role}</p>
-              </div>
-            </div>
+              <User className="w-3.5 h-3.5 text-gray-400 group-hover/item:text-blue-400" />
+              <span className="text-xs font-bold text-gray-300 group-hover/item:text-white">My Profile</span>
+            </button>
 
-            {/* Menu groups */}
-            <div className="p-1.5 space-y-0.5">
-              {menuItems.map((group) => (
-                <div key={group.group}>
-                  {group.items.map(({ icon: Icon, label, action, isToggle }) => (
-                    <button
-                      key={label}
-                      onClick={action}
-                      className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer text-left text-secondary hover:text-primary hover:bg-raised"
-                    >
-                      <Icon className="w-4 h-4 flex-shrink-0 text-muted" strokeWidth={1.8} />
-                      {label}
-                    </button>
-                  ))}
-                  <div className="h-px my-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
-                </div>
-              ))}
-            </div>
+            <div className="h-px bg-white/5 my-1" />
 
-            {/* Logout */}
-            <div className="p-1.5 pt-0">
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4 flex-shrink-0" strokeWidth={1.8} />
-                Sign out
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2.5 w-full p-2 rounded-xl transition-all hover:bg-red-500/10 text-left group/logout"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-900/60 group-hover/logout:text-red-500" />
+              <span className="text-xs font-bold text-red-900/60 group-hover/logout:text-red-500">Sign Out</span>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

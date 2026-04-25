@@ -10,13 +10,13 @@ import java.util.List;
 public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO request);
 
-    List<BookingResponseDTO> getBookings(Long userId, Long resourceId, BookingStatus status, boolean isAdmin);
+    List<BookingResponseDTO> getBookings(String userId, Long resourceId, BookingStatus status, boolean isAdmin);
 
-    BookingResponseDTO updateBooking(Long id, BookingUpdateDTO request, Long userId, boolean isAdmin);
+    BookingResponseDTO updateBooking(Long id, BookingUpdateDTO request, String userId, boolean isAdmin);
 
-    BookingResponseDTO updateBookingStatus(Long id, BookingStatusUpdateDTO request, Long userId, boolean isAdmin);
+    BookingResponseDTO updateBookingStatus(Long id, BookingStatusUpdateDTO request, String userId, boolean isAdmin);
 
-    void deleteBooking(Long id, Long userId, boolean isAdmin);
+    void deleteBooking(Long id, String userId, boolean isAdmin);
 
     BookingResponseDTO verifyQrToken(String token);
 }

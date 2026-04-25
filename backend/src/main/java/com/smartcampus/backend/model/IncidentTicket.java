@@ -16,11 +16,13 @@ public class IncidentTicket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "resource_id", nullable = false)
-    private Long resourceId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "resource_id", nullable = false)
+    private Resource resource;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
     private String category; // HARDWARE, SOFTWARE, CLEANING

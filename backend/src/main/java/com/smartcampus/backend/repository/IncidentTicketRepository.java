@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public interface IncidentTicketRepository extends JpaRepository<IncidentTicket, Long> {
-    List<IncidentTicket> findByResourceId(Long resourceId);
+    List<IncidentTicket> findByResource_Id(Long resourceId);
     List<IncidentTicket> findByStatus(String status);
+    List<IncidentTicket> findByUser_SupabaseUid(String userId);
 }

@@ -46,18 +46,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String token = authHeader.substring(7);
 
-            System.out.println("Incoming JWT: " + token);
 
-            // 🔥 Extract email from token
-            String email = jwtService.extractEmail(token);
+            // 🔥 Extract Supabase UUID (sub claim) from token
+            String userId = jwtService.extractUsername(token);
 
-            System.out.println("Extracted email: " + email);
 
             // Only set auth if not already set
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // 🔥 Load user from database
-                User user = userRepository.findByEmail(email)
+                // 🔥 Load user from database using Supabase UUID
+                User user = userRepository.findById(userId)
                         .orElse(null);
 
                 if (user != null && jwtService.isTokenValid(token, user)) {
@@ -65,8 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     // 🔥 IMPORTANT: Spring requires ROLE_ prefix
                     String role = "ROLE_" + user.getRole().name();
 
-                    System.out.println("Authenticated user: " + email);
-                    System.out.println("Role from DB: " + role);
 
                     List<SimpleGrantedAuthority> authorities = List.of(
                             new SimpleGrantedAuthority(role)
@@ -87,12 +83,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 } else {
-                    System.out.println("User NOT found in DB or token invalid for email: " + email);
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("JWT Processing Error: " + e.getMessage());
+            // JWT processing error log (optional)
         }
 
         filterChain.doFilter(request, response);

@@ -27,9 +27,9 @@ import NotificationBell from './components/NotificationBell';
 import UserDropdown from './components/layout/UserDropdown';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
-import { Search } from 'lucide-react';
-import BookingOfficerOverview from './pages/BookingOfficerOverview';
 import ReportsPage from './pages/ReportsPage';
+import BookingOfficerOverview from './pages/BookingOfficerOverview';
+
 
 const AppLayout = () => {
   const { user } = useAuthStore();
@@ -48,23 +48,8 @@ const AppLayout = () => {
       {/* ── Main content area offset by sidebar ── */}
       <div className="flex-1 ml-56 flex flex-col min-h-screen glossy-mesh">
 
-        {/* ── Top Header ── */}
-        <header
-          className="sticky top-0 z-30 h-16 flex items-center px-6 gap-4 glass-card"
-          style={{ borderBottom: '1px solid var(--border-subtle)' }}
-        >
-          {/* Removed top navbar search bar */}
-
-          {/* Right controls */}
-          <div className="flex items-center gap-3 ml-auto">
-            <NotificationBell />
-            <div className="w-px h-6" style={{ backgroundColor: 'var(--border-subtle)' }} />
-            <UserDropdown />
-          </div>
-        </header>
-
         {/* ── Page content ── */}
-        <main className="flex-1 px-6 py-7 max-w-[1400px] w-full mx-auto">
+        <main className="flex-1 px-6 py-5 max-w-[1400px] w-full mx-auto">
           <Routes>
             <Route
               path=""

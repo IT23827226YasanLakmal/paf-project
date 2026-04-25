@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTicket } from '../../services/ticketApi';
-import { supabase } from '../../services/supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { AlertCircle, Camera, CheckCircle2, Loader2, UploadCloud } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
@@ -80,8 +80,8 @@ const IncidentReportForm = ({ onReportComplete }) => {
     setUploadProgress(100);
 
     const ticketData = {
-        resourceId: parseInt(formData.resourceId) || 1, 
-        userId: user?.id || 1, 
+        resourceId: parseInt(formData.resourceId), 
+        userId: user?.supabaseUid || user?.id, 
         category: formData.category,
         description: formData.description,
         priority: formData.priority,

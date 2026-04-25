@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class BookingResponseDTO {
     private Long id;
     private Long resourceId;
-    private Long userId;
+    private String userId; // Changed to String
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -25,7 +25,7 @@ public class BookingResponseDTO {
     private BookingStatus status;
     private String rejectionReason;
     private String adminNote;
-    private Long reviewedBy;
+    private String reviewedBy; // Changed to String
     private String qrCodeToken;
     private Long durationMinutes;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

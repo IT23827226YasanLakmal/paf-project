@@ -24,13 +24,16 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "resource_id", nullable = false)
-    @NotNull(message = "Resource ID is required")
-    private Long resourceId;
+    // Standard Enterprise Practice: Use Object Relationships
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "resource_id", nullable = false)
+    @NotNull(message = "Resource is required")
+    private Resource resource;
 
-    @Column(name = "user_id", nullable = false)
-    @NotNull(message = "User ID is required")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    @NotNull(message = "User is required")
+    private User user;
 
     @Column(name = "start_time", nullable = false)
     @NotNull(message = "Start time is required")
@@ -62,7 +65,7 @@ public class Booking {
     private String adminNote;
 
     @Column(name = "reviewed_by")
-    private Long reviewedBy;
+    private String reviewedBy;
 
     // UUID token generated when booking is APPROVED — used for QR check-in
     @Column(name = "qr_code_token", unique = true, length = 64)
@@ -75,4 +78,13 @@ public class Booking {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // Helper methods to keep existing logic working with flat IDs in some places
+    public Long getResourceId() {
+        return resource != null ? resource.getId() : null;
+    }
+
+    public String getUserId() {
+        return user != null ? user.getSupabaseUid() : null;
+    }
 }

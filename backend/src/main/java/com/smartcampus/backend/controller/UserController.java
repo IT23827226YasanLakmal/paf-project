@@ -36,9 +36,10 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/role")
     public User updateUserRole(
-            @PathVariable Long id,
-            @RequestBody RoleDTO request
+            @PathVariable String id,
+            @RequestBody RoleDTO request,
+            @RequestHeader(value = "X-User-Id", required = false) String adminId
     ) {
-        return userService.updateUserRole(id, request.getRole());
+        return userService.updateUserRole(id, request.getRole(), adminId);
     }
 }

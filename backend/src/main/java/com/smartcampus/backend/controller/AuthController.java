@@ -33,4 +33,11 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.authenticate(request));
     }
+
+    @PostMapping("/sync")
+    public ResponseEntity<AuthResponse> sync(
+            @RequestBody com.smartcampus.backend.dto.SyncRequest request
+    ) {
+        return ResponseEntity.ok(authService.sync(request));
+    }
 }

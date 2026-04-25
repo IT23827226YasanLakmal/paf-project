@@ -29,7 +29,7 @@ public class NotificationController {
                 .getAuthentication()
                 .getPrincipal();
 
-        return service.getUserNotifications(user.getId());
+        return service.getUserNotifications(user.getSupabaseUid());
     }
 
     //  Delete notification
@@ -47,7 +47,7 @@ public class NotificationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER')")
     @PostMapping
     public Notification createNotification(@RequestBody Map<String, String> body) {
-    Long userId = Long.parseLong(body.get("userId"));
+    String userId = body.get("userId");
     String message = body.get("message");
     return service.createNotification(userId, message);
     }

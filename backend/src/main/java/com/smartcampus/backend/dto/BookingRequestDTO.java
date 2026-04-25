@@ -15,7 +15,7 @@ public class BookingRequestDTO {
     @NotNull(message = "Resource ID is required")
     private Long resourceId;
 
-    private Long userId; // Set by controller from X-User-Id header
+    private String userId; // Set by controller from X-User-Id header
 
     @NotNull(message = "Start time is required")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

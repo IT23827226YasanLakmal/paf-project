@@ -16,10 +16,12 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepo;
     private final NotificationService notificationService;
+    private final AuditService auditService;
 
-    public UserService(UserRepository userRepo, NotificationService notificationService) {
+    public UserService(UserRepository userRepo, NotificationService notificationService, AuditService auditService) {
         this.userRepo = userRepo;
         this.notificationService = notificationService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -28,8 +30,8 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }
 
-    //   updates user role
-    public User updateUserRole(Long userId, String newRole) {
+    // updates user role
+    public User updateUserRole(String userId, String newRole, String adminId) {
 
     User user = userRepo.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -50,11 +52,20 @@ public class UserService implements UserDetailsService {
     //  Save updated user
     User updatedUser = userRepo.save(user);
 
-    //   Create notification AFTER update
+    // Create notification AFTER update
     String message = "Your role has been updated from "
             + oldRole + " to " + updatedUser.getRole();
 
-    notificationService.createNotification(updatedUser.getId(), message);
+    notificationService.createNotification(updatedUser.getSupabaseUid(), message);
+
+    // LOG ACTION
+    auditService.logAction(
+        adminId, 
+        "USER_ROLE_UPDATE", 
+        "USER", 
+        userId, 
+        "Role changed from " + oldRole + " to " + updatedUser.getRole()
+    );
 
     return updatedUser;
    }

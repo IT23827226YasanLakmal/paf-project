@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Layers } from 'lucide-react';
+import { Layers, Menu } from 'lucide-react';
 import { supabase } from "../../supabaseClient";
 import NotificationBell from "../NotificationBell";
+import UserDropdown from "./UserDropdown";
 
 const Navbar = () => {
 
@@ -30,74 +31,75 @@ const Navbar = () => {
     };
   }, []);
 
-  //  Logout function
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("token");
-  };
-
   return (
     <motion.nav 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed top-0 inset-x-0 z-50 glass-dark h-14"
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed top-0 inset-x-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5 h-16"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-        <div className="flex justify-between items-center h-full text-sm font-medium text-gray-300">
+        <div className="flex justify-between items-center h-full text-sm font-medium text-gray-400">
 
           {/* LEFT LOGO */}
-          <Link to="/" className="flex items-center space-x-2 text-white hover:opacity-80 transition-opacity">
-            <Layers className="w-5 h-5" />
-            <span className="font-semibold tracking-wide">Campus Hub</span>
-          </Link>
-          
-          {/* CENTER LINKS */}
-          <div className="hidden md:flex space-x-8">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#integration" className="hover:text-white transition-colors">Integration</a>
-            <a href="#security" className="hover:text-white transition-colors">Security</a>
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center space-x-3 text-white hover:opacity-80 transition-all group">
+              <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:rotate-12 transition-transform duration-300">
+                <Layers className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-black text-lg tracking-tighter uppercase">Campus Hub</span>
+            </Link>
+
+            {/* CENTER LINKS (Hidden on small) */}
+            <div className="hidden lg:flex items-center space-x-6">
+              {['Platform', 'Solutions', 'Security', 'Pricing'].map((item) => (
+                <a 
+                  key={item}
+                  href={`#${item.toLowerCase()}`} 
+                  className="text-[11px] font-black uppercase tracking-[0.2em] hover:text-white transition-colors"
+                >
+                  {item}
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center space-x-5">
-
-            {/* Show only if logged in */}
-            {user && <NotificationBell />}
+          <div className="flex items-center gap-2 sm:gap-4">
 
             {!user ? (
-              <>
-                <Link to="/login" className="text-white hover:text-gray-300 transition-colors">
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-gray-300 hover:text-white transition-colors font-bold text-xs uppercase tracking-widest">
                   Sign In
                 </Link>
 
-                <Link to="/signup" className="bg-white text-black px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200">
+                <Link to="/signup" className="bg-white text-black px-5 py-2 rounded-full font-black text-[11px] uppercase tracking-wider hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all">
                   Get Started
                 </Link>
-              </>
+              </div>
             ) : (
-              <div className="flex items-center space-x-3">
-
-                {/*  Avatar */}
-                <img
-                  src={
-                    user.user_metadata?.avatar_url ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`
-                  }
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full border border-white/20"
-                />
-
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="bg-white/10 border border-white/20 px-3 py-1 rounded-lg hover:bg-red-500 hover:border-red-500 transition"
-                >
-                  Logout
+              <div className="flex items-center gap-2 sm:gap-6">
+                
+                {/* Search Trigger (Icon only) */}
+                <button className="hidden sm:flex p-2 text-gray-500 hover:text-white transition-colors">
+                   <div className="w-px h-6 bg-white/10 mr-4"></div>
                 </button>
 
+                {/* Notifications */}
+                <NotificationBell />
+
+                {/* Vertical Divider */}
+                <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
+
+                {/* Profile Dropdown */}
+                <UserDropdown />
               </div>
             )}
+
+            {/* Mobile Menu Toggle */}
+            <button className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors">
+              <Menu className="w-6 h-6" />
+            </button>
 
           </div>
         </div>
@@ -106,4 +108,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbar;

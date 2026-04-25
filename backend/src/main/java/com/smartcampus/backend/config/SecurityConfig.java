@@ -76,6 +76,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/tickets/**").permitAll()
                         .requestMatchers("/api/resources/**").permitAll()
 
+                        // Special authenticated endpoints (must come before broad patterns)
+                        .requestMatchers("/api/users/me").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
+
                         // Role-based access
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

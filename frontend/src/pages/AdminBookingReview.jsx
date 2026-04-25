@@ -247,7 +247,8 @@ const AdminBookingReview = () => {
             <p className="text-muted text-sm mt-1">Review, approve, and manage all booking requests.</p>
           </div>
             <button onClick={async () => {
-              console.log("Manual refresh clicked");
+              // Manual refresh triggered
+
           
               await queryClient.removeQueries({ queryKey: ['bookings'], exact: false });
               await refetch();

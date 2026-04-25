@@ -17,7 +17,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
   // Conflict detection — POST (new booking)
   @Query("""
       SELECT COUNT(b) > 0 FROM Booking b
-      WHERE b.resourceId = :resourceId
+      WHERE b.resource.id = :resourceId
         AND (b.status = 'APPROVED' OR b.status = 'PENDING')
         AND b.startTime < :endTime
         AND :startTime < b.endTime
@@ -29,7 +29,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
   @Query("""
       SELECT b FROM Booking b
-      WHERE b.resourceId = :resourceId
+      WHERE b.resource.id = :resourceId
         AND (b.status = 'APPROVED' OR b.status = 'PENDING')
         AND b.startTime < :endTime
         AND :startTime < b.endTime
@@ -41,10 +41,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       @Param("endTime") LocalDateTime endTime);
 
   // Conflict detection — PUT (exclude the booking being edited)
-  // Prevents a booking from "conflicting" with its own previous time slot.
   @Query("""
       SELECT COUNT(b) > 0 FROM Booking b
-      WHERE b.resourceId = :resourceId
+      WHERE b.resource.id = :resourceId
         AND (b.status = 'APPROVED' OR b.status = 'PENDING')
         AND b.id <> :excludeId
         AND b.startTime < :endTime
@@ -58,7 +57,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
   @Query("""
       SELECT b FROM Booking b
-      WHERE b.resourceId = :resourceId
+      WHERE b.resource.id = :resourceId
         AND (b.status = 'APPROVED' OR b.status = 'PENDING')
         AND b.id <> :excludeId
         AND b.startTime < :endTime
@@ -71,14 +70,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       @Param("endTime") LocalDateTime endTime,
       @Param("excludeId") Long excludeId);
 
-  // Filtered queries
-  List<Booking> findByUserIdOrderByCreatedAtDesc(Long userId);
+  // Filtered queries using object traversal
+  List<Booking> findByUser_SupabaseUidOrderByCreatedAtDesc(String supabaseUid);
 
-  List<Booking> findByResourceIdOrderByCreatedAtDesc(Long resourceId);
+  List<Booking> findByResource_IdOrderByCreatedAtDesc(Long resourceId);
 
   List<Booking> findByStatusOrderByCreatedAtDesc(BookingStatus status);
 
-  List<Booking> findByUserIdAndStatusOrderByCreatedAtDesc(Long userId, BookingStatus status);
+  List<Booking> findByUser_SupabaseUidAndStatusOrderByCreatedAtDesc(String supabaseUid, BookingStatus status);
 
   Optional<Booking> findByQrCodeToken(String token);
 }

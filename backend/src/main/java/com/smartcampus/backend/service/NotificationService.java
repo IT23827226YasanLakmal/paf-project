@@ -19,7 +19,7 @@ public class NotificationService {
         this.userRepo = userRepo;
     }
 
-    public Notification createNotification(Long userId, String message) {
+    public Notification createNotification(String userId, String message) {
 
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -29,8 +29,8 @@ public class NotificationService {
         return notificationRepo.save(notification);
     }
 
-    public List<Notification> getUserNotifications(Long userId) {
-        return notificationRepo.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<Notification> getUserNotifications(String userId) {
+        return notificationRepo.findByUser_SupabaseUidOrderByCreatedAtDesc(userId);
     }
 
     public void deleteNotification(Long id) {

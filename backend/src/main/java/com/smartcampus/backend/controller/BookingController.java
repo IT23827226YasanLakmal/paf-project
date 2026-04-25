@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * TEMP AUTH: Headers used until Role 4 adds Spring Security + JWT.
- * X-User-Id → current user's ID
+ * X-User-Id → current user's Supabase UUID
  * X-Is-Admin → "true" if admin
  */
 @RestController
@@ -35,7 +35,7 @@ public class BookingController {
     @Operation(summary = "Request a booking (with conflict detection)")
     public ResponseEntity<BookingResponseDTO> createBooking(
             @Valid @RequestBody BookingRequestDTO request,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
+            @RequestHeader(value = "X-User-Id") String userId) {
 
         request.setUserId(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingService.createBooking(request));
@@ -45,13 +45,13 @@ public class BookingController {
     @GetMapping
     @Operation(summary = "Get bookings — user sees own, admin sees all")
     public ResponseEntity<List<BookingResponseDTO>> getBookings(
-            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String userId,
             @RequestParam(required = false) Long resourceId,
             @RequestParam(required = false) BookingStatus status,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long currentUserId,
+            @RequestHeader(value = "X-User-Id") String currentUserId,
             @RequestHeader(value = "X-Is-Admin", defaultValue = "false") boolean isAdmin) {
 
-        Long effectiveUserId = (isAdmin && userId != null) ? userId : currentUserId;
+        String effectiveUserId = (isAdmin && userId != null) ? userId : currentUserId;
         return ResponseEntity.ok(bookingService.getBookings(effectiveUserId, resourceId, status, isAdmin));
     }
 
@@ -69,7 +69,7 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> updateBooking(
             @PathVariable Long id,
             @Valid @RequestBody BookingUpdateDTO request,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestHeader(value = "X-Is-Admin", defaultValue = "false") boolean isAdmin) {
 
         return ResponseEntity.ok(bookingService.updateBooking(id, request, userId, isAdmin));
@@ -81,7 +81,7 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> updateBookingStatus(
             @PathVariable Long id,
             @Valid @RequestBody BookingStatusUpdateDTO request,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long currentUserId,
+            @RequestHeader(value = "X-User-Id") String currentUserId,
             @RequestHeader(value = "X-Is-Admin", defaultValue = "false") boolean isAdmin) {
 
         if (!isAdmin && request.getStatus() != BookingStatus.CANCELLED) {
@@ -95,7 +95,7 @@ public class BookingController {
     @Operation(summary = "Delete a booking (REJECTED / CANCELLED / overdue APPROVED only)")
     public ResponseEntity<Void> deleteBooking(
             @PathVariable Long id,
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
+            @RequestHeader(value = "X-User-Id") String userId,
             @RequestHeader(value = "X-Is-Admin", defaultValue = "false") boolean isAdmin) {
 
         bookingService.deleteBooking(id, userId, isAdmin);

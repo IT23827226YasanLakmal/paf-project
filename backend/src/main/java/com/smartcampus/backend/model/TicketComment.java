@@ -16,11 +16,18 @@ public class TicketComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ticket_id", nullable = false)
-    private Long ticketId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private IncidentTicket ticket;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("userId")
+    private String userId;
 
     @Column(name = "user_role")
     private String userRole;

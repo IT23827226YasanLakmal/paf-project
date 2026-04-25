@@ -9,8 +9,9 @@ const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
     if (token) headers['Authorization'] = `Bearer ${token}`;
     
     if (user) {
-        headers['X-User-Id'] = String(user.id);
-        if (user.role === 'ADMIN' || user.role === 'BOOKING_OFFICER') {
+        // Use supabaseUid (String) for the custom header
+        headers['X-User-Id'] = user.supabaseUid || user.id;
+        if (user.role === 'ADMIN' || user.role === 'BOOKING_OFFICER' || user.role === 'FACILITY_MANAGER') {
             headers['X-Is-Admin'] = 'true';
         }
     }
@@ -29,10 +30,15 @@ const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
             
             // Intercept 401 Unauthenticated sessions
             if (response.status === 401) {
-                console.warn('[Resilience] Unauthorized endpoint access. Resetting session...');
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = '/login';
+                const currentPath = window.location.pathname;
+                if (currentPath !== '/login' && currentPath !== '/signup') {
+                    console.warn('[Resilience] Unauthorized access detected. Session may be invalid.');
+                    // Don't nukes the storage immediately to prevent flickering loops
+                    // Only redirect if we are deep in the app
+                    if (currentPath.startsWith('/app')) {
+                        window.location.href = '/login?expired=true';
+                    }
+                }
                 return response;
             }
 
@@ -180,8 +186,8 @@ export const updateBookingStatus = async ({ id, status, rejectionReason, adminNo
   const response = await authFetch(`${API_BASE_URL}/bookings/${id}/status`, {
     method: 'PATCH',
     headers: {
-      'X-Is-Admin': 'true',  // ← Add this
-      'X-User-Id': localStorage.getItem('userId') || '1',  // ← Add this (adjust key if needed)
+      'X-Is-Admin': 'true',
+      'X-User-Id': (localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).supabaseUid : 'null'),
     },
     body: JSON.stringify({ status, rejectionReason, adminNote }),
   });

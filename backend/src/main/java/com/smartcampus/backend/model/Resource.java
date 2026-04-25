@@ -31,4 +31,9 @@ public class Resource {
     private String status; // ACTIVE, OUT_OF_SERVICE
 
     private String imageUrl;
+
+    // Inventory Metadata
+    private String serialNumber;
+    private java.time.LocalDate purchaseDate;
+    private java.time.LocalDate warrantyExpiry;
 }

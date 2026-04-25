@@ -4,12 +4,12 @@ import com.smartcampus.backend.model.Role;
 
 public class AuthResponse {
     private String token;
-    private Long id;
+    private String id; // Changed from Long to String (Supabase UUID)
     private String name;
     private String email;
     private Role role;
 
-    public AuthResponse(String token, Long id, String name, String email, Role role) {
+    public AuthResponse(String token, String id, String name, String email, Role role) {
         this.token = token;
         this.id = id;
         this.name = name;
@@ -18,7 +18,7 @@ public class AuthResponse {
     }
 
     public String getToken() { return token; }
-    public Long getId() { return id; }
+    public String getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
     public Role getRole() { return role; }

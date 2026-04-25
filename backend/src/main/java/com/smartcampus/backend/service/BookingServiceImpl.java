@@ -6,7 +6,11 @@ import com.smartcampus.backend.dto.BookingStatusUpdateDTO;
 import com.smartcampus.backend.dto.BookingUpdateDTO;
 import com.smartcampus.backend.model.Booking;
 import com.smartcampus.backend.model.BookingStatus;
+import com.smartcampus.backend.model.Resource;
+import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.repository.BookingRepository;
+import com.smartcampus.backend.repository.ResourceRepository;
+import com.smartcampus.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +31,9 @@ import java.util.stream.Collectors;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final ResourceRepository resourceRepository;
+    private final UserRepository userRepository;
+    private final AuditService auditService;
 
     // ── POST /api/bookings ─────────────────────────────────────────────────
     @Override
@@ -38,6 +45,13 @@ public class BookingServiceImpl implements BookingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum duration is 30 minutes.");
         if (mins > 480)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum duration is 8 hours.");
+
+        // Verify Resource and User exist
+        Resource resource = resourceRepository.findById(req.getResourceId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+        
+        User user = userRepository.findById(req.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         boolean conflict = bookingRepository.existsConflict(
                 req.getResourceId(), req.getStartTime(), req.getEndTime());
@@ -51,8 +65,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         Booking booking = Booking.builder()
-                .resourceId(req.getResourceId())
-                .userId(req.getUserId())
+                .resource(resource)
+                .user(user)
                 .startTime(req.getStartTime())
                 .endTime(req.getEndTime())
                 .purpose(req.getPurpose())
@@ -66,27 +80,26 @@ public class BookingServiceImpl implements BookingService {
     // ── GET /api/bookings ──────────────────────────────────────────────────
     @Override
     @Transactional(readOnly = true)
-    public List<BookingResponseDTO> getBookings(Long userId, Long resourceId,
+    public List<BookingResponseDTO> getBookings(String userId, Long resourceId,
             BookingStatus status, boolean isAdmin) {
         List<Booking> result;
         if (isAdmin) {
             if (resourceId != null)
-                result = bookingRepository.findByResourceIdOrderByCreatedAtDesc(resourceId);
+                result = bookingRepository.findByResource_IdOrderByCreatedAtDesc(resourceId);
             else if (status != null)
                 result = bookingRepository.findByStatusOrderByCreatedAtDesc(status);
             else
                 result = bookingRepository.findAll();
         } else {
             if (status != null)
-                result = bookingRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, status);
+                result = bookingRepository.findByUser_SupabaseUidAndStatusOrderByCreatedAtDesc(userId, status);
             else
-                result = bookingRepository.findByUserIdOrderByCreatedAtDesc(userId);
+                result = bookingRepository.findByUser_SupabaseUidOrderByCreatedAtDesc(userId);
         }
         return result.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     // ── GET /api/bookings/verify-qr/{token} ───────────────────────────────
-    // Public endpoint — no auth needed, used at facility entrance on QR scan.
     @Override
     @Transactional(readOnly = true)
     public BookingResponseDTO verifyQrToken(String token) {
@@ -94,44 +107,35 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Invalid or expired QR code."));
 
-        // Only APPROVED bookings are valid for check-in
         if (booking.getStatus() != BookingStatus.APPROVED)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "This booking is not currently approved (status: " + booking.getStatus() + ").");
 
-        log.info("QR verified for bookingId={} resourceId={}", booking.getId(), booking.getResourceId());
         return toDTO(booking);
     }
 
     // ── PUT /api/bookings/{id} ─────────────────────────────────────────────
     @Override
     public BookingResponseDTO updateBooking(Long id, BookingUpdateDTO req,
-            Long userId, boolean isAdmin) {
+            String userId, boolean isAdmin) {
         Booking booking = findOrThrow(id);
 
         if (booking.getStatus() != BookingStatus.PENDING)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Only PENDING bookings can be edited. Current status: " + booking.getStatus());
 
-        if (!isAdmin && !booking.getUserId().equals(userId))
+        if (!isAdmin && !booking.getUser().getSupabaseUid().equals(userId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You can only edit your own bookings.");
 
         if (!req.getEndTime().isAfter(req.getStartTime()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End time must be after start time.");
-        long mins = Duration.between(req.getStartTime(), req.getEndTime()).toMinutes();
-        if (mins < 30)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Minimum duration is 30 minutes.");
-        if (mins > 480)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Maximum duration is 8 hours.");
-
-        // CONFLICT DETECTION — ALWAYS RUN (no timeChanged guard)
+        
         boolean conflict = bookingRepository.existsConflictExcluding(
-                booking.getResourceId(), req.getStartTime(), req.getEndTime(), id);
+                booking.getResource().getId(), req.getStartTime(), req.getEndTime(), id);
         if (conflict) {
             List<Booking> conflicts = bookingRepository.findConflictsExcluding(
-                    booking.getResourceId(), req.getStartTime(), req.getEndTime(), id);
-            log.warn("Edit conflict for bookingId={} resourceId={}", id, booking.getResourceId());
+                    booking.getResource().getId(), req.getStartTime(), req.getEndTime(), id);
             throw new BookingConflictException(
                     "The time slot conflicts with an existing booking.",
                     conflicts.stream().map(this::toDTO).collect(Collectors.toList()));
@@ -142,51 +146,29 @@ public class BookingServiceImpl implements BookingService {
         booking.setPurpose(req.getPurpose());
         booking.setAttendees(req.getAttendees());
 
-        log.info("Booking id={} updated by userId={}", id, userId);
         return toDTO(bookingRepository.save(booking));
     }
 
     // ── PATCH /api/bookings/{id}/status ───────────────────────────────────
     @Override
     public BookingResponseDTO updateBookingStatus(Long id, BookingStatusUpdateDTO req,
-            Long userId, boolean isAdmin) {
+            String userId, boolean isAdmin) {
         Booking booking = findOrThrow(id);
 
         if (!isAdmin) {
-            if (!booking.getUserId().equals(userId))
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "You can only cancel your own bookings.");
+            if (!booking.getUser().getSupabaseUid().equals(userId))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
             if (req.getStatus() != BookingStatus.CANCELLED)
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "Users can only cancel bookings.");
-            if (booking.getStatus() != BookingStatus.PENDING
-                    && booking.getStatus() != BookingStatus.APPROVED)
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Only PENDING or APPROVED bookings can be cancelled.");
-            if (booking.getStatus() == BookingStatus.APPROVED
-                    && (req.getAdminNote() == null || req.getAdminNote().isBlank()))
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "A reason is required when cancelling an approved booking.");
-
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users can only cancel");
+            
             booking.setStatus(BookingStatus.CANCELLED);
             booking.setAdminNote(req.getAdminNote());
             booking.setReviewedBy(userId);
-            log.info("Booking id={} cancelled by userId={}", id, userId);
             return toDTO(bookingRepository.save(booking));
         }
 
         validateTransition(booking.getStatus(), req.getStatus());
-
-        if (req.getStatus() == BookingStatus.REJECTED
-                && (req.getRejectionReason() == null || req.getRejectionReason().isBlank()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rejection reason is required.");
-
-        if (req.getStatus() == BookingStatus.CANCELLED
-                && booking.getStatus() == BookingStatus.APPROVED
-                && (req.getAdminNote() == null || req.getAdminNote().isBlank()))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "A reason is required when cancelling an approved booking.");
-
+        BookingStatus oldStatus = booking.getStatus();
         booking.setStatus(req.getStatus());
         booking.setReviewedBy(userId);
         booking.setRejectionReason(req.getRejectionReason());
@@ -195,32 +177,27 @@ public class BookingServiceImpl implements BookingService {
         if (req.getStatus() == BookingStatus.APPROVED && booking.getQrCodeToken() == null)
             booking.setQrCodeToken(UUID.randomUUID().toString().replace("-", ""));
 
-        log.info("Booking id={} status→{} by adminId={}", id, req.getStatus(), userId);
-        return toDTO(bookingRepository.save(booking));
+        Booking saved = bookingRepository.save(booking);
+
+        // LOG ACTION
+        auditService.logAction(
+            userId, 
+            "BOOKING_STATUS_UPDATE", 
+            "BOOKING", 
+            id.toString(), 
+            "Status changed from " + oldStatus + " to " + req.getStatus()
+        );
+
+        return toDTO(saved);
     }
 
     // ── DELETE /api/bookings/{id} ──────────────────────────────────────────
     @Override
-    public void deleteBooking(Long id, Long userId, boolean isAdmin) {
+    public void deleteBooking(Long id, String userId, boolean isAdmin) {
         Booking booking = findOrThrow(id);
-
-        if (!isAdmin && !booking.getUserId().equals(userId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "You cannot delete another user's booking.");
-
-        if (booking.getStatus() == BookingStatus.PENDING)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "PENDING bookings cannot be deleted. Admin must approve or reject first.");
-
-        boolean isOverdue = booking.getStatus() == BookingStatus.APPROVED
-                && booking.getEndTime().isBefore(LocalDateTime.now());
-
-        if (booking.getStatus() == BookingStatus.APPROVED && !isOverdue)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Cannot delete active APPROVED bookings.");
-
+        if (!isAdmin && !booking.getUser().getSupabaseUid().equals(userId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         bookingRepository.delete(booking);
-        log.info("Booking id={} ({}) deleted", id, booking.getStatus());
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
@@ -232,22 +209,18 @@ public class BookingServiceImpl implements BookingService {
 
     private void validateTransition(BookingStatus from, BookingStatus to) {
         boolean ok = switch (from) {
-            case PENDING -> to == BookingStatus.APPROVED
-                    || to == BookingStatus.REJECTED
-                    || to == BookingStatus.CANCELLED;
+            case PENDING -> to == BookingStatus.APPROVED || to == BookingStatus.REJECTED || to == BookingStatus.CANCELLED;
             case APPROVED -> to == BookingStatus.CANCELLED;
-            case REJECTED, CANCELLED -> false;
+            default -> false;
         };
-        if (!ok)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Invalid status transition: " + from + " → " + to);
+        if (!ok) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transition");
     }
 
     private BookingResponseDTO toDTO(Booking b) {
         return BookingResponseDTO.builder()
                 .id(b.getId())
-                .resourceId(b.getResourceId())
-                .userId(b.getUserId())
+                .resourceId(b.getResource().getId())
+                .userId(b.getUser().getSupabaseUid())
                 .startTime(b.getStartTime())
                 .endTime(b.getEndTime())
                 .purpose(b.getPurpose())
@@ -265,14 +238,10 @@ public class BookingServiceImpl implements BookingService {
 
     public static class BookingConflictException extends RuntimeException {
         private final List<BookingResponseDTO> conflicts;
-
         public BookingConflictException(String msg, List<BookingResponseDTO> conflicts) {
             super(msg);
             this.conflicts = conflicts;
         }
-
-        public List<BookingResponseDTO> getConflicts() {
-            return conflicts;
-        }
+        public List<BookingResponseDTO> getConflicts() { return conflicts; }
     }
 }

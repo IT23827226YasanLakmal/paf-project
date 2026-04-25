@@ -3,6 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
+import NotificationBell from '../NotificationBell';
+import UserDropdown from './UserDropdown';
 import {
   LayoutGrid, LayoutDashboard, BookOpen, CalendarCheck,
   Ticket, Users, Settings, Sun, Moon, Headphones, Bell, BarChart3,
@@ -130,6 +132,18 @@ const Sidebar = () => {
 
       {/* ── Bottom ── */}
       <div className="px-3 pb-4 space-y-2 flex-shrink-0">
+
+        {/* ── Profile & Notifications strip ── */}
+        <div
+          className="flex items-center justify-between px-3 py-2.5 rounded-xl"
+          style={{ borderBottom: '1px solid var(--border-subtle)', marginBottom: '6px', paddingBottom: '10px' }}
+        >
+          <div className="flex-1">
+            <UserDropdown direction="up" />
+          </div>
+          <NotificationBell direction="up" />
+        </div>
+
         {/* Theme toggle */}
         <button
           onClick={toggleDarkMode}

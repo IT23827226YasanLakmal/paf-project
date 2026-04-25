@@ -29,18 +29,21 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         Role role = request.getRole() != null ? request.getRole() : Role.USER;
         
+        // Identity & password handled by Supabase, we just save the profile.
         var user = new User(
+                request.getSupabaseUid(), // Use the UUID from Supabase
                 request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
                 request.getName(),
                 role
         );
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return new AuthResponse(jwtToken, user.getId(), user.getName(), user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getSupabaseUid(), user.getName(), user.getEmail(), user.getRole());
     }
 
     public AuthResponse authenticate(AuthRequest request) {
+        // Note: With Supabase, authentication is primarily on the frontend.
+        // This method remains for legacy support or backend-driven auth if needed.
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -50,6 +53,24 @@ public class AuthService {
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return new AuthResponse(jwtToken, user.getId(), user.getName(), user.getEmail(), user.getRole());
+        return new AuthResponse(jwtToken, user.getSupabaseUid(), user.getName(), user.getEmail(), user.getRole());
+    }
+
+    public AuthResponse sync(com.smartcampus.backend.dto.SyncRequest request) {
+        User user = repository.findById(request.getSupabaseUid())
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setSupabaseUid(request.getSupabaseUid());
+                    newUser.setRole(Role.USER); // Default role
+                    return newUser;
+                });
+
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        
+        repository.save(user);
+        
+        var jwtToken = jwtService.generateToken(user);
+        return new AuthResponse(jwtToken, user.getSupabaseUid(), user.getName(), user.getEmail(), user.getRole());
     }
 }
