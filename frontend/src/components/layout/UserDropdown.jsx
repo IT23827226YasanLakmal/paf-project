@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
-const UserDropdown = ({ direction = 'down' }) => {
+const UserDropdown = ({ direction = 'down', isCollapsed = false }) => {
   // Main dropdown state
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -32,27 +32,31 @@ const UserDropdown = ({ direction = 'down' }) => {
   const isUp = direction === 'up';
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative flex justify-center w-full" ref={ref}>
       {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2.5 cursor-pointer group p-1 pr-2 rounded-full transition-all duration-200 hover:bg-white/10 active:scale-95"
+        className={`flex ${isCollapsed ? 'flex-col gap-1.5 items-center justify-center' : 'items-center gap-2.5 pr-2'} cursor-pointer group p-1 rounded-xl transition-all duration-200 hover:bg-white/5 active:scale-95 w-full`}
       >
-        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/20 shadow-sm group-hover:border-blue-500/50">
+        <div className="w-8 h-8 rounded-full overflow-hidden border border-subtle shadow-sm group-hover:border-accent flex-shrink-0">
           <img
             src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'Guest'}`}
             alt="Avatar"
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="hidden sm:block text-left">
-          <p className="text-[11px] font-bold text-gray-300 group-hover:text-white transition-colors uppercase tracking-tight">
-            {user?.name?.split(' ')[0] || 'User'}
-          </p>
-        </div>
-        <ChevronDown
-          className={`w-3 h-3 text-gray-500 transition-transform duration-300 ${open ? 'rotate-180 text-blue-500' : 'group-hover:text-white'}`}
-        />
+        {!isCollapsed && (
+          <div className="text-center animate-in fade-in duration-300">
+            <p className="text-[10px] font-black text-primary group-hover:text-accent transition-colors uppercase tracking-wider truncate max-w-[45px]">
+              {user?.name?.split(' ')[0] || 'User'}
+            </p>
+          </div>
+        )}
+        {!isCollapsed && (
+          <ChevronDown
+            className={`w-3 h-3 text-muted transition-transform duration-300 ${open ? 'rotate-180 text-accent' : 'group-hover:text-primary'}`}
+          />
+        )}
       </button>
 
       {/* Dropdown Overlay */}
