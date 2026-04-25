@@ -69,18 +69,10 @@ const AppLayout = () => {
           <Routes>
             <Route
               path=""
-              element={
-                ['USER', 'ADMIN'].includes(user?.role)
-                  ? <Navigate to="/app/dashboard" replace />
-                  : user?.role === 'FACILITY_MANAGER'
-                  ? <Navigate to="/app/facility" replace />
-                  : user?.role === 'TECHNICIAN'
-                  ? <Navigate to="/app/technician-dashboard" replace />
-                  : <Navigate to="/app/catalogue" replace />
-              }
+              element={<Navigate to="/app/dashboard" replace />}
             />
 
-            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER', 'TECHNICIAN']} />}>
               <Route
                 path="dashboard"
                 element={<DashboardPage onBookResource={(r) => setBookingTarget(r)} />}

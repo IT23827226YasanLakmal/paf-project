@@ -34,6 +34,39 @@ const NavItem = ({ to, icon: Icon, label, end = false }) => (
   </NavLink>
 );
 
+const ROLE_NAV_CONFIG = {
+  USER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+  ],
+  ADMIN: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
+    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/users", icon: Users, label: "Users" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  ],
+  FACILITY_MANAGER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+  ],
+  TECHNICIAN: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  ],
+  BOOKING_OFFICER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
+  ],
+};
+
 const Sidebar = () => {
   const { user } = useAuthStore();
   const { darkMode, toggleDarkMode } = useThemeStore();
@@ -45,6 +78,8 @@ const Sidebar = () => {
     setActiveTab('report');
     navigate('/app/tickets');
   };
+
+  const navLinks = ROLE_NAV_CONFIG[role] || [];
 
   return (
     <aside
@@ -80,31 +115,9 @@ const Sidebar = () => {
           </div>
         )}
 
-        {(role === 'USER' || role === 'ADMIN' || role === 'FACILITY_MANAGER') && (
-          <NavItem to={role === 'FACILITY_MANAGER' ? "/app/facility" : "/app/dashboard"} icon={LayoutDashboard} label="Dashboard" />
-        )}
-
-        {role === 'TECHNICIAN' && (
-          <NavItem to="/app/technician-dashboard" icon={LayoutDashboard} label="Dashboard" />
-        )}
-
-        <NavItem to="/app/catalogue" icon={BookOpen} label="Resources" />
-
-        {(role === 'USER' || role === 'ADMIN') && (
-          <NavItem to="/app/my-bookings" icon={CalendarCheck} label="Bookings" />
-        )}
-
-        {(role === 'USER' || role === 'TECHNICIAN' || role === 'ADMIN') && (
-          <NavItem to="/app/tickets" icon={Ticket} label="Tickets" />
-        )}
-
-        {role === 'ADMIN' && (
-          <NavItem to="/app/users" icon={Users} label="Users" />
-        )}
-
-        {role === 'TECHNICIAN' && (
-          <NavItem to="/app/reports" icon={BarChart3} label="Reports" />
-        )}
+        {navLinks.map((link, idx) => (
+          <NavItem key={idx} to={link.to} icon={link.icon} label={link.label} />
+        ))}
 
         {/* Spacer */}
         <div className="h-px my-3" style={{ backgroundColor: 'var(--border-subtle)' }} />
