@@ -140,14 +140,16 @@ export const fetchBookings = async ({ userId, resourceId, status } = {}) => {
 export const updateBookingStatus = async ({ id, status, rejectionReason, adminNote }) => {
   const response = await authFetch(`${API_BASE_URL}/bookings/${id}/status`, {
     method: 'PATCH',
+    headers: {
+      'X-Is-Admin': 'true',  // ← Add this
+      'X-User-Id': localStorage.getItem('userId') || '1',  // ← Add this (adjust key if needed)
+    },
     body: JSON.stringify({ status, rejectionReason, adminNote }),
   });
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
-
-    console.error(" Backend error:", errData); // helpful debug
-
+    console.error("Backend error:", errData);
     const err = new Error(
       errData.message || errData.error || 'Failed to update booking status'
     );
