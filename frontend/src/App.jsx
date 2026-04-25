@@ -16,6 +16,7 @@ import RoleNav from './components/layout/RoleNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminUserRoles from "./pages/AdminUserRoles";
 import { Toaster } from "react-hot-toast";
+import Signup from "./pages/Signup";
 
 const AppLayout = () => {
   const { user, logout } = useAuthStore();
@@ -142,6 +143,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-qr/:token" element={<VerifyQrPage />} />
+      <Route path="/signup" element={<Signup />} />
       
       <Route path="/app/*" element={
           <ProtectedRoute>

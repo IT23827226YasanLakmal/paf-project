@@ -175,9 +175,10 @@ const MyBookingsPage = () => {
   const [bookingTarget, setBookingTarget] = useState(null);
 
   const { data: bookings = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['bookings', 'my', user?.id, statusFilter],
+    queryKey: ['bookings', 'my', user?.id || 'fake-user-1', statusFilter],
     queryFn:  () => fetchBookings({ userId: user?.id || 1, status: statusFilter || undefined }),
-    enabled:  !!user,
+    // Remove or comment out the enabled check while testing with fake headers!
+    // enabled:  !!user, 
   });
 
   const deleteMutation = useMutation({
