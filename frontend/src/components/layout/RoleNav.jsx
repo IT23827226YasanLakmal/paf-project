@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import NotificationBell from "../NotificationBell";
 
 const RoleNav = () => {
     const { user } = useAuthStore();
@@ -21,6 +22,7 @@ const RoleNav = () => {
 
     return (
         <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <NotificationBell />
             {(role === 'USER') && (
                 <>
                     {renderNavLink("/app/catalogue", "Catalogue")}

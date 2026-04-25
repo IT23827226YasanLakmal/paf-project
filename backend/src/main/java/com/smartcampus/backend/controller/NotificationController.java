@@ -5,6 +5,7 @@ import com.smartcampus.backend.model.User;
 import com.smartcampus.backend.service.NotificationService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Map;
@@ -43,13 +44,11 @@ public class NotificationController {
         service.markAsRead(id);
     }
 
-    // (Optional) Admin create
-    @PostMapping("/admin")
+    @PreAuthorize("hasAnyRole('ADMIN', 'BOOKING_OFFICER', 'FACILITY_MANAGER')")
+    @PostMapping
     public Notification createNotification(@RequestBody Map<String, String> body) {
-
-        Long userId = Long.parseLong(body.get("userId"));
-        String message = body.get("message");
-
-        return service.createNotification(userId, message);
+    Long userId = Long.parseLong(body.get("userId"));
+    String message = body.get("message");
+    return service.createNotification(userId, message);
     }
 }
