@@ -7,7 +7,7 @@ import { useAuthStore } from '../../store/authStore';
 
 const IncidentReportForm = ({ onReportComplete }) => {
   const [formData, setFormData] = useState({
-    resourceId: '1', // Defaulting for now, in a real app this would be populated from Role 1's resources
+    resourceId: '1', 
     category: 'HARDWARE',
     priority: 'MEDIUM',
     description: '',
@@ -54,7 +54,6 @@ const IncidentReportForm = ({ onReportComplete }) => {
 
             setUploadProgress(40);
             
-            // Note: Make sure the bucket 'incident-images' is created and is public in Supabase
             const { error: uploadError, data } = await supabase.storage
               .from('incident-images')
               .upload(filePath, file);
@@ -81,8 +80,8 @@ const IncidentReportForm = ({ onReportComplete }) => {
     setUploadProgress(100);
 
     const ticketData = {
-        resourceId: parseInt(formData.resourceId) || 1, // Fallback dummy ID if not selected
-        userId: user?.id || 1, // Fallback dummy user ID if not logged in proper
+        resourceId: parseInt(formData.resourceId) || 1, 
+        userId: user?.id || 1, 
         category: formData.category,
         description: formData.description,
         priority: formData.priority,
@@ -94,52 +93,52 @@ const IncidentReportForm = ({ onReportComplete }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-2xl mx-auto mt-8">
-      <div className="bg-slate-50 border-b border-slate-100 px-8 py-5 flex items-center gap-3">
-        <AlertCircle className="text-blue-500 w-6 h-6" />
-        <h2 className="text-xl font-bold tracking-tight text-slate-800">Report an Incident</h2>
+    <div className="bg-surface rounded-2xl shadow-sm overflow-hidden max-w-2xl mx-auto mt-8" style={{ border: '1px solid var(--border-subtle)' }}>
+      <div className="bg-raised px-8 py-5 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+        <AlertCircle className="text-accent w-6 h-6" />
+        <h2 className="text-xl font-bold tracking-tight text-primary">Report an Incident</h2>
       </div>
       
       <form onSubmit={handleSubmit} className="p-8 space-y-6">
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-600">Affected Resource ID</label>
+            <label className="text-sm font-semibold text-primary">Affected Resource ID</label>
             <input 
                 type="number" 
                 value={formData.resourceId}
                 onChange={(e) => setFormData({...formData, resourceId: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
+                className="w-full px-4 py-3 bg-raised border border-subtle rounded-xl focus:ring-2 focus:ring-accent outline-none transition-all placeholder:text-muted text-primary"
                 placeholder="e.g. 102"
                 required
             />
-            <p className="text-xs text-slate-400">Enter the ID of the faulty equipment/hall.</p>
+            <p className="text-xs text-muted">Enter the ID of the faulty equipment/hall.</p>
             </div>
 
             <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-600">Category</label>
+            <label className="text-sm font-semibold text-primary">Category</label>
             <select 
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 bg-raised border border-subtle rounded-xl focus:ring-2 focus:ring-accent outline-none transition-all text-primary"
             >
-                <option value="HARDWARE">Hardware Failure</option>
-                <option value="SOFTWARE">Software/Network Issue</option>
-                <option value="CLEANING">Cleaning/Maintenance required</option>
+                <option value="HARDWARE" className="text-primary bg-surface">Hardware Failure</option>
+                <option value="SOFTWARE" className="text-primary bg-surface">Software/Network Issue</option>
+                <option value="CLEANING" className="text-primary bg-surface">Cleaning/Maintenance required</option>
             </select>
             </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-600">Priority Level</label>
+          <label className="text-sm font-semibold text-primary">Priority Level</label>
           <div className="grid grid-cols-4 gap-3">
             {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(level => (
                <label 
                  key={level} 
                  className={`cursor-pointer border rounded-xl py-3 px-2 text-center text-sm font-medium transition-all ${
                      formData.priority === level 
-                        ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500 shadow-sm' 
-                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300'
+                        ? 'bg-accent-subtle border-accent text-accent ring-1 ring-accent shadow-sm' 
+                        : 'bg-surface border-subtle text-muted hover:bg-raised'
                  }`}
                >
                  <input 
@@ -156,19 +155,19 @@ const IncidentReportForm = ({ onReportComplete }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-600">Description</label>
+          <label className="text-sm font-semibold text-primary">Description</label>
           <textarea 
             rows={4}
             value={formData.description}
             onChange={(e) => setFormData({...formData, description: e.target.value})}
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 resize-none"
+            className="w-full px-4 py-3 bg-raised border border-subtle rounded-xl focus:ring-2 focus:ring-accent outline-none transition-all placeholder:text-muted resize-none text-primary"
             placeholder="Please describe the issue in detail..."
             required
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-600 block">Photo Evidence (Optional)</label>
+          <label className="text-sm font-semibold text-primary block">Photo Evidence (Optional)</label>
           
           <div className="relative">
               <input 
@@ -181,46 +180,46 @@ const IncidentReportForm = ({ onReportComplete }) => {
               <label 
                 htmlFor="file-upload" 
                 className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
-                    filePreview ? 'border-blue-400 bg-blue-50/50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400'
+                    filePreview ? 'border-accent bg-accent-subtle' : 'border-subtle bg-raised hover:bg-muted-fill'
                 }`}
               >
                  {filePreview ? (
                      <div className="relative w-full h-full p-2 group">
-                         <img src={filePreview} alt="Preview" className="w-full h-full object-contain rounded-lg" />
-                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                         <img src={filePreview} alt="Preview" className="w-full h-full object-contain rounded-xl" />
+                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
                             <span className="text-white text-sm font-medium flex items-center gap-2"><UploadCloud className="w-4 h-4" /> Change Photo</span>
                          </div>
                      </div>
                  ) : (
-                     <div className="flex flex-col items-center justify-center py-5 text-slate-400">
-                         <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3">
-                            <Camera className="w-5 h-5 text-blue-500" />
-                         </div>
-                        <p className="text-sm font-medium text-slate-600">Click to upload a photo</p>
-                        <p className="text-xs text-slate-400 mt-1">PNG, JPG, GIF up to 5MB</p>
+                     <div className="flex flex-col items-center justify-center py-5 text-muted">
+                          <div className="w-12 h-12 bg-surface rounded-full shadow-sm flex items-center justify-center mb-3">
+                             <Camera className="w-5 h-5 text-accent" />
+                          </div>
+                         <p className="text-sm font-medium text-primary">Click to upload a photo</p>
+                         <p className="text-xs text-muted mt-1">PNG, JPG, GIF up to 5MB</p>
                      </div>
                  )}
               </label>
           </div>
         </div>
 
-        <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+        <div className="pt-4 flex justify-end gap-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
            <button 
              type="button" 
              onClick={() => window.history.back()}
-             className="px-6 py-2.5 rounded-xl font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+             className="px-6 py-2.5 rounded-xl font-medium text-secondary hover:bg-raised transition-colors cursor-pointer"
            >
               Cancel
            </button>
            <button 
              type="submit" 
              disabled={ticketMutation.isPending}
-             className="px-8 py-2.5 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all focus:ring-4 focus:ring-blue-100 flex items-center gap-2 disabled:bg-blue-400"
+             className="px-8 py-2.5 rounded-xl font-semibold text-white bg-accent hover-bg-accent shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
            >
               {ticketMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    {uploadProgress > 0 && uploadProgress < 100 ? `Uploading Image ${uploadProgress}%...` : 'Submitting...'}
+                    {uploadProgress > 0 && uploadProgress < 100 ? `Uploading ${uploadProgress}%` : 'Submitting...'}
                   </>
               ) : (
                   <>

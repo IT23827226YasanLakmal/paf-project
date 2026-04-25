@@ -72,40 +72,40 @@ const CataloguePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    <h1 className="text-3xl font-extrabold text-primary tracking-tight">
                         {isAdmin ? 'Facilities & Assets' : 'Resource Catalogue'}
                     </h1>
-                    <p className="text-slate-500 mt-2">
+                    <p className="text-secondary mt-2">
                         {isAdmin ? 'Manage all university bookable resources.' : 'Browse and book university resources.'}
                     </p>
                 </div>
                 {isAdmin && !showForm && (
-                    <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors shadow-sm cursor-pointer hover:shadow-md">
+                    <button onClick={() => setShowForm(true)} className="inline-flex items-center px-4 py-2 bg-accent hover-bg-accent text-white text-sm font-medium rounded-xl transition-colors shadow-sm cursor-pointer">
                         <Plus className="w-4 h-4 mr-2" /> Add Resource
                     </button>
                 )}
             </div>
 
             {isAdmin && showForm && (
-                <div className="mb-8">
+                <div className="mb-8 bg-surface rounded-2xl p-6" style={{ border: '1px solid var(--border-subtle)' }}>
                     <ResourceForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
                 </div>
             )}
 
-            <div className="mb-6 flex items-center space-x-4 bg-white p-3 rounded-lg border border-slate-200 shadow-sm w-fit">
-                <Filter className="w-5 h-5 text-slate-400 ml-2" />
+            <div className="mb-6 flex items-center space-x-4 bg-surface p-3 rounded-xl shadow-sm w-fit" style={{ border: '1px solid var(--border-subtle)' }}>
+                <Filter className="w-5 h-5 text-muted ml-2" />
                 <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-                    className="bg-transparent border-none text-sm font-medium text-slate-700 outline-none cursor-pointer pr-4 focus:ring-0">
-                    <option value="">All Types</option>
-                    <option value="LECTURE_HALL">Lecture Halls</option>
-                    <option value="LAB">Laboratories</option>
-                    <option value="EQUIPMENT">Equipment</option>
+                    className="bg-transparent border-none text-sm font-medium text-primary outline-none cursor-pointer pr-4 focus:ring-0">
+                    <option value="" className="text-primary bg-surface">All Types</option>
+                    <option value="LECTURE_HALL" className="text-primary bg-surface">Lecture Halls</option>
+                    <option value="LAB" className="text-primary bg-surface">Laboratories</option>
+                    <option value="EQUIPMENT" className="text-primary bg-surface">Equipment</option>
                 </select>
             </div>
 
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -121,9 +121,9 @@ const CataloguePage = () => {
                         />
                     ))}
                     {resources.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center justify-center p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                            <h3 className="text-lg font-medium text-slate-900">No resources found</h3>
-                            <p className="text-slate-500 mt-1 text-center">Get started by creating a new facility or equipment asset.</p>
+                        <div className="col-span-full flex flex-col items-center justify-center p-12 bg-raised border-2 border-dashed border-subtle rounded-2xl">
+                            <h3 className="text-lg font-medium text-primary">No resources found</h3>
+                            <p className="text-secondary mt-1 text-center">Get started by creating a new facility or equipment asset.</p>
                         </div>
                     )}
                 </div>

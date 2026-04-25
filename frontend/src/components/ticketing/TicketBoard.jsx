@@ -5,10 +5,11 @@ import { Clock, Hammer, CheckCircle, Package, MoreVertical, Search, Image as Ima
 import TicketDetailsModal from './TicketDetailsModal';
 import { useAuthStore } from '../../store/authStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
+
 const COLUMNS = [
-  { id: 'OPEN', label: 'Open Issues', icon: <Package className="w-5 h-5 text-amber-500" />, bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
-  { id: 'IN_PROGRESS', label: 'In Progress', icon: <Hammer className="w-5 h-5 text-blue-500" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-  { id: 'RESOLVED', label: 'Resolved', icon: <CheckCircle className="w-5 h-5 text-emerald-500" />, bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' }
+  { id: 'OPEN', label: 'Open Issues', icon: <Package className="w-5 h-5 text-amber-500" />, bgColor: 'bg-amber-500/5', borderColor: 'border-amber-500/20' },
+  { id: 'IN_PROGRESS', label: 'In Progress', icon: <Hammer className="w-5 h-5 text-blue-500" />, bgColor: 'bg-blue-500/5', borderColor: 'border-blue-500/20' },
+  { id: 'RESOLVED', label: 'Resolved', icon: <CheckCircle className="w-5 h-5 text-emerald-500" />, bgColor: 'bg-emerald-500/5', borderColor: 'border-emerald-500/20' }
 ];
 
 const TicketBoard = () => {
@@ -31,7 +32,6 @@ const TicketBoard = () => {
   });
 
   const onDragStart = (ticket) => setDraggedTicket(ticket);
-
   const onDragOver = (e) => e.preventDefault();
 
   const onDrop = (status, e) => {
@@ -42,8 +42,8 @@ const TicketBoard = () => {
     setDraggedTicket(null);
   };
 
-  if (isLoading) return <div className="flex justify-center p-12"><div className="w-8 h-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div></div>;
-  if (isError) return <div className="p-8 text-center text-red-500 font-medium bg-red-50 rounded-xl">Error loading tickets. Make sure backend is running.</div>;
+  if (isLoading) return <div className="flex justify-center p-12"><div className="w-8 h-8 rounded-full border-4 border-accent border-t-transparent animate-spin"></div></div>;
+  if (isError) return <div className="p-8 text-center text-red-500 font-medium bg-red-500/10 rounded-2xl" style={{ border: '1px solid var(--border-subtle)' }}>Error loading tickets. Please check backend.</div>;
 
   return (
     <>
@@ -54,16 +54,16 @@ const TicketBoard = () => {
           return (
             <div 
               key={column.id} 
-              className={`flex-1 min-w-[320px] rounded-2xl border bg-slate-50 flex flex-col ${column.borderColor}`}
+              className={`flex-1 min-w-[320px] rounded-2xl border bg-raised flex flex-col ${column.borderColor}`}
               onDragOver={canManageTickets ? onDragOver : undefined}
               onDrop={(e) => canManageTickets && onDrop(column.id, e)}
             >
               <div className={`p-4 border-b ${column.borderColor} flex items-center justify-between ${column.bgColor} rounded-t-2xl`}>
                 <div className="flex items-center gap-2">
                   {column.icon}
-                  <h3 className="font-semibold text-slate-800">{column.label}</h3>
+                  <h3 className="font-semibold text-primary">{column.label}</h3>
                 </div>
-                <span className="bg-white rounded-full px-2.5 py-0.5 text-xs font-bold text-slate-600 shadow-sm border border-slate-100">
+                <span className="bg-surface rounded-full px-2.5 py-0.5 text-xs font-bold text-secondary shadow-sm border border-subtle">
                   {columnTickets.length}
                 </span>
               </div>
@@ -75,41 +75,46 @@ const TicketBoard = () => {
                     draggable={canManageTickets}
                     onDragStart={() => canManageTickets && onDragStart(ticket)}
                     onClick={() => setSelectedTicket(ticket)}
-                    className={`bg-white p-4 rounded-xl shadow-sm border border-slate-200 transition-all group relative ${canManageTickets ? 'cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-md' : 'cursor-pointer hover:shadow-md'}`}
+                    className={`bg-surface p-4 rounded-xl shadow-sm transition-all group relative ${
+                      canManageTickets 
+                        ? 'cursor-grab active:cursor-grabbing hover:-translate-y-1 hover:shadow-md' 
+                        : 'cursor-pointer hover:shadow-md'
+                    }`}
+                    style={{ border: '1px solid var(--border-subtle)' }}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-bold px-2 py-1 rounded bg-slate-100 text-slate-600">
+                      <span className="text-xs font-bold px-2 py-1 rounded bg-muted-fill text-primary">
                         #{ticket.id}
                       </span>
                       <div className="flex gap-2">
                         {ticket.priority === 'URGENT' && <span className="w-2 h-2 rounded-full bg-red-500 mt-1.5 animate-pulse"></span>}
-                        {ticket.imageUrl && <ImageIcon className="w-4 h-4 text-slate-400" />}
+                        {ticket.imageUrl && <ImageIcon className="w-4 h-4 text-muted" />}
                       </div>
                     </div>
 
-                    <p className="font-medium text-slate-800 text-sm mb-3 line-clamp-2 leading-relaxed">
+                    <p className="font-medium text-primary text-sm mb-3 line-clamp-2 leading-relaxed">
                       {ticket.description}
                     </p>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                      <div className="flex items-center bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                    <div className="flex items-center gap-3 text-xs text-secondary font-medium">
+                      <div className="flex items-center bg-muted-fill px-2 py-1 rounded border border-subtle">
                          {ticket.category}
                       </div>
-                      <span className="flex items-center gap-1.5 ml-auto">
+                      <span className="flex items-center gap-1.5 ml-auto text-muted">
                         <Clock className="w-3.5 h-3.5" />
                         {new Date(ticket.createdAt).toLocaleDateString()}
                       </span>
                     </div>
 
-                    <button className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded">
+                    <button className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted hover:text-primary hover:bg-muted-fill rounded-lg">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
                 ))}
 
                 {columnTickets.length === 0 && (
-                  <div className="flex-1 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl p-6 bg-slate-50/50">
-                    <Package className="w-8 h-8 mb-2 opacity-50 text-slate-300" />
+                  <div className="flex-1 flex flex-col items-center justify-center text-muted border-2 border-dashed border-subtle rounded-2xl p-6 bg-raised">
+                    <Package className="w-8 h-8 mb-2 opacity-50" />
                     <p className="text-sm font-medium">No tickets here</p>
                     {canManageTickets && <p className="text-xs mt-1">Drag tickets to change status</p>}
                   </div>
