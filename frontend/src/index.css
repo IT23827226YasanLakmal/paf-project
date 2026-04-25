@@ -1,10 +1,44 @@
 @import "tailwindcss";
 
+:root {
+  --color-bg-primary: #F8FAFC;
+  --color-bg-secondary: #FFFFFF;
+  --color-border-subtle: #E2E8F0;
+  --color-border-main: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-secondary: #64748B;
+  --color-text-primary: #0F172A; /* Deep Navy */
+  --color-accent: #FF6B00;
+}
+
+.dark {
+  --color-bg-primary: #0A0F24; /* Deep Navy Dark */
+  --color-bg-secondary: #131B35;
+  --color-border-subtle: #1E294B;
+  --color-border-main: #2E3B6E;
+  --color-text-muted: #64748B;
+  --color-text-secondary: #94A3B8;
+  --color-text-primary: #F1F5F9; /* Off-White text */
+  --color-accent: #FF6B00;
+}
+
 @theme {
   --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --color-apple-bg: #000000;
-  --color-apple-surface: #1d1d1f;
-  --color-apple-text: #f5f5f7;
+  
+  --color-slate-50: var(--color-bg-primary);
+  --color-slate-100: var(--color-bg-primary); /* Use primary bg for slate-100 too */
+  --color-slate-200: var(--color-border-subtle);
+  --color-slate-300: var(--color-border-main);
+  --color-slate-400: var(--color-text-muted);
+  --color-slate-500: var(--color-text-secondary);
+  --color-slate-600: var(--color-text-secondary);
+  --color-slate-700: var(--color-text-primary);
+  --color-slate-800: var(--color-text-primary);
+  --color-slate-900: var(--color-text-primary);
+  
+  --color-blue-500: var(--color-accent);
+  --color-blue-600: var(--color-accent);
+  --color-blue-700: var(--color-accent);
 }
 
 @layer base {
@@ -14,21 +48,24 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-black text-white font-sans overflow-x-hidden;
+    @apply bg-slate-50 text-slate-900 font-sans overflow-x-hidden transition-colors duration-300;
   }
 }
 
 @layer utilities {
-  .glass-dark {
-    @apply backdrop-blur-xl bg-black/50 border-b border-white/10;
+  .dark .bg-white {
+    background-color: var(--color-bg-secondary) !important;
   }
-  .glass-card {
-    @apply backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl;
+  .dark .border-slate-200 {
+    border-color: var(--color-border-subtle) !important;
   }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-white via-gray-200 to-gray-500;
+  .dark .text-slate-900 {
+    color: var(--color-text-primary) !important;
   }
-  .text-gradient-blue {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500;
+  .dark .text-slate-600 {
+    color: var(--color-text-secondary) !important;
+  }
+  .dark .text-slate-500 {
+    color: var(--color-text-muted) !important;
   }
 }
