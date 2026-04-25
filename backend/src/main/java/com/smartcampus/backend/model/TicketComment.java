@@ -22,6 +22,9 @@ public class TicketComment {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "user_role")
+    private String userRole;
+
     @Column(nullable = false, length = 1000)
     private String text;
 

@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepo;
+    private final NotificationService notificationService;
 
-    public UserService(UserRepository userRepo) {
+    public UserService(UserRepository userRepo, NotificationService notificationService) {
         this.userRepo = userRepo;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -26,24 +28,36 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }
 
-    //  ADMIN updates user role
+    //   updates user role
     public User updateUserRole(Long userId, String newRole) {
 
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    User user = userRepo.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        try {
-            //  Convert String to Enum
-            Role roleEnum = Role.valueOf(newRole.toUpperCase());
+    //  Save old role before updating
+    Role oldRole = user.getRole();
 
-            user.setRole(roleEnum);
+    try {
+        //  Convert String → Enum
+        Role roleEnum = Role.valueOf(newRole.toUpperCase());
 
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid role: " + newRole);
-        }
+        user.setRole(roleEnum);
 
-        return userRepo.save(user);
+    } catch (IllegalArgumentException e) {
+        throw new RuntimeException("Invalid role: " + newRole);
     }
+
+    //  Save updated user
+    User updatedUser = userRepo.save(user);
+
+    //   Create notification AFTER update
+    String message = "Your role has been updated from "
+            + oldRole + " to " + updatedUser.getRole();
+
+    notificationService.createNotification(updatedUser.getId(), message);
+
+    return updatedUser;
+   }
 
     public List<User> getAllUsers() {
         return userRepo.findAll();

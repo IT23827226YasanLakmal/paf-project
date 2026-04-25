@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import NotificationBell from "../NotificationBell";
 
 const RoleNav = () => {
     const { user } = useAuthStore();
@@ -20,7 +21,10 @@ const RoleNav = () => {
     );
 
     return (
-        <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+    <div className="w-full flex items-center justify-between sm:ml-6">
+
+        {/* LEFT SIDE NAV LINKS */}
+        <div className="flex space-x-8">
             {(role === 'USER') && (
                 <>
                     {renderNavLink("/app/catalogue", "Catalogue")}
@@ -58,7 +62,21 @@ const RoleNav = () => {
                 </>
             )}
         </div>
-    );
+
+        {/* RIGHT SIDE (NOTIFICATION + USER AREA) */}
+        <div className="flex items-center space-x-4 ml-auto">
+
+            {/* NOTIFICATION BELL */}
+            <div className="relative">
+                <NotificationBell />
+            </div>
+
+            
+
+        </div>
+
+    </div>
+);
 };
 
 export default RoleNav;

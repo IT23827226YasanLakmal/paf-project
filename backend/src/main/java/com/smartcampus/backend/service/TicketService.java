@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,20 @@ public class TicketService {
     @Transactional
     public IncidentTicket updateTicketStatus(Long id, String status) {
         IncidentTicket ticket = getTicketById(id);
+        
+        // SLA: Tracking First Response (when moving out of OPEN)
+        if (ticket.getFirstResponseAt() == null && !"OPEN".equals(status)) {
+            ticket.setFirstResponseAt(LocalDateTime.now());
+        }
+
+        // SLA: Tracking Resolution
+        if ("RESOLVED".equals(status)) {
+            ticket.setResolvedAt(LocalDateTime.now());
+        } else if (ticket.getResolvedAt() != null && ("OPEN".equals(status) || "IN_PROGRESS".equals(status))) {
+            // If reopened, clear resolved timestamp
+            ticket.setResolvedAt(null);
+        }
+
         ticket.setStatus(status);
         return ticketRepository.save(ticket);
     }
@@ -57,6 +72,13 @@ public class TicketService {
     public TicketComment addComment(Long ticketId, TicketComment comment) {
         IncidentTicket ticket = getTicketById(ticketId); // verify exists
         comment.setTicketId(ticket.getId());
+
+        // SLA: Tracking First Response (if technician comments first)
+        if (ticket.getFirstResponseAt() == null && "TECHNICIAN".equals(comment.getUserRole())) {
+            ticket.setFirstResponseAt(LocalDateTime.now());
+            ticketRepository.save(ticket);
+        }
+
         return commentRepository.save(comment);
     }
 
