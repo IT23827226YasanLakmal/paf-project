@@ -1,46 +1,81 @@
 @import "tailwindcss";
 
+/* ============================================================
+   DESIGN SYSTEM — Smart Campus Hub
+   Strategy: CSS custom properties on :root / .dark
+   Tailwind dark: variants are used only for overrides.
+   All semantic tokens resolve correctly in both themes.
+   ============================================================ */
+
+/* ── Light theme (default) ── */
 :root {
-  --color-bg-primary: #F8FAFC;
-  --color-bg-secondary: #FFFFFF;
-  --color-border-subtle: #E2E8F0;
-  --color-border-main: #CBD5E1;
-  --color-text-muted: #94A3B8;
-  --color-text-secondary: #64748B;
-  --color-text-primary: #0F172A; /* Deep Navy */
-  --color-accent: #FF6B00;
+  /* Backgrounds */
+  --bg-canvas:    #F1F5F9;   /* outer page background */
+  --bg-surface:   #FFFFFF;   /* cards, panels, header */
+  --bg-raised:    #F8FAFC;   /* slightly elevated surface */
+  --bg-overlay:   #FFFFFF;   /* dropdowns, modals */
+  --bg-muted:     #F1F5F9;   /* muted fills, segment pills */
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.07);
+  --border-main:   #CBD5E1;
+
+  /* Text */
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #94A3B8;
+
+  /* Brand Accent — Blue */
+  --accent:        #2563EB;
+  --accent-hover:  #1D4ED8;
+  --accent-subtle: #EFF6FF;
+  --accent-text:   #1D4ED8;
+
+  /* Sidebar */
+  --sidebar-bg:     #FFFFFF;
+  --sidebar-border: rgba(0,0,0,0.06);
+
+  /* Status colors — unchanged in both themes */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error:   #EF4444;
 }
 
+/* ── Dark theme ── */
 .dark {
-  --color-bg-primary: #0A0F24; /* Deep Navy Dark */
-  --color-bg-secondary: #131B35;
-  --color-border-subtle: #1E294B;
-  --color-border-main: #2E3B6E;
-  --color-text-muted: #64748B;
-  --color-text-secondary: #94A3B8;
-  --color-text-primary: #F1F5F9; /* Off-White text */
-  --color-accent: #FF6B00;
+  /* Backgrounds */
+  --bg-canvas:    #0D1117;   /* GitHub-dark style deep background */
+  --bg-surface:   #161B22;   /* card surfaces */
+  --bg-raised:    #1C2333;   /* slightly raised panels */
+  --bg-overlay:   #1C2333;   /* dropdowns */
+  --bg-muted:     #1C2333;   /* muted fills */
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-main:   rgba(255, 255, 255, 0.12);
+
+  /* Text */
+  --text-primary:   #E6EDF3;
+  --text-secondary: #8B949E;
+  --text-muted:     #6E7681;
+
+  /* Brand Accent — brighter blue for dark bg */
+  --accent:        #3B82F6;
+  --accent-hover:  #60A5FA;
+  --accent-subtle: rgba(59, 130, 246, 0.12);
+  --accent-text:   #60A5FA;
+
+  /* Sidebar */
+  --sidebar-bg:     #161B22;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
 }
 
+/* ── Typography ── */
 @theme {
-  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  --color-slate-50: var(--color-bg-primary);
-  --color-slate-100: var(--color-bg-primary); /* Use primary bg for slate-100 too */
-  --color-slate-200: var(--color-border-subtle);
-  --color-slate-300: var(--color-border-main);
-  --color-slate-400: var(--color-text-muted);
-  --color-slate-500: var(--color-text-secondary);
-  --color-slate-600: var(--color-text-secondary);
-  --color-slate-700: var(--color-text-primary);
-  --color-slate-800: var(--color-text-primary);
-  --color-slate-900: var(--color-text-primary);
-  
-  --color-blue-500: var(--color-accent);
-  --color-blue-600: var(--color-accent);
-  --color-blue-700: var(--color-accent);
+  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* ── Base layer ── */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -48,24 +83,41 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-slate-50 text-slate-900 font-sans overflow-x-hidden transition-colors duration-300;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    overflow-x: hidden;
   }
 }
 
+/* ── Semantic utility classes ── */
+/* Use these classes directly in JSX instead of fighting dark: */
 @layer utilities {
-  .dark .bg-white {
-    background-color: var(--color-bg-secondary) !important;
-  }
-  .dark .border-slate-200 {
-    border-color: var(--color-border-subtle) !important;
-  }
-  .dark .text-slate-900 {
-    color: var(--color-text-primary) !important;
-  }
-  .dark .text-slate-600 {
-    color: var(--color-text-secondary) !important;
-  }
-  .dark .text-slate-500 {
-    color: var(--color-text-muted) !important;
-  }
+  /* Surfaces */
+  .bg-canvas   { background-color: var(--bg-canvas); }
+  .bg-surface  { background-color: var(--bg-surface); }
+  .bg-raised   { background-color: var(--bg-raised); }
+  .bg-overlay  { background-color: var(--bg-overlay); }
+  .bg-muted-fill { background-color: var(--bg-muted); }
+
+  /* Borders */
+  .border-subtle { border-color: var(--border-subtle); }
+  .border-main   { border-color: var(--border-main); }
+
+  /* Text */
+  .text-primary   { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted     { color: var(--text-muted); }
+
+  /* Accent */
+  .bg-accent        { background-color: var(--accent); }
+  .bg-accent-subtle { background-color: var(--accent-subtle); }
+  .text-accent      { color: var(--accent-text); }
+  .border-accent    { border-color: var(--accent); }
+  .hover-bg-accent:hover { background-color: var(--accent-hover); }
+
+  /* Sidebar */
+  .bg-sidebar        { background-color: var(--sidebar-bg); }
+  .border-sidebar    { border-color: var(--sidebar-border); }
 }
