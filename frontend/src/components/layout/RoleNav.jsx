@@ -21,8 +21,10 @@ const RoleNav = () => {
     );
 
     return (
-        <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-            <NotificationBell />
+    <div className="w-full flex items-center justify-between sm:ml-6">
+
+        {/* LEFT SIDE NAV LINKS */}
+        <div className="flex space-x-8">
             {(role === 'USER') && (
                 <>
                     {renderNavLink("/app/catalogue", "Catalogue")}
@@ -60,7 +62,14 @@ const RoleNav = () => {
                 </>
             )}
         </div>
-    );
+
+        {/* RIGHT SIDE ICONS (NOTIFICATION + DP) */}
+        <div className="flex items-center space-x-4">
+            <NotificationBell />
+        </div>
+
+    </div>
+);
 };
 
 export default RoleNav;
