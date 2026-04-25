@@ -1,86 +1,164 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
-import { login, register } from "../services/api";
-import { useAuthStore } from "../store/authStore";
+import { getCurrentUser } from "../services/api";
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("USER");
-  const [error, setError] = useState("");
-  
   const navigate = useNavigate();
-  const authLogin = useAuthStore(state => state.login);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
+  //  sync user to backend
+  const syncUserToBackend = async () => {
     try {
-      if (isLogin) {
-        const response = await login({ email, password });
-        authLogin(
-          { id: response.id, name: response.name, email: response.email, role: response.role },
-          response.token
-        );
-      } else {
-        const response = await register({ name, email, password, role });
-        authLogin(
-          { id: response.id, name: response.name, email: response.email, role: response.role },
-          response.token
-        );
-      }
-      navigate("/app");
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+
+      if (!user) return;
+
+      await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.user_metadata?.full_name || "User",
+          oauthId: user.id,
+        }),
+      });
+
+      console.log("User synced to backend");
     } catch (err) {
-      setError(err.message || "Authentication failed");
+      console.error("Sync error:", err);
+    }
+  };
+
+  //  Check session (Google redirect)
+  useEffect(() => {
+  const checkSession = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    if (data.session) {
+      const token = data.session.access_token;
+
+      //  Save JWT
+      localStorage.setItem("token", token);
+
+      console.log("JWT saved:", token);
+
+      //  Sync user to backend
+      await syncUserToBackend();
+
+      try {
+        //  Get logged-in user details (with role)
+        const user = await getCurrentUser();
+
+        console.log("User role:", user.role);
+
+        //  Role-based redirect
+        if (user.role === "ADMIN") {
+          navigate("/app/admin/users");
+        } else if (user.role === "TECHNICIAN") {
+          navigate("/app");
+        } else {
+          navigate("/"); // normal user
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch user role", err);
+        navigate("/"); // fallback
+      }
+    }
+  };
+
+  checkSession();
+}, []);
+
+  //  Email login
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  //  Save token
+  localStorage.setItem("token", data.session.access_token);
+
+  console.log("Login success");
+
+  //  Let useEffect handle everything
+  window.location.reload();
+};
+
+  //  Google login
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "http://localhost:5173/login",
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+
+    if (error) {
+      console.error(error);
+      alert(error.message);
     }
   };
 
   return (
-    <div className="bg-black min-h-screen flex items-center justify-center text-white px-4">
-      <div className="w-full max-w-md bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl font-semibold text-center mb-6">
-          {isLogin ? "Smart Campus Login" : "Register Account"}
+  <div className="min-h-screen flex bg-black text-white">
+
+    {/* LEFT SIDE (Branding) */}
+    <div className="hidden md:flex w-1/2 items-center justify-center bg-linear-to-br from-blue-900/40 to-black p-12">
+      <div className="max-w-md">
+
+        <h1 className="text-4xl font-bold mb-4 leading-tight">
+          Welcome to <span className="text-blue-500">Smart Campus</span>
+        </h1>
+
+        <p className="text-gray-300 text-lg mb-6">
+          Pro-grade operations. Seamless experiences. 
+          Unprecedented control over every asset, room, and resource.
+        </p>
+
+        <div className="text-sm text-gray-500">
+          Manage everything. Effortlessly.
+        </div>
+
+      </div>
+    </div>
+
+    {/* RIGHT SIDE (Login Form) */}
+    <div className="flex w-full md:w-1/2 items-center justify-center px-6">
+
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
+
+        <h2 className="text-2xl font-semibold mb-2">
+          Sign in
         </h2>
 
-        {error && (
-          <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-lg mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
+        <p className="text-sm text-gray-400 mb-6">
+          Access your dashboard and manage your system
+        </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {!isLogin && (
-            <>
-              <input
-                type="text"
-                placeholder="Full Name"
-                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-                required
-              >
-                <option value="USER" className="text-black">Standard User</option>
-                <option value="FACILITY_MANAGER" className="text-black">Facility Manager</option>
-                <option value="BOOKING_OFFICER" className="text-black">Booking Officer</option>
-                <option value="TECHNICIAN" className="text-black">Technician</option>
-                <option value="ADMIN" className="text-black">System Admin</option>
-              </select>
-            </>
-          )}
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
 
           <input
             type="email"
             placeholder="Email"
-            className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -89,7 +167,7 @@ export default function Login() {
           <input
             type="password"
             placeholder="Password"
-            className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -97,22 +175,30 @@ export default function Login() {
 
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 transition rounded-lg py-2 font-medium mt-2"
+            className="bg-blue-600 hover:bg-blue-700 transition rounded-lg py-3 font-medium shadow-lg shadow-blue-900/30"
           >
-            {isLogin ? "Login" : "Register"}
+            Login
           </button>
         </form>
 
-        <div className="text-center mt-6 text-sm text-gray-400">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="ml-2 text-blue-400 hover:text-blue-300 font-medium transition"
-          >
-            {isLogin ? "Register here" : "Login here"}
-          </button>
+        <div className="text-center my-5 text-sm text-gray-400">
+          OR
         </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-3 bg-white text-black rounded-lg py-3 font-medium hover:bg-gray-200 transition"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className="w-5 h-5"
+          />
+          Continue with Google
+        </button>
+
       </div>
     </div>
-  );
+  </div>
+);
 }
