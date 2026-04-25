@@ -6,7 +6,7 @@ import Footer from '../components/layout/Footer';
 
 const LandingPage = () => {
   return (
-    <div className="bg-black min-h-screen text-white selection:bg-blue-500/30">
+    <div className="bg-canvas text-primary font-sans antialiased min-h-screen glossy-mesh selection:bg-accent/30 overflow-x-hidden">
       <Navbar />
       <HeroSection />
       <FeatureBentoGrid />

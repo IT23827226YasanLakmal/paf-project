@@ -142,7 +142,7 @@ const AssetsPage = () => {
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-overlay rounded-2xl p-6 shadow-2xl w-full max-w-xl relative animate-fade-in" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
                         <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                             <h2 className="text-lg font-bold text-primary">
                                 Onboard Equipment Asset
@@ -353,7 +353,7 @@ const AssetsPage = () => {
 
             {isAdmin && editingResource && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-overlay rounded-2xl p-6 shadow-2xl w-full max-w-xl relative animate-fade-in" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
                         <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                             <h2 className="text-lg font-bold text-primary">
                                 Update Equipment Details

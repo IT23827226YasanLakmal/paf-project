@@ -31,13 +31,13 @@ const features = [
 
 const FeatureBentoGrid = () => {
   return (
-    <section id="features" className="py-32 px-4 max-w-7xl mx-auto relative z-10 border-t border-white/10">
+    <section id="features" className="py-32 px-4 max-w-7xl mx-auto relative z-10 border-t border-subtle">
       <div className="text-center mb-20 space-y-6">
-        <h2 className="text-4xl md:text-6xl font-bold tracking-tight">
+        <h2 className="text-4xl md:text-6xl font-black text-primary tracking-tight">
           Everything you need. <br className="hidden md:block"/>
-          <span className="text-gray-500">Nothing you don't.</span>
+          <span className="text-muted">Nothing you don't.</span>
         </h2>
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto">Masterfully engineered to keep your campus running at peak efficiency with zero compromise.</p>
+        <p className="text-xl text-secondary max-w-2xl mx-auto font-medium">Masterfully engineered to keep your campus running at peak efficiency with zero compromise.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px] md:auto-rows-[280px]">
@@ -48,14 +48,15 @@ const FeatureBentoGrid = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className={`glass-card p-8 flex flex-col justify-between hover:bg-white/10 transition-colors duration-500 group overflow-hidden ${feature.className}`}
+            className={`p-8 rounded-3xl border border-subtle flex flex-col justify-between hover:bg-surface/30 transition-all duration-500 group overflow-hidden ${feature.className}`}
+            style={{ background: 'var(--bg-surface)', backdropFilter: 'blur(20px)' }}
           >
-            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500">
+            <div className="w-14 h-14 rounded-2xl bg-raised flex items-center justify-center mb-6 border border-subtle group-hover:scale-110 group-hover:bg-accent/10 transition-all duration-500">
               {feature.icon}
             </div>
             <div>
-              <h3 className="text-3xl font-semibold mb-3 tracking-tight">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed text-lg">{feature.description}</p>
+              <h3 className="text-2xl font-bold mb-3 tracking-tight text-primary">{feature.title}</h3>
+              <p className="text-muted leading-relaxed text-sm font-semibold">{feature.description}</p>
             </div>
           </motion.div>
         ))}

@@ -37,7 +37,20 @@ public class IncidentTicket {
     private String status; // OPEN, IN_PROGRESS, RESOLVED, CLOSED, REJECTED
 
     @Column(name = "image_url")
-    private String imageUrl; // URL from Supabase Storage
+    private String imageUrl;
+
+    @Column(name = "image_url_2")
+    private String imageUrl2;
+
+    @Column(name = "image_url_3")
+    private String imageUrl3;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
 
     @Column(name = "first_response_at")
     private LocalDateTime firstResponseAt;
