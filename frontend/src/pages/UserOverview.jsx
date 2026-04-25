@@ -181,7 +181,7 @@ const UserOverview = () => {
                         </div>
 
                         <button 
-                            onClick={() => navigate('/app/tickets')} 
+                            onClick={() => navigate('/app/technician/tickets')} 
                             className="w-full flex items-center justify-center gap-2 py-3 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-primary text-sm font-bold transition-all cursor-pointer"
                         >
                             Open Ticketing Workspace

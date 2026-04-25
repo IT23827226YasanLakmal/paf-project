@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import TicketBoard from '../components/ticketing/TicketBoard';
 import IncidentReportForm from '../components/ticketing/IncidentReportForm';
-import { Ticket, PlusCircle, Download } from 'lucide-react';
+import { Ticket, PlusCircle, Download, ShieldCheck } from 'lucide-react';
 
 import { useAuthStore } from '../store/authStore';
 import { useTicketUiStore } from '../store/ticketUiStore';
@@ -24,14 +24,12 @@ const TicketingPage = () => {
       {/* ── Page Header ── */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-black text-primary flex items-center gap-2.5">
-            <Ticket className="w-6 h-6 text-accent" />
-            Tickets
+          <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+            <Ticket className="w-8 h-8 text-accent animate-pulse" />
+            Tickets & Incidents
           </h1>
-          <p className="text-xs text-muted mt-1">
-            {isTechOrAdmin
-              ? 'Manage incident reports and track resolution performance'
-              : 'Track your reported issues or submit a new incident'}
+          <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
           </p>
         </div>
 

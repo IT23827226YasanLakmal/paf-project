@@ -41,16 +41,14 @@ const ROLE_NAV_CONFIG = {
   USER: [
     { to: "/app/user/overview", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/user/bookings", icon: CalendarCheck, label: "Bookings" },
-    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/technician/tickets", icon: Ticket, label: "Tickets" },
   ],
   ADMIN: [
     { to: "/app/admin/overview", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/facility-manager/facilities", icon: Building2, label: "Facilities" },
     { to: "/app/facility-manager/assets", icon: Laptop, label: "Equipments" },
-    { to: "/app/user/bookings", icon: CalendarCheck, label: "Bookings" },
-    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/booking-officer/review", icon: CalendarCheck, label: "Bookings" },
-    { to: "/app/facility-manager/overview", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/technician/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/admin/users", icon: Users, label: "Users" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
     { to: "/app/admin/maintenance", icon: Wrench, label: "Maintenance" },
@@ -62,7 +60,7 @@ const ROLE_NAV_CONFIG = {
   ],
   TECHNICIAN: [
     { to: "/app/technician/overview", icon: LayoutDashboard, label: "Overview" },
-    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/technician/tickets", icon: Ticket, label: "Tickets" },
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],
   BOOKING_OFFICER: [
@@ -81,7 +79,7 @@ const Sidebar = () => {
 
   const handleHelpClick = () => {
     setActiveTab('report');
-    navigate('/app/tickets');
+    navigate('/app/technician/tickets');
   };
 
   const navLinks = ROLE_NAV_CONFIG[role] || [];

@@ -4,7 +4,7 @@ import { fetchResources, createResource, updateResourceStatus, updateResource, d
 import EquipmentForm from '../components/EquipmentForm';
 import BookingForm from '../components/BookingForm';
 import QRModal from '../components/QRModal';
-import { Plus, Filter, Search, Trash2, AlertCircle, RefreshCcw, CalendarCheck, Laptop, X, Pencil } from 'lucide-react';
+import { Plus, Filter, Search, Trash2, AlertCircle, RefreshCcw, CalendarCheck, Laptop, X, Pencil, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCatalogueUiStore } from '../store/catalogueUiStore';
 
@@ -124,9 +124,20 @@ const AssetsPage = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-8 space-y-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
             
-            {/* Removed upper title floating constraints */}
+            {/* ── Page Header ── */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+              <div>
+                <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+                  <Laptop className="w-8 h-8 text-accent animate-pulse" />
+                  Equipment & Assets
+                </h1>
+                <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+                </p>
+              </div>
+            </div>
 
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (

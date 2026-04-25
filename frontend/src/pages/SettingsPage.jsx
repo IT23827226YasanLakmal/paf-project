@@ -182,10 +182,19 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-extrabold text-primary tracking-tight">System Settings</h1>
-        <p className="text-sm text-secondary mt-1">Configure platform properties, notifications and security</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+      {/* ── Page Header ── */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+            <Settings className="w-8 h-8 text-accent animate-pulse" />
+            System Settings
+          </h1>
+          <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+            <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+          </p>
+        </div>
       </div>
 
       {isSaved && (

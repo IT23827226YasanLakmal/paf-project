@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import {
   ShieldAlert, Users, Wrench, Calendar, Sparkles, ArrowRight,
-  TrendingUp, CheckCircle2, Clock, AlertCircle
+  TrendingUp, CheckCircle2, Clock, AlertCircle, Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,11 +50,11 @@ const AdminOverview = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-black text-primary tracking-tight leading-tight flex items-center gap-3">
-                        <ShieldAlert className="w-8 h-8 text-accent flex-shrink-0" />
+                        <ShieldAlert className="w-8 h-8 text-accent flex-shrink-0 animate-pulse" />
                         System Administrator Hub
                     </h1>
-                    <p className="text-secondary mt-1 text-sm">
-                        Enterprise command workspace. Audit scheduling workflows and hardware deployments safely.
+                    <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+                        <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
                     </p>
                 </div>
             </div>
@@ -165,7 +165,7 @@ const AdminOverview = () => {
                     
                     <div className="space-y-2">
                         <button 
-                            onClick={() => navigate('/app/admin-review')}
+                            onClick={() => navigate('/app/booking-officer/review')}
                             className="w-full flex items-center justify-between p-4 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-sm font-bold text-primary transition-all cursor-pointer"
                         >
                             <span className="flex items-center gap-2">
@@ -175,7 +175,7 @@ const AdminOverview = () => {
                         </button>
 
                         <button 
-                            onClick={() => navigate('/app/facility')}
+                            onClick={() => navigate('/app/facility-manager/overview')}
                             className="w-full flex items-center justify-between p-4 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-sm font-bold text-primary transition-all cursor-pointer"
                         >
                             <span className="flex items-center gap-2">
@@ -185,7 +185,7 @@ const AdminOverview = () => {
                         </button>
 
                         <button 
-                            onClick={() => navigate('/app/users')}
+                            onClick={() => navigate('/app/admin/users')}
                             className="w-full flex items-center justify-between p-4 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-sm font-bold text-primary transition-all cursor-pointer"
                         >
                             <span className="flex items-center gap-2">
