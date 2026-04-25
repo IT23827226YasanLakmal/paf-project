@@ -14,10 +14,10 @@ const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short
 const fmtTime = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
 const STATUS_CFG = {
-  PENDING:   { label: 'Pending',   bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-400',  border: 'border-amber-200' },
-  APPROVED:  { label: 'Approved',  bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-400',  border: 'border-green-200' },
-  REJECTED:  { label: 'Rejected',  bg: 'bg-red-50',    text: 'text-red-600',    dot: 'bg-red-400',    border: 'border-red-200' },
-  CANCELLED: { label: 'Cancelled', bg: 'bg-slate-100', text: 'text-slate-500',  dot: 'bg-slate-300',  border: 'border-slate-200' },
+  PENDING:   { label: 'Pending',   bg: 'bg-amber-500/10',  text: 'text-amber-500',  dot: 'bg-amber-400',  border: 'border-amber-500/20' },
+  APPROVED:  { label: 'Approved',  bg: 'bg-green-500/10',  text: 'text-green-500',  dot: 'bg-green-400',  border: 'border-green-500/20' },
+  REJECTED:  { label: 'Rejected',  bg: 'bg-red-500/10',    text: 'text-red-500',    dot: 'bg-red-400',    border: 'border-red-500/20' },
+  CANCELLED: { label: 'Cancelled', bg: 'bg-slate-500/10', text: 'text-slate-400',  dot: 'bg-slate-300',  border: 'border-slate-500/20' },
 };
 
 const StatusBadge = ({ status }) => {
@@ -35,27 +35,26 @@ const RejectModal = ({ onConfirm, onClose, isPending }) => {
   const [reason, setReason] = useState('');
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full border border-slate-200">
+      <div className="bg-overlay rounded-xl border border-subtle p-6 max-w-sm w-full text-primary shadow-xl">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <XCircle className="w-5 h-5 text-red-600" />
+          <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+            <XCircle className="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">Reject Booking</h3>
-            <p className="text-slate-500 text-xs mt-0.5">A reason is required and shown to the user.</p>
+            <h3 className="font-bold text-primary">Reject Booking</h3>
+            <p className="text-muted text-xs mt-0.5">A reason is required and shown to the user.</p>
           </div>
         </div>
-        {/* text-gray-900 bg-white — without these the text is invisible */}
         <textarea
           value={reason}
           onChange={e => setReason(e.target.value)}
           placeholder="Rejection reason (required)..."
           rows={3}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none mb-4"
+          className="w-full border border-subtle bg-surface rounded-lg px-3 py-2 text-sm text-primary placeholder:text-muted outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-none mb-4"
         />
         <div className="flex gap-3">
           <button onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+            className="flex-1 py-2.5 border border-subtle text-secondary text-sm font-medium rounded-lg hover:bg-raised transition-colors">
             Back
           </button>
           <button onClick={() => onConfirm(reason)}
@@ -75,14 +74,14 @@ const CancelModal = ({ booking, onConfirm, onClose, isPending }) => {
   const [reason, setReason] = useState('');
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full border border-slate-200">
+      <div className="bg-overlay rounded-xl border border-subtle p-6 max-w-sm w-full text-primary shadow-xl">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center flex-shrink-0">
             <Ban className="w-5 h-5 text-orange-500" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">Cancel Approved Booking</h3>
-            <p className="text-slate-500 text-xs mt-0.5">A reason is required and shown to the user.</p>
+            <h3 className="font-bold text-primary">Cancel Approved Booking</h3>
+            <p className="text-muted text-xs mt-0.5">A reason is required and shown to the user.</p>
           </div>
         </div>
         <textarea
@@ -90,11 +89,11 @@ const CancelModal = ({ booking, onConfirm, onClose, isPending }) => {
           onChange={e => setReason(e.target.value)}
           placeholder="Reason for cancellation (required)..."
           rows={3}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none mb-4"
+          className="w-full border border-subtle bg-surface rounded-lg px-3 py-2 text-sm text-primary placeholder:text-muted outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 resize-none mb-4"
         />
         <div className="flex gap-3">
           <button onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+            className="flex-1 py-2.5 border border-subtle text-secondary text-sm font-medium rounded-lg hover:bg-raised transition-colors">
             Back
           </button>
           <button onClick={() => onConfirm(reason)}
@@ -112,19 +111,19 @@ const CancelModal = ({ booking, onConfirm, onClose, isPending }) => {
 // Delete confirm 
 const DeleteModal = ({ booking, onConfirm, onClose, isPending }) => (
   <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-    <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full border border-slate-200">
+    <div className="bg-overlay rounded-xl border border-subtle p-6 max-w-sm w-full text-primary shadow-xl">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <Trash2 className="w-5 h-5 text-red-600" />
+        <div className="w-10 h-10 bg-red-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+          <Trash2 className="w-5 h-5 text-red-500" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-900">Delete {fmtBid(booking?.id)}</h3>
-          <p className="text-slate-500 text-xs mt-0.5">This action cannot be undone.</p>
+          <h3 className="font-bold text-primary">Delete {fmtBid(booking?.id)}</h3>
+          <p className="text-muted text-xs mt-0.5">This action cannot be undone.</p>
         </div>
       </div>
       <div className="flex gap-3">
         <button onClick={onClose}
-          className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+          className="flex-1 py-2.5 border border-subtle text-secondary text-sm font-medium rounded-lg hover:bg-raised transition-colors">
           Cancel
         </button>
         <button onClick={onConfirm} disabled={isPending}
@@ -232,20 +231,20 @@ const AdminBookingReview = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas text-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-slate-400 mb-3">
+        <div className="flex items-center gap-1.5 text-sm text-muted mb-3">
           <span>Admin</span><ChevronRight className="w-4 h-4" />
-          <span className="text-slate-600 font-medium">Booking Management</span>
+          <span className="text-secondary font-medium">Booking Management</span>
         </div>
 
         {/* Header */}
         <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Booking Management</h1>
-            <p className="text-slate-500 text-sm mt-1">Review, approve, and manage all booking requests.</p>
+            <h1 className="text-2xl font-bold text-primary">Booking Management</h1>
+            <p className="text-muted text-sm mt-1">Review, approve, and manage all booking requests.</p>
           </div>
             <button onClick={async () => {
               console.log("Manual refresh clicked");
@@ -253,7 +252,7 @@ const AdminBookingReview = () => {
               await queryClient.removeQueries({ queryKey: ['bookings'], exact: false });
               await refetch();
               }}
-              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-surface border border-subtle rounded-xl text-sm text-secondary hover:bg-raised transition-colors shadow-sm cursor-pointer"
               >
               <RefreshCw className="w-4 h-4" />
               Refresh
@@ -268,45 +267,45 @@ const AdminBookingReview = () => {
             { label: 'Rejected',  count: counts.REJECTED,  accent: 'border-l-red-400',   Icon: XCircle },
             { label: 'Cancelled', count: counts.CANCELLED, accent: 'border-l-slate-300', Icon: Ban },
           ].map(({ label, count, accent, Icon }) => (
-            <div key={label} className={`bg-white rounded-xl border border-slate-200 border-l-4 ${accent} p-4 shadow-sm`}>
-              <p className="text-2xl font-bold text-slate-900">{isLoading ? '—' : count}</p>
-              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><Icon className="w-3 h-3" />{label}</p>
+            <div key={label} className={`bg-surface rounded-xl border border-subtle border-l-4 ${accent} p-4 shadow-sm`}>
+              <p className="text-2xl font-bold text-primary">{isLoading ? '—' : count}</p>
+              <p className="text-xs text-muted mt-0.5 flex items-center gap-1"><Icon className="w-3 h-3" />{label}</p>
             </div>
           ))}
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-5">
-          <div className="flex gap-1 p-1 bg-white border border-slate-200 rounded-xl shadow-sm overflow-x-auto">
+          <div className="flex gap-1 p-1 bg-surface border border-subtle rounded-xl shadow-sm overflow-x-auto">
             {TABS.map(({ key, label }) => (
               <button key={key} onClick={() => setStatusFilter(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  statusFilter === key ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  statusFilter === key ? 'bg-accent text-white shadow-sm' : 'text-secondary hover:text-primary hover:bg-raised'
                 }`}>
                 {label}
-                <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${statusFilter === key ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                <span className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${statusFilter === key ? 'bg-white/25 text-white' : 'bg-muted-fill text-secondary'}`}>
                   {counts[key] ?? 0}
                 </span>
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-sm flex-1 min-w-[200px] max-w-sm">
-            <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <div className="flex items-center gap-2 px-3 py-2 bg-surface border border-subtle rounded-xl shadow-sm flex-1 min-w-[200px] max-w-sm">
+            <Search className="w-4 h-4 text-muted flex-shrink-0" />
             <input type="text" placeholder="Search ID, user, resource, purpose..."
               value={search} onChange={e => setSearch(e.target.value)}
-              className="text-sm outline-none bg-transparent w-full placeholder:text-slate-400 text-slate-700" />
-            {search && <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600 text-xs leading-none">✕</button>}
+              className="text-sm outline-none bg-transparent w-full placeholder:text-muted text-primary" />
+            {search && <button onClick={() => setSearch('')} className="text-muted hover:text-primary text-xs leading-none cursor-pointer">✕</button>}
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-2xl border border-subtle shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
+                <tr className="bg-raised border-b border-subtle">
                   {['Booking ID', 'Resource', 'User', 'Date & Time', 'Attendees', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -316,33 +315,33 @@ const AdminBookingReview = () => {
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={7}>
                     <div className="flex flex-col items-center justify-center py-16">
-                      <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                        <AlertCircle className="w-7 h-7 text-slate-400" />
+                      <div className="w-14 h-14 bg-muted-fill rounded-full flex items-center justify-center mb-3">
+                        <AlertCircle className="w-7 h-7 text-muted" />
                       </div>
-                      <p className="text-slate-600 font-medium">No bookings found</p>
-                      <p className="text-slate-400 text-sm mt-1">{search ? 'Try a different search.' : 'No bookings match this filter.'}</p>
+                      <p className="text-secondary font-medium">No bookings found</p>
+                      <p className="text-muted text-sm mt-1">{search ? 'Try a different search.' : 'No bookings match this filter.'}</p>
                     </div>
                   </td></tr>
                 ) : filtered.map(booking => {
                   const busy = statusMutation.isPending && statusMutation.variables?.id === booking.id;
                   return (
-                    <tr key={booking.id} className="border-b border-slate-50 hover:bg-blue-50/20 transition-colors">
+                    <tr key={booking.id} className="border-b border-subtle hover:bg-accent-subtle transition-colors">
 
                       <td className="px-4 py-3.5">
-                        <span className="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-mono font-semibold rounded-lg">
+                        <span className="inline-flex items-center px-2.5 py-1 bg-muted-fill text-secondary text-xs font-mono font-semibold rounded-lg">
                           {fmtBid(booking.id)}
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
-                        <p className="text-sm font-semibold text-slate-800">{booking.resourceName || `Resource #${booking.resourceId}`}</p>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate max-w-[140px]">{booking.purpose}</p>
+                        <p className="text-sm font-semibold text-primary">{booking.resourceName || `Resource #${booking.resourceId}`}</p>
+                        <p className="text-xs text-muted mt-0.5 truncate max-w-[140px]">{booking.purpose}</p>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-slate-600">User #{booking.userId}</td>
-                      <td className="px-4 py-3.5 text-sm text-slate-600 whitespace-nowrap">
+                      <td className="px-4 py-3.5 text-sm text-secondary">User #{booking.userId}</td>
+                      <td className="px-4 py-3.5 text-sm text-secondary whitespace-nowrap">
                         <div>{fmtDate(booking.startTime)}</div>
-                        <div className="text-xs text-slate-400">{fmtTime(booking.startTime)} – {fmtTime(booking.endTime)}</div>
+                        <div className="text-xs text-muted">{fmtTime(booking.startTime)} – {fmtTime(booking.endTime)}</div>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-slate-600 text-center">{booking.attendees ?? '—'}</td>
+                      <td className="px-4 py-3.5 text-sm text-secondary text-center">{booking.attendees ?? '—'}</td>
                       <td className="px-4 py-3.5"><StatusBadge status={booking.status} /></td>
 
                       {/* Actions */}
@@ -351,7 +350,7 @@ const AdminBookingReview = () => {
 
                           {/* View — always enabled */}
                           <button onClick={() => setViewTarget(booking)} title="View details"
-                            className="p-1.5 text-blue-500 hover:bg-blue-100 rounded-lg transition-colors">
+                            className="p-1.5 text-blue-500 hover:bg-accent-subtle rounded-lg transition-colors cursor-pointer">
                             <Eye className="w-3.5 h-3.5" />
                           </button>
 
@@ -360,7 +359,7 @@ const AdminBookingReview = () => {
                             onClick={() => !editDisabled(booking) && setEditTarget(booking)}
                             disabled={editDisabled(booking)}
                             title={editDisabled(booking) ? 'Only PENDING bookings can be edited' : 'Edit booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${editDisabled(booking) ? 'text-slate-300 cursor-not-allowed' : 'text-indigo-500 hover:bg-indigo-100 cursor-pointer'}`}>
+                            className={`p-1.5 rounded-lg transition-colors ${editDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-indigo-500 hover:bg-accent-subtle cursor-pointer'}`}>
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
 
@@ -369,7 +368,7 @@ const AdminBookingReview = () => {
                             onClick={() => !approveDisabled(booking) && approve(booking.id)}
                             disabled={approveDisabled(booking) || busy}
                             title={approveDisabled(booking) ? 'Can only approve PENDING bookings' : 'Approve — generates QR code'}
-                            className={`p-1.5 rounded-lg transition-colors ${approveDisabled(booking) ? 'text-slate-300 cursor-not-allowed' : 'text-green-600 hover:bg-green-100 cursor-pointer'}`}>
+                            className={`p-1.5 rounded-lg transition-colors ${approveDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-green-600 hover:bg-accent-subtle cursor-pointer'}`}>
                             {busy && !approveDisabled(booking)
                               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                               : <CheckCircle className="w-3.5 h-3.5" />}
@@ -380,7 +379,7 @@ const AdminBookingReview = () => {
                             onClick={() => !rejectDisabled(booking) && setRejectTarget(booking)}
                             disabled={rejectDisabled(booking)}
                             title={rejectDisabled(booking) ? 'Can only reject PENDING bookings' : 'Reject booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${rejectDisabled(booking) ? 'text-slate-300 cursor-not-allowed' : 'text-red-500 hover:bg-red-100 cursor-pointer'}`}>
+                            className={`p-1.5 rounded-lg transition-colors ${rejectDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-red-500 hover:bg-accent-subtle cursor-pointer'}`}>
                             <XCircle className="w-3.5 h-3.5" />
                           </button>
 
@@ -389,7 +388,7 @@ const AdminBookingReview = () => {
                             onClick={() => !cancelDisabled(booking) && setCancelTarget(booking)}
                             disabled={cancelDisabled(booking)}
                             title={cancelDisabled(booking) ? 'Cancel is only for APPROVED bookings' : 'Cancel approved booking'}
-                            className={`p-1.5 rounded-lg transition-colors ${cancelDisabled(booking) ? 'text-slate-300 cursor-not-allowed' : 'text-orange-500 hover:bg-orange-100 cursor-pointer'}`}>
+                            className={`p-1.5 rounded-lg transition-colors ${cancelDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-orange-500 hover:bg-accent-subtle cursor-pointer'}`}>
                             <Ban className="w-3.5 h-3.5" />
                           </button>
 
@@ -398,7 +397,7 @@ const AdminBookingReview = () => {
                             onClick={() => !deleteDisabled(booking) && setDeleteTarget(booking)}
                             disabled={deleteDisabled(booking)}
                             title={deleteDisabled(booking) ? 'Cannot delete PENDING or active bookings' : 'Delete record'}
-                            className={`p-1.5 rounded-lg transition-colors ${deleteDisabled(booking) ? 'text-slate-300 cursor-not-allowed' : 'text-red-400 hover:bg-red-100 cursor-pointer'}`}>
+                            className={`p-1.5 rounded-lg transition-colors ${deleteDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-red-400 hover:bg-accent-subtle cursor-pointer'}`}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -410,7 +409,7 @@ const AdminBookingReview = () => {
             </table>
           </div>
           {!isLoading && filtered.length > 0 && (
-            <div className="px-4 py-3 border-t border-slate-50 text-xs text-slate-400">
+            <div className="px-4 py-3 border-t border-subtle text-xs text-muted">
               Showing {filtered.length} of {bookings.length} booking{bookings.length !== 1 ? 's' : ''}
               {search && ` matching "${search}"`}
             </div>

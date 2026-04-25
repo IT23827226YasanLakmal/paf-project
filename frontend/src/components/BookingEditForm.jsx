@@ -18,9 +18,9 @@ const ConflictCard = ({ b }) => {
   const fmt = (iso) => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   const fmtD = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   return (
-    <div className="flex items-start gap-2 p-2.5 bg-red-50 border border-red-200 rounded-lg text-sm">
+    <div className="flex items-start gap-2 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg text-sm">
       <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-      <span className="text-red-700">
+      <span className="text-red-400">
         Booking #{b.id} — {fmtD(b.startTime)}, {fmt(b.startTime)} – {fmt(b.endTime)}
       </span>
     </div>
@@ -121,8 +121,8 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
   };
 
   const inp = (f) => 
-    `w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-400 text-gray-900 
-     ${errors[f] ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white hover:border-gray-300'}`;
+    `w-full px-3 py-2 border rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-400 text-primary 
+     ${errors[f] ? 'border-red-400 bg-red-500/10' : 'border-subtle bg-surface hover:border-accent'}`;
 
   // 🚨 Dynamic Capacity Alert Logic (now uses the found resource)
   const isOverCapacity = resource?.capacity && Number(form.attendees) > resource.capacity;
@@ -130,18 +130,18 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-start justify-between">
+      <div className="w-full max-w-lg bg-overlay rounded-2xl shadow-xl overflow-hidden border border-subtle text-primary">
+        <div className="px-6 py-5 border-b border-subtle flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Edit Booking</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-lg font-bold text-primary">Edit Booking</h2>
+            <p className="text-sm text-muted mt-0.5">
               #{booking.id} · {booking.resourceName || resource?.name || `Resource #${booking.resourceId}`}
             </p>
-            <span className="mt-1.5 inline-block px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold rounded-full">
+            <span className="mt-1.5 inline-block px-2.5 py-0.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-semibold rounded-full">
               PENDING — editable
             </span>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
+          <button onClick={onClose} className="text-muted hover:text-primary p-1 rounded-lg hover:bg-raised">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -149,12 +149,12 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
         <div className="px-6 pt-4 space-y-3">
           {/* Conflict Alert */}
           {conflictData && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-                <p className="text-sm font-semibold text-red-800">Scheduling Conflict</p>
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+                <p className="text-sm font-semibold text-red-500">Scheduling Conflict</p>
               </div>
-              <p className="text-red-700 text-sm mb-2">{conflictData.message}</p>
+              <p className="text-red-400 text-sm mb-2">{conflictData.message}</p>
               <div className="space-y-1.5">
                 {conflictData.conflictingBookings?.map(b => <ConflictCard key={b.id} b={b} />)}
               </div>
@@ -164,17 +164,17 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
 
           {/* 🚨 Dynamic Capacity Alerts */}
           {isOverCapacity && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-red-700">
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-400">
                 <strong>Capacity Exceeded:</strong> This resource allows a maximum of {resource.capacity} attendees. Please reduce the number.
               </p>
             </div>
           )}
           {isNearCapacity && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-              <Info className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-amber-700">
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-500">
                 <strong>Near Capacity:</strong> You are booking close to the maximum room capacity of {resource.capacity}.
               </p>
             </div>
@@ -183,7 +183,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
 
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-primary mb-1.5">
               <Calendar className="w-3.5 h-3.5 inline mr-1" /> Date
             </label>
             <input
@@ -199,7 +199,7 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
           <div className="grid grid-cols-2 gap-3">
             {[['startTime', 'Start Time'], ['endTime', 'End Time']].map(([f, label]) => (
               <div key={f}>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-primary mb-1.5">
                   <Clock className="w-3.5 h-3.5 inline mr-1" />{label}
                 </label>
                 <input
@@ -214,13 +214,13 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
           </div>
 
           {calcDuration(form.startTime, form.endTime) && (
-            <span className="inline-block px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 text-xs font-semibold rounded-full">
+            <span className="inline-block px-2.5 py-1 bg-green-500/10 text-green-500 border border-green-500/20 text-xs font-semibold rounded-full">
               ⏱ Duration: {calcDuration(form.startTime, form.endTime)}
             </span>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-primary mb-1.5">
               <FileText className="w-3.5 h-3.5 inline mr-1" /> Purpose
             </label>
             <textarea
@@ -232,12 +232,12 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
             />
             <div className="flex justify-between mt-1">
               {errors.purpose ? <p className="text-red-500 text-xs">{errors.purpose}</p> : <span />}
-              <span className="text-xs text-gray-400">{form.purpose.length}/500</span>
+              <span className="text-xs text-muted">{form.purpose.length}/500</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-primary mb-1.5">
               <Users className="w-3.5 h-3.5 inline mr-1" /> Attendees
             </label>
             <input
@@ -251,18 +251,18 @@ const BookingEditForm = ({ booking, onClose, onSuccess }) => {
             {errors.attendees && <p className="text-red-500 text-xs mt-1">{errors.attendees}</p>}
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex gap-3 pt-4 border-t border-subtle">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-secondary bg-muted-fill hover:bg-raised rounded-xl transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isPending || isOverCapacity}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               {mutation.isPending ? (
                 <>

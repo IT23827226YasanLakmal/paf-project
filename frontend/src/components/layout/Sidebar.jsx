@@ -5,7 +5,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
 import {
   LayoutGrid, LayoutDashboard, BookOpen, CalendarCheck,
-  Ticket, Users, Settings, Sun, Moon, Headphones,
+  Ticket, Users, Settings, Sun, Moon, Headphones, Bell, BarChart3
 } from 'lucide-react';
 
 const NavItem = ({ to, icon: Icon, label, end = false }) => (
@@ -34,6 +34,39 @@ const NavItem = ({ to, icon: Icon, label, end = false }) => (
   </NavLink>
 );
 
+const ROLE_NAV_CONFIG = {
+  USER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+  ],
+  ADMIN: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+    { to: "/app/my-bookings", icon: CalendarCheck, label: "Bookings" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
+    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/users", icon: Users, label: "Users" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  ],
+  FACILITY_MANAGER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/facility", icon: LayoutDashboard, label: "Facility Admin" },
+    { to: "/app/catalogue", icon: BookOpen, label: "Resources" },
+  ],
+  TECHNICIAN: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  ],
+  BOOKING_OFFICER: [
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
+  ],
+};
+
 const Sidebar = () => {
   const { user } = useAuthStore();
   const { darkMode, toggleDarkMode } = useThemeStore();
@@ -45,6 +78,8 @@ const Sidebar = () => {
     setActiveTab('report');
     navigate('/app/tickets');
   };
+
+  const navLinks = ROLE_NAV_CONFIG[role] || [];
 
   return (
     <aside
@@ -68,23 +103,21 @@ const Sidebar = () => {
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
 
-        {(role === 'USER' || role === 'ADMIN' || role === 'FACILITY_MANAGER') && (
-          <NavItem to={role === 'FACILITY_MANAGER' ? "/app/facility" : "/app/dashboard"} icon={LayoutDashboard} label="Dashboard" />
+        {role === 'TECHNICIAN' && (
+          <div className="mb-4">
+            <button className="group flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-medium text-secondary hover:text-primary hover:bg-raised transition-all cursor-pointer border-none bg-transparent">
+              <div className="flex items-center gap-3">
+                <Bell className="w-[18px] h-[18px] text-muted group-hover:text-secondary" strokeWidth={1.7} />
+                <span>Activity</span>
+              </div>
+              <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">12</span>
+            </button>
+          </div>
         )}
 
-        <NavItem to="/app/catalogue" icon={BookOpen} label="Resources" />
-
-        {(role === 'USER' || role === 'ADMIN') && (
-          <NavItem to="/app/my-bookings" icon={CalendarCheck} label="Bookings" />
-        )}
-
-        {(role === 'USER' || role === 'TECHNICIAN' || role === 'ADMIN') && (
-          <NavItem to="/app/tickets" icon={Ticket} label="Tickets" />
-        )}
-
-        {role === 'ADMIN' && (
-          <NavItem to="/app/users" icon={Users} label="Users" />
-        )}
+        {navLinks.map((link, idx) => (
+          <NavItem key={idx} to={link.to} icon={link.icon} label={link.label} />
+        ))}
 
         {/* Spacer */}
         <div className="h-px my-3" style={{ backgroundColor: 'var(--border-subtle)' }} />

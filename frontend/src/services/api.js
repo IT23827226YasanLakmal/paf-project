@@ -2,12 +2,24 @@ const API_BASE_URL = 'http://localhost:8080/api';
 
 const authFetch = async (url, options = {}) => {
     const token = localStorage.getItem('token');
-    const headers = {
-        ...options.headers,
-    };
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    
+    const headers = {};
+    
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
+    
+    if (user) {
+        headers['X-User-Id'] = String(user.id);
+        if (user.role === 'ADMIN' || user.role === 'BOOKING_OFFICER') {
+            headers['X-Is-Admin'] = 'true';
+        }
+    }
+    
+    // Merge options.headers
+    Object.assign(headers, options.headers);
     
     // Default to application/json if no Content-Type is provided and it's not FormData
     if (!headers['Content-Type'] && !(options.body instanceof FormData)) {
@@ -180,58 +192,43 @@ export const uploadResourceImage = async (id, file) => {
 };
 
 export const fetchUsers = async () => {
-  const response = await fetch(`${API_BASE_URL}/users`, {
-    headers: getAuthHeaders(),
-  });
-
+  const response = await authFetch(`${API_BASE_URL}/users`);
   if (!response.ok) throw new Error("Failed to fetch users");
   return response.json();
 };
 
 export const updateUserRole = async (id, role) => {
-  const response = await fetch(`${API_BASE_URL}/users/${id}/role`, {
+  const response = await authFetch(`${API_BASE_URL}/users/${id}/role`, {
     method: "PUT",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ role }),
   });
-
   if (!response.ok) throw new Error("Failed to update user role");
   return response.json();
 };
 
 //  NOTIFICATIONS
 export const fetchNotifications = async () => {
-  const response = await fetch(`${API_BASE_URL}/notifications`, {
-    headers: getAuthHeaders(),
-  });
-
+  const response = await authFetch(`${API_BASE_URL}/notifications`);
   if (!response.ok) throw new Error("Failed to fetch notifications");
   return response.json();
 };
 
 export const deleteNotification = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/notifications/${id}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
-
   if (!response.ok) throw new Error("Failed to delete notification");
 };
 
 export const markAsRead = async (id) => {
-  const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+  const response = await authFetch(`${API_BASE_URL}/notifications/${id}/read`, {
     method: "PUT",
-    headers: getAuthHeaders(),
   });
-
   if (!response.ok) throw new Error("Failed to mark as read");
 };
 
 export const getCurrentUser = async () => {
-  const response = await fetch(`${API_BASE_URL}/users/me`, {
-    headers: getAuthHeaders(),
-  });
-
+  const response = await authFetch(`${API_BASE_URL}/users/me`);
   if (!response.ok) throw new Error("Failed to fetch user");
   return response.json();
 };
