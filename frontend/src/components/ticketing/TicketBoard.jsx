@@ -224,7 +224,7 @@ const TicketBoard = () => {
                 <th className="px-6 py-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-subtle">
+            <tbody>
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="text-center py-16 text-muted italic text-sm">
@@ -241,7 +241,7 @@ const TicketBoard = () => {
                 return (
                   <tr
                     key={ticket.id}
-                    className={`hover:bg-raised/50 transition-colors group ${isSelected ? 'bg-accent/5' : ''}`}
+                    className={`border-b border-subtle hover:bg-raised/50 transition-colors group ${isSelected ? 'bg-accent/5' : ''}`}
                   >
                     {/* Checkbox */}
                     <td className="px-6 py-4">

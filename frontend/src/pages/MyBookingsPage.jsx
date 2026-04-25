@@ -8,6 +8,7 @@ import BookingForm from '../components/BookingForm';
 import {
   Search, Plus, Eye, Pencil, Trash2, RefreshCw,
   BookOpen, ChevronRight, Loader2, Ban, X,
+  CalendarCheck, Shield
 } from 'lucide-react';
 
 //Helpers
@@ -196,20 +197,20 @@ const MyBookingsPage = () => {
   ];
 
   return (
-    <div className="bg-canvas">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-muted mb-3">
-          <span>Home</span><ChevronRight className="w-4 h-4" />
-          <span className="text-secondary font-medium">My Bookings</span>
-        </div>
 
         {/* Header */}
-        <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-primary tracking-tight">My Bookings</h1>
-            <p className="text-secondary text-sm mt-1">Track and manage your resource reservations.</p>
+            <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+              <CalendarCheck className="w-8 h-8 text-accent animate-pulse" />
+              My Bookings
+            </h1>
+            <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+            </p>
           </div>
           <button 
             onClick={() => setShowSelector(true)}
@@ -452,7 +453,7 @@ const MyBookingsPage = () => {
           onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['bookings'] }); setBookingTarget(null); }} 
         />
       )}
-    </div>
+    </>
   );
 };
 

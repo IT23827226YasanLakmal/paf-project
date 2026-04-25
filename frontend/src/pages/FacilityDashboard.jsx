@@ -36,10 +36,15 @@ const FacilityDashboard = () => {
             {/* ── Dashboard Header ── */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-primary tracking-tight">Facility Overview</h1>
-                    <p className="text-secondary text-sm mt-1">Operational health and space allocation matrices.</p>
+                    <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+                        <Building className="w-8 h-8 text-accent animate-pulse" />
+                        Facility Overview
+                    </h1>
+                    <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+                        <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">FACILITY_MANAGER</span>
+                    </p>
                 </div>
-                <div className="flex bg-raised p-1 rounded-xl border border-subtle">
+                <div className="flex bg-raised p-1 rounded-xl border border-subtle shadow-sm">
                     {['Today', 'This week', 'This month'].map((range) => (
                         <button
                             key={range}

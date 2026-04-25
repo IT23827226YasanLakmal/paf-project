@@ -16,22 +16,22 @@ const NavItem = ({ to, icon: Icon, label, end = false }) => (
     to={to}
     end={end}
     className={({ isActive }) =>
-      `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer w-full
+      `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer w-full border
       ${isActive
-        ? 'bg-accent-subtle text-accent font-semibold'
-        : 'text-secondary hover:text-primary hover:bg-raised'
+        ? 'bg-accent/10 border-accent/20 text-accent shadow-sm'
+        : 'border-transparent text-secondary hover:text-primary hover:bg-raised'
       }`
     }
   >
     {({ isActive }) => (
       <>
         <Icon
-          className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-            isActive ? 'text-accent' : 'text-muted group-hover:text-secondary'
+          className={`w-[18px] h-[18px] flex-shrink-0 transition-all duration-200 ${
+            isActive ? 'text-accent scale-105' : 'text-muted group-hover:text-secondary group-hover:scale-105'
           }`}
-          strokeWidth={isActive ? 2 : 1.7}
+          strokeWidth={isActive ? 2 : 1.5}
         />
-        <span className={isActive ? 'text-accent' : ''}>{label}</span>
+        <span className="transition-all duration-200">{label}</span>
       </>
     )}
   </NavLink>
@@ -41,7 +41,7 @@ const ROLE_NAV_CONFIG = {
   USER: [
     { to: "/app/user/overview", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/user/bookings", icon: CalendarCheck, label: "Bookings" },
-    { to: "/app/technician/tickets", icon: Ticket, label: "Tickets" },
+    { to: "/app/user/tickets", icon: Ticket, label: "Tickets" },
   ],
   ADMIN: [
     { to: "/app/admin/overview", icon: LayoutDashboard, label: "Overview" },
@@ -79,15 +79,18 @@ const Sidebar = () => {
 
   const handleHelpClick = () => {
     setActiveTab('report');
-    navigate('/app/technician/tickets');
+    if (role === 'USER') {
+      navigate('/app/user/tickets');
+    } else {
+      navigate('/app/technician/tickets');
+    }
   };
 
   const navLinks = ROLE_NAV_CONFIG[role] || [];
 
   return (
     <aside
-      className="fixed left-0 top-0 h-full w-56 z-40 flex flex-col glass-card border-r border-sidebar transition-colors duration-200"
-      style={{ boxShadow: '1px 0 0 0 var(--sidebar-border)' }}
+      className="fixed left-0 top-0 h-full w-56 z-40 flex flex-col bg-sidebar border-r border-sidebar transition-colors duration-200 shadow-[2px_0_12px_rgba(0,0,0,0.02)]"
     >
       {/* ── Logo ── */}
       <div
@@ -147,11 +150,11 @@ const Sidebar = () => {
         {/* Help card */}
         <button 
           onClick={handleHelpClick}
-          className="bg-accent-subtle rounded-2xl p-3 w-full text-left cursor-pointer hover:bg-accent/10 transition-all border-none"
+          className="bg-accent/5 rounded-2xl p-3 w-full text-left cursor-pointer hover:bg-accent/10 transition-all border border-accent/10 hover:border-accent/20"
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center flex-shrink-0">
-              <Headphones className="w-3.5 h-3.5 text-white" strokeWidth={2} />
+            <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Headphones className="w-3.5 h-3.5 text-white animate-pulse" strokeWidth={2} />
             </div>
             <div>
               <p className="text-xs font-bold text-primary leading-tight">Need help?</p>
