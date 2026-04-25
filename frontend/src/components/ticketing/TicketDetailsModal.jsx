@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTicketComments, createTicketComment, deleteTicketComment } from '../../services/ticketApi';
-import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 const TicketDetailsModal = ({ ticket, onClose }) => {
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
 
@@ -13,7 +15,11 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
   });
 
   const commentMutation = useMutation({
-    mutationFn: (text) => createTicketComment(ticket.id, { text, userId: 1 }), // Mapped to Dummy User ID 1 for now
+    mutationFn: (text) => createTicketComment(ticket.id, { 
+        text, 
+        userId: user?.id || 1, 
+        userRole: user?.role || 'USER' 
+    }), 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', ticket.id] });
       setNewComment('');
@@ -139,23 +145,43 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
                   <p className="font-medium">No comments yet</p>
                </div>
             ) : (
-              comments.map(comment => (
-                <div key={comment.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group transition-all hover:shadow-md">
-                   <div className="flex justify-between items-center mb-1 text-xs">
-                      <span className="font-bold text-slate-700 flex items-center gap-1.5"><User className="w-3 h-3 text-blue-500" /> User {comment.userId}</span>
-                      <span className="text-slate-400 font-medium">{new Date(comment.createdAt).toLocaleDateString()}</span>
-                   </div>
-                   <p className="text-slate-600 text-sm mt-2">{comment.text}</p>
-                   
-                   <button 
-                      onClick={() => deleteMutation.mutate(comment.id)}
-                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 p-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-md transition-all"
-                      title="Delete comment"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                   </button>
-                </div>
-              ))
+              comments.map(comment => {
+                const isMe = comment.userId === user?.id;
+                const isTechnician = comment.userRole === 'TECHNICIAN';
+                const displayName = isTechnician ? 'Technician' : 'User';
+                
+                return (
+                  <div 
+                    key={comment.id} 
+                    className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                  >
+                     <div className={`flex items-center gap-2 mb-1 text-[10px] font-bold uppercase tracking-wider ${isMe ? 'flex-row-reverse text-blue-600' : 'text-slate-500'}`}>
+                        <span>{isMe ? 'You' : displayName}</span>
+                        <span className="text-[10px] font-medium text-slate-400 lowercase">{new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                     </div>
+                     
+                     <div className="relative max-w-[85%]">
+                        <div className={`p-3.5 rounded-2xl text-sm shadow-sm ${
+                          isMe 
+                            ? 'bg-blue-600 text-white rounded-tr-none' 
+                            : 'bg-white border border-slate-200 text-slate-700 rounded-tl-none'
+                        }`}>
+                           {comment.text}
+                        </div>
+                        
+                        {isMe && (
+                          <button 
+                             onClick={() => deleteMutation.mutate(comment.id)}
+                             className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1.5 text-slate-300 hover:text-red-500 transition-all"
+                             title="Delete message"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                     </div>
+                  </div>
+                );
+              })
             )}
           </div>
 

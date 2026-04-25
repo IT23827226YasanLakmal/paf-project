@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import TicketBoard from '../components/ticketing/TicketBoard';
 import IncidentReportForm from '../components/ticketing/IncidentReportForm';
 import { Wrench, PlusCircle, LayoutDashboard } from 'lucide-react';
 
 import { useAuthStore } from '../store/authStore';
+import { useTicketUiStore } from '../store/ticketUiStore';
 
 const TicketingPage = () => {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('board'); // 'board' or 'report'
+  const { activeTab, setActiveTab } = useTicketUiStore();
+  const isTechnician = user?.role === 'TECHNICIAN';
   const isTechOrAdmin = ['TECHNICIAN', 'ADMIN'].includes(user?.role);
+
+  // Force technicians to the board tab if they somehow land on report
+  useEffect(() => {
+    if (isTechnician && activeTab === 'report') {
+      setActiveTab('board');
+    }
+  }, [isTechnician, activeTab, setActiveTab]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -37,17 +46,19 @@ const TicketingPage = () => {
             <LayoutDashboard className="w-4 h-4" />
             {isTechOrAdmin ? "Ticket Board" : "My Tickets"}
           </button>
-          <button
-            onClick={() => setActiveTab('report')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
-              activeTab === 'report' 
-                ? 'bg-white text-blue-600 shadow-sm' 
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <PlusCircle className="w-4 h-4" />
-            Report Issue
-          </button>
+          {!isTechnician && (
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all ${
+                activeTab === 'report' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <PlusCircle className="w-4 h-4" />
+              Report Issue
+            </button>
+          )}
         </div>
       </div>
 

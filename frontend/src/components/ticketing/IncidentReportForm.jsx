@@ -74,7 +74,7 @@ const IncidentReportForm = ({ onReportComplete }) => {
             }
         } catch (err) {
             console.error(err);
-            alert("Failed to upload image. Submitting ticket without image or please configure your Supabase bucket.");
+            alert(`Upload failed: ${err.message || "Unknown error"}. Ensure your Supabase bucket 'incident-images' exists and has an 'INSERT' policy for public uploads.`);
         }
     }
 

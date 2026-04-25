@@ -4,6 +4,7 @@ import { getTickets, updateTicketStatus } from '../../services/ticketApi';
 import { Clock, Hammer, CheckCircle, Package, MoreVertical, Search, Image as ImageIcon } from 'lucide-react';
 import TicketDetailsModal from './TicketDetailsModal';
 import { useAuthStore } from '../../store/authStore';
+import { useTicketUiStore } from '../../store/ticketUiStore';
 const COLUMNS = [
   { id: 'OPEN', label: 'Open Issues', icon: <Package className="w-5 h-5 text-amber-500" />, bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
   { id: 'IN_PROGRESS', label: 'In Progress', icon: <Hammer className="w-5 h-5 text-blue-500" />, bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
@@ -14,7 +15,7 @@ const TicketBoard = () => {
   const { user } = useAuthStore();
   const canManageTickets = ['TECHNICIAN', 'ADMIN'].includes(user?.role);
   const queryClient = useQueryClient();
-  const [selectedTicket, setSelectedTicket] = useState(null);
+  const { selectedTicket, setSelectedTicket, clearSelectedTicket } = useTicketUiStore();
   const [draggedTicket, setDraggedTicket] = useState(null);
 
   const { data: tickets = [], isLoading, isError } = useQuery({
@@ -122,7 +123,7 @@ const TicketBoard = () => {
       {selectedTicket && (
         <TicketDetailsModal 
           ticket={selectedTicket} 
-          onClose={() => setSelectedTicket(null)} 
+          onClose={clearSelectedTicket} 
         />
       )}
     </>
