@@ -62,7 +62,7 @@ const ROLE_NAV_CONFIG = {
     { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],
   BOOKING_OFFICER: [
-    { to: "/app/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { to: "/app/bookings", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/admin-review", icon: CalendarCheck, label: "Booking Admin" },
   ],
 };
