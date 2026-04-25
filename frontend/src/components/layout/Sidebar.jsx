@@ -5,7 +5,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
 import {
   LayoutGrid, LayoutDashboard, BookOpen, CalendarCheck,
-  Ticket, Users, Settings, Sun, Moon, Headphones,
+  Ticket, Users, Settings, Sun, Moon, Headphones, Bell, BarChart3
 } from 'lucide-react';
 
 const NavItem = ({ to, icon: Icon, label, end = false }) => (
@@ -68,8 +68,24 @@ const Sidebar = () => {
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
 
+        {role === 'TECHNICIAN' && (
+          <div className="mb-4">
+            <button className="group flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-medium text-secondary hover:text-primary hover:bg-raised transition-all cursor-pointer border-none bg-transparent">
+              <div className="flex items-center gap-3">
+                <Bell className="w-[18px] h-[18px] text-muted group-hover:text-secondary" strokeWidth={1.7} />
+                <span>Activity</span>
+              </div>
+              <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">12</span>
+            </button>
+          </div>
+        )}
+
         {(role === 'USER' || role === 'ADMIN' || role === 'FACILITY_MANAGER') && (
           <NavItem to={role === 'FACILITY_MANAGER' ? "/app/facility" : "/app/dashboard"} icon={LayoutDashboard} label="Dashboard" />
+        )}
+
+        {role === 'TECHNICIAN' && (
+          <NavItem to="/app/technician-dashboard" icon={LayoutDashboard} label="Dashboard" />
         )}
 
         <NavItem to="/app/catalogue" icon={BookOpen} label="Resources" />
@@ -84,6 +100,10 @@ const Sidebar = () => {
 
         {role === 'ADMIN' && (
           <NavItem to="/app/users" icon={Users} label="Users" />
+        )}
+
+        {role === 'TECHNICIAN' && (
+          <NavItem to="/app/reports" icon={BarChart3} label="Reports" />
         )}
 
         {/* Spacer */}
