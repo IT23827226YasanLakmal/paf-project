@@ -8,14 +8,14 @@ import { Plus, Filter, Search, Trash2, Edit2, AlertCircle, RefreshCcw, LayoutGri
 import { useAuthStore } from '../store/authStore';
 import { useCatalogueUiStore } from '../store/catalogueUiStore';
 
-const CataloguePage = () => {
+const CataloguePage = ({ defaultTab = 'facilities' }) => {
     const { user } = useAuthStore();
     const isAdmin = ['FACILITY_MANAGER', 'ADMIN'].includes(user?.role);
 
     const queryClient = useQueryClient();
     const [showForm, setShowForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [categoryTab, setCategoryTab] = useState('facilities'); // 'facilities' or 'resources'
+    const [categoryTab, setCategoryTab] = useState(defaultTab); // 'facilities' or 'resources'
     const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR, selectedResourceForBooking, setSelectedResourceForBooking } = useCatalogueUiStore();
 
     // Queries
