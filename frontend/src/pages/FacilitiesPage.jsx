@@ -20,7 +20,7 @@ const FacilitiesPage = () => {
     const [viewMode, setViewMode] = useState('GRID'); // 'GRID', 'CAD'
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-    const itemsPerPage = 6;
+    const itemsPerPage = 3;
     const { filterType, setFilterType, selectedResourceForQR, setSelectedResourceForQR, selectedResourceForBooking, setSelectedResourceForBooking } = useCatalogueUiStore();
 
     // Queries
@@ -409,6 +409,8 @@ const FacilitiesPage = () => {
                     onClose={() => setSelectedResourceForBooking(null)} 
                     onSuccess={() => alert('Booking requested successfully! Navigate to My Bookings to view its status.')}
                 />
+            )}
+
             {deleteConfirmId && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-overlay border border-subtle glass-card p-6 rounded-2xl max-w-sm w-full text-center shadow-xl flex flex-col gap-4">
