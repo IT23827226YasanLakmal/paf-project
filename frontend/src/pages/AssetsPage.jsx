@@ -141,20 +141,22 @@ const AssetsPage = () => {
 
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
-                        <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                            <h2 className="text-lg font-bold text-primary">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-hidden">
+                    <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300 border border-subtle flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center px-6 py-4 border-b border-subtle bg-surface/50 backdrop-blur-md sticky top-0 z-20">
+                            <h2 className="text-lg font-black text-primary tracking-tight">
                                 Onboard Equipment Asset
                             </h2>
-                            <button onClick={() => setShowForm(false)} className="text-muted hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted-fill cursor-pointer border-none bg-transparent">
+                            <button onClick={() => setShowForm(false)} className="text-muted hover:text-primary transition-all p-1.5 rounded-xl hover:bg-muted-fill cursor-pointer border-none bg-transparent">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <EquipmentForm 
-                            onSubmit={handleCreate} 
-                            onCancel={() => setShowForm(false)} 
-                        />
+                        <div className="overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-subtle scrollbar-track-transparent">
+                            <EquipmentForm 
+                                onSubmit={handleCreate} 
+                                onCancel={() => setShowForm(false)} 
+                            />
+                        </div>
                     </div>
                 </div>
             )}
@@ -262,6 +264,11 @@ const AssetsPage = () => {
                                 <h3 className="text-lg font-black tracking-tight text-primary leading-tight group-hover:text-accent transition-colors">
                                     {res.name}
                                 </h3>
+                                {(res.brand || res.modelNumber) && (
+                                    <p className="text-[11px] font-bold text-accent mt-0.5 uppercase tracking-wide">
+                                        {[res.brand, res.modelNumber].filter(Boolean).join(' • ')}
+                                    </p>
+                                )}
                                 <p className="text-xs font-medium text-muted mt-1.5 flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 bg-muted rounded-full flex-shrink-0" />
                                     {res.location || 'Central Inventory'}
@@ -352,21 +359,23 @@ const AssetsPage = () => {
             )}
 
             {isAdmin && editingResource && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
-                        <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                            <h2 className="text-lg font-bold text-primary">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-hidden">
+                    <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300 border border-subtle flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center px-6 py-4 border-b border-subtle bg-surface/50 backdrop-blur-md sticky top-0 z-20">
+                            <h2 className="text-lg font-black text-primary tracking-tight">
                                 Update Equipment Details
                             </h2>
-                            <button onClick={() => setEditingResource(null)} className="text-muted hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted-fill cursor-pointer border-none bg-transparent">
+                            <button onClick={() => setEditingResource(null)} className="text-muted hover:text-primary transition-all p-1.5 rounded-xl hover:bg-muted-fill cursor-pointer border-none bg-transparent">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <EquipmentForm 
-                            onSubmit={handleEditSubmit} 
-                            onCancel={() => setEditingResource(null)} 
-                            resource={editingResource}
-                        />
+                        <div className="overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-subtle scrollbar-track-transparent">
+                            <EquipmentForm 
+                                onSubmit={handleEditSubmit} 
+                                onCancel={() => setEditingResource(null)} 
+                                resource={editingResource}
+                            />
+                        </div>
                     </div>
                 </div>
             )}

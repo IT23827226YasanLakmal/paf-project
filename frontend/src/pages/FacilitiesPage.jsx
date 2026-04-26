@@ -135,21 +135,23 @@ const FacilitiesPage = () => {
 
             {/* ── Modal Add Form ── */}
             {isAdmin && showForm && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
-                        <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                            <h2 className="text-lg font-bold text-primary">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-hidden">
+                    <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300 border border-subtle flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center px-6 py-4 border-b border-subtle bg-surface/50 backdrop-blur-md sticky top-0 z-20">
+                            <h2 className="text-lg font-black text-primary tracking-tight">
                                 Register New Facility
                             </h2>
-                            <button onClick={() => setShowForm(false)} className="text-muted hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted-fill cursor-pointer border-none bg-transparent">
+                            <button onClick={() => setShowForm(false)} className="text-muted hover:text-primary transition-all p-1.5 rounded-xl hover:bg-muted-fill cursor-pointer border-none bg-transparent">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <FacilityForm 
-                            onSubmit={handleCreate} 
-                            onCancel={() => setShowForm(false)} 
-                            defaultType="LECTURE_HALL"
-                        />
+                        <div className="overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-subtle scrollbar-track-transparent">
+                            <FacilityForm 
+                                onSubmit={handleCreate} 
+                                onCancel={() => setShowForm(false)} 
+                                defaultType="LECTURE_HALL"
+                            />
+                        </div>
                     </div>
                 </div>
             )}
@@ -380,21 +382,23 @@ const FacilitiesPage = () => {
             )}
 
             {isAdmin && editingResource && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-3xl p-6 shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300" style={{ border: '1px solid var(--border-subtle)' }}>
-                        <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                            <h2 className="text-lg font-bold text-primary">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-hidden">
+                    <div className="bg-surface rounded-3xl shadow-2xl w-full max-w-lg relative animate-in fade-in zoom-in-95 duration-300 border border-subtle flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center px-6 py-4 border-b border-subtle bg-surface/50 backdrop-blur-md sticky top-0 z-20">
+                            <h2 className="text-lg font-black text-primary tracking-tight">
                                 Edit Facility Details
                             </h2>
-                            <button onClick={() => setEditingResource(null)} className="text-muted hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-muted-fill cursor-pointer border-none bg-transparent">
+                            <button onClick={() => setEditingResource(null)} className="text-muted hover:text-primary transition-all p-1.5 rounded-xl hover:bg-muted-fill cursor-pointer border-none bg-transparent">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <FacilityForm 
-                            onSubmit={handleEditSubmit} 
-                            onCancel={() => setEditingResource(null)} 
-                            resource={editingResource}
-                        />
+                        <div className="overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-subtle scrollbar-track-transparent">
+                            <FacilityForm 
+                                onSubmit={handleEditSubmit} 
+                                onCancel={() => setEditingResource(null)} 
+                                resource={editingResource}
+                            />
+                        </div>
                     </div>
                 </div>
             )}

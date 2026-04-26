@@ -43,6 +43,11 @@ public class ResourceService {
         resource.setAvailabilityWindows(dto.getAvailabilityWindows());
         resource.setStatus(dto.getStatus());
         resource.setImageUrl(dto.getImageUrl());
+        resource.setBrand(dto.getBrand());
+        resource.setModelNumber(dto.getModelNumber());
+        resource.setSerialNumber(dto.getSerialNumber());
+        resource.setPurchaseDate(dto.getPurchaseDate());
+        resource.setWarrantyExpiry(dto.getWarrantyExpiry());
 
         resource = resourceRepository.save(resource);
         return mapToDTO(resource);
@@ -70,6 +75,11 @@ public class ResourceService {
         dto.setAvailabilityWindows(resource.getAvailabilityWindows());
         dto.setStatus(resource.getStatus());
         dto.setImageUrl(resource.getImageUrl());
+        dto.setBrand(resource.getBrand());
+        dto.setModelNumber(resource.getModelNumber());
+        dto.setSerialNumber(resource.getSerialNumber());
+        dto.setPurchaseDate(resource.getPurchaseDate());
+        dto.setWarrantyExpiry(resource.getWarrantyExpiry());
         return dto;
     }
 
@@ -82,6 +92,11 @@ public class ResourceService {
         resource.setAvailabilityWindows(dto.getAvailabilityWindows());
         resource.setStatus(dto.getStatus());
         resource.setImageUrl(dto.getImageUrl());
+        resource.setBrand(dto.getBrand());
+        resource.setModelNumber(dto.getModelNumber());
+        resource.setSerialNumber(dto.getSerialNumber());
+        resource.setPurchaseDate(dto.getPurchaseDate());
+        resource.setWarrantyExpiry(dto.getWarrantyExpiry());
         return resource;
     }
 }
