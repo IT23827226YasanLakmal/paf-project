@@ -43,7 +43,6 @@ const TicketBoard = () => {
   const [sortDir, setSortDir] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
-  const [selectedIds, setSelectedIds] = useState(new Set());
   const [actionMenuId, setActionMenuId] = useState(null);
   const [ticketToDelete, setTicketToDelete] = useState(null);
 
@@ -106,13 +105,6 @@ const TicketBoard = () => {
     setCurrentPage(1);
   };
 
-  /* ── Select all ── */
-  const allSelected = paginated.length > 0 && paginated.every(t => selectedIds.has(t.id));
-  const toggleAll = () => {
-    if (allSelected) setSelectedIds(prev => { const n = new Set(prev); paginated.forEach(t => n.delete(t.id)); return n; });
-    else setSelectedIds(prev => { const n = new Set(prev); paginated.forEach(t => n.add(t.id)); return n; });
-  };
-  const toggleOne = (id) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   /* ── Page reset on filter ── */
   const handleSearch = (v) => { setSearch(v); setCurrentPage(1); };
@@ -196,14 +188,6 @@ const TicketBoard = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-raised text-[10px] font-black text-muted uppercase tracking-widest border-b border-subtle">
-                <th className="px-6 py-4 w-10">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    className="w-4 h-4 accent-accent rounded cursor-pointer"
-                  />
-                </th>
                 <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors whitespace-nowrap" onClick={() => toggleSort('id')}>
                   <span className="flex items-center gap-1">Ticket ID <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
@@ -238,23 +222,12 @@ const TicketBoard = () => {
                 const priority = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
                 const status   = STATUS_CONFIG[ticket.status]     || STATUS_CONFIG.OPEN;
                 const StatusIcon = status.icon;
-                const isSelected = selectedIds.has(ticket.id);
 
                 return (
                   <tr
                     key={ticket.id}
-                    className={`border-b border-subtle hover:bg-raised/50 transition-colors group ${isSelected ? 'bg-accent/5' : ''}`}
+                    className="border-b border-subtle hover:bg-raised/50 transition-colors group"
                   >
-                    {/* Checkbox */}
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleOne(ticket.id)}
-                        className="w-4 h-4 accent-accent rounded cursor-pointer"
-                      />
-                    </td>
-
                     {/* Ticket ID */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-xs font-black text-accent">#{shortenId(String(ticket.id).padStart(3, '0'))}</span>
@@ -327,10 +300,14 @@ const TicketBoard = () => {
                     {/* Date */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <p className="text-xs font-bold text-primary">
-                        {new Date(ticket.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        {ticket.createdAt 
+                          ? new Date(ticket.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                          : 'N/A'}
                       </p>
                       <p className="text-[10px] text-muted">
-                        {new Date(ticket.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        {ticket.createdAt 
+                          ? new Date(ticket.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                          : ''}
                       </p>
                     </td>
 
@@ -345,15 +322,30 @@ const TicketBoard = () => {
 
                       {/* Dropdown */}
                       {actionMenuId === ticket.id && (
-                        <div className="absolute right-4 top-12 z-50 bg-overlay border border-subtle rounded-2xl shadow-2xl w-40 py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                        <div className={`absolute right-4 z-50 bg-overlay border border-subtle rounded-2xl shadow-2xl w-40 py-1 animate-in fade-in slide-in-from-top-2 duration-150 ${
+                          paginated.indexOf(ticket) >= paginated.length - 2 && paginated.length > 3
+                            ? 'bottom-12 origin-bottom' 
+                            : 'top-12 origin-top'
+                        }`}>
                           <button
                             onClick={() => { setSelectedTicket(ticket); setActionMenuId(null); }}
-                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-primary hover:bg-raised transition-colors cursor-pointer"
+                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-primary hover:bg-raised transition-colors cursor-pointer border-none bg-transparent"
                           >
                             View Details
                           </button>
+                          
+                          {(canManage || ticket.userId === user?.id) && (
+                            <button
+                              onClick={() => { setTicketToDelete(ticket); setActionMenuId(null); }}
+                              className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-raised transition-colors cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          )}
+
                           {canManage && (
                             <>
+                              <div className="border-t border-subtle my-1" />
                               <button
                                 onClick={() => { updateStatusMutation.mutate({ id: ticket.id, status: 'IN_PROGRESS' }); setActionMenuId(null); }}
                                 className="w-full text-left px-4 py-2.5 text-xs font-bold text-blue-500 hover:bg-raised transition-colors cursor-pointer"
@@ -365,13 +357,6 @@ const TicketBoard = () => {
                                 className="w-full text-left px-4 py-2.5 text-xs font-bold text-green-500 hover:bg-raised transition-colors cursor-pointer"
                               >
                                 Mark Resolved
-                              </button>
-                              <div className="border-t border-subtle my-1" />
-                              <button
-                                onClick={() => { setTicketToDelete(ticket); setActionMenuId(null); }}
-                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-raised transition-colors cursor-pointer"
-                              >
-                                Delete
                               </button>
                             </>
                           )}

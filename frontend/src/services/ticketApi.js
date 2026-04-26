@@ -1,15 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080/api/tickets';
+import { authFetch } from './api';
 
-const getHeaders = () => {
-    const userJson = localStorage.getItem('user');
-    const user = userJson ? JSON.parse(userJson) : null;
-    const headers = { 'Content-Type': 'application/json' };
-    
-    if (user) {
-        headers['X-User-Id'] = user.supabaseUid || user.id;
-    }
-    return headers;
-};
+const API_BASE_URL = 'http://127.0.0.1:8080/api/resources/tickets';
 
 export const getTickets = async ({ status, resourceId, userId } = {}) => {
     let url = API_BASE_URL;
@@ -22,15 +13,15 @@ export const getTickets = async ({ status, resourceId, userId } = {}) => {
         url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url, { headers: getHeaders() });
+    const response = await authFetch(url);
     if (!response.ok) throw new Error('Failed to fetch tickets');
     return response.json();
 };
 
 export const createTicket = async (ticket) => {
-    const response = await fetch(API_BASE_URL, {
+    console.log("[TicketAPI] Creating ticket at:", API_BASE_URL);
+    const response = await authFetch(API_BASE_URL, {
         method: 'POST',
-        headers: getHeaders(),
         body: JSON.stringify(ticket)
     });
     if (!response.ok) throw new Error('Failed to create ticket');
@@ -38,35 +29,39 @@ export const createTicket = async (ticket) => {
 };
 
 export const updateTicketStatus = async (id, status) => {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await authFetch(`${API_BASE_URL}/${id}`, {
         method: 'PUT',
-        headers: getHeaders(),
         body: JSON.stringify({ status })
+    });
+    if (!response.ok) throw new Error('Failed to update ticket status');
+    return response.json();
+};
+
+export const updateTicket = async (id, ticketData) => {
+    const response = await authFetch(`${API_BASE_URL}/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(ticketData)
     });
     if (!response.ok) throw new Error('Failed to update ticket');
     return response.json();
 };
 
 export const deleteTicket = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/${id}`, { 
-        method: 'DELETE',
-        headers: getHeaders()
+    const response = await authFetch(`${API_BASE_URL}/${id}`, { 
+        method: 'DELETE'
     });
     if (!response.ok) throw new Error('Failed to delete ticket');
 };
 
 export const getTicketComments = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/${id}/comments`, {
-        headers: getHeaders()
-    });
+    const response = await authFetch(`${API_BASE_URL}/${id}/comments`);
     if (!response.ok) throw new Error('Failed to fetch comments');
     return response.json();
 };
 
 export const createTicketComment = async (id, comment) => {
-    const response = await fetch(`${API_BASE_URL}/${id}/comments`, {
+    const response = await authFetch(`${API_BASE_URL}/${id}/comments`, {
         method: 'POST',
-        headers: getHeaders(),
         body: JSON.stringify(comment)
     });
     if (!response.ok) throw new Error('Failed to create comment');
@@ -74,9 +69,22 @@ export const createTicketComment = async (id, comment) => {
 };
 
 export const deleteTicketComment = async (commentId) => {
-    const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, { 
-        method: 'DELETE',
-        headers: getHeaders()
+    const response = await authFetch(`${API_BASE_URL}/comments/${commentId}`, { 
+        method: 'DELETE'
     });
     if (!response.ok) throw new Error('Failed to delete comment');
+};
+
+export const uploadTicketImages = async (id, files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+        formData.append('files', file);
+    });
+
+    const response = await authFetch(`${API_BASE_URL}/${id}/images`, {
+        method: 'POST',
+        body: formData
+    });
+    if (!response.ok) throw new Error('Failed to upload images');
+    return response.json();
 };

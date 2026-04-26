@@ -1,6 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
-const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
+export const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
     const token = localStorage.getItem('token');
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;

@@ -29,4 +29,5 @@ public class TicketRequestDTO {
     private String imageUrl;
     private String imageUrl2;
     private String imageUrl3;
+    private String status;
 }

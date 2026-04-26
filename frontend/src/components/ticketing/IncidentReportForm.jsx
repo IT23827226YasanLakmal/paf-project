@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTicket } from '../../services/ticketApi';
-import { supabase } from '../../supabaseClient';
-import { AlertCircle, Camera, CheckCircle2, Loader2, UploadCloud } from 'lucide-react';
+import { createTicket, uploadTicketImages } from '../../services/ticketApi';
+import { AlertCircle, Camera, CheckCircle2, Loader2, UploadCloud, X } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const IncidentReportForm = ({ onReportComplete }) => {
   const [formData, setFormData] = useState({
-    resourceId: '1', 
+    resourceId: '', 
     category: 'HARDWARE',
     priority: 'MEDIUM',
     description: '',
   });
-  const [file, setFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { user } = useAuthStore();
   
@@ -21,75 +20,69 @@ const IncidentReportForm = ({ onReportComplete }) => {
 
   const ticketMutation = useMutation({
     mutationFn: createTicket,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-      if (onReportComplete) onReportComplete();
-    },
     onError: (error) => {
       console.error("Error creating ticket:", error);
-      alert("Failed to submit report. Ensure the backend is running.");
     }
   });
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setFilePreview(URL.createObjectURL(selectedFile));
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files).slice(0, 3 - files.length);
+      const newFiles = [...files, ...selectedFiles];
+      setFiles(newFiles);
+      
+      const newPreviews = selectedFiles.map(f => URL.createObjectURL(f));
+      setFilePreviews([...filePreviews, ...newPreviews]);
     }
+  };
+
+  const removeFile = (index) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
+
+    const newPreviews = [...filePreviews];
+    URL.revokeObjectURL(newPreviews[index]);
+    newPreviews.splice(index, 1);
+    setFilePreviews(newPreviews);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.description) return;
 
-    let imageUrl = null;
+    setUploadProgress(20);
+    
+    try {
+        const ticketData = {
+            resourceId: parseInt(formData.resourceId), 
+            userId: user?.supabaseUid || user?.id, 
+            category: formData.category,
+            description: formData.description,
+            priority: formData.priority,
+            status: 'OPEN',
+        };
 
-    if (file) {
-        try {
-            setUploadProgress(10);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
+        const savedTicket = await ticketMutation.mutateAsync(ticketData);
+        setUploadProgress(50);
 
-            setUploadProgress(40);
-            
-            const { error: uploadError, data } = await supabase.storage
-              .from('incident-images')
-              .upload(filePath, file);
-
-            setUploadProgress(80);
-
-            if (uploadError) {
-                console.error('Upload Error:', uploadError);
-                throw uploadError;
-            }
-
-            if (data) {
-                 const { data: { publicUrl } } = supabase.storage
-                    .from('incident-images')
-                    .getPublicUrl(filePath);
-                 imageUrl = publicUrl;
-            }
-        } catch (err) {
-            console.error(err);
-            alert(`Upload failed: ${err.message || "Unknown error"}. Ensure your Supabase bucket 'incident-images' exists and has an 'INSERT' policy for public uploads.`);
+        if (files.length > 0 && savedTicket?.id) {
+            await uploadTicketImages(savedTicket.id, files);
         }
+        
+        setUploadProgress(100);
+        
+        // Success feedback
+        queryClient.invalidateQueries({ queryKey: ['tickets'] });
+        setTimeout(() => {
+            if (onReportComplete) onReportComplete();
+        }, 800);
+
+    } catch (err) {
+        console.error(err);
+        setUploadProgress(0);
+        alert(`Submission failed. Ensure the backend is running and files are under 10MB.`);
     }
-
-    setUploadProgress(100);
-
-    const ticketData = {
-        resourceId: parseInt(formData.resourceId), 
-        userId: user?.supabaseUid || user?.id, 
-        category: formData.category,
-        description: formData.description,
-        priority: formData.priority,
-        status: 'OPEN',
-        imageUrl: imageUrl,
-    };
-
-    ticketMutation.mutate(ticketData);
   };
 
   return (
@@ -167,39 +160,46 @@ const IncidentReportForm = ({ onReportComplete }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Photo Evidence (Optional)</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">
+            Photo Evidence (Max 3)
+          </label>
           
-          <div className="relative">
-              <input 
-                type="file" 
-                id="file-upload" 
-                className="hidden" 
-                accept="image/*"
-                onChange={handleFileChange} 
-              />
-              <label 
-                htmlFor="file-upload" 
-                className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
-                    filePreview ? 'border-accent bg-accent-subtle' : 'border-subtle bg-raised hover:bg-muted-fill'
-                }`}
-              >
-                 {filePreview ? (
-                     <div className="relative w-full h-full p-2 group">
-                         <img src={filePreview} alt="Preview" className="w-full h-full object-contain rounded-xl" />
-                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
-                            <span className="text-white text-sm font-medium flex items-center gap-2"><UploadCloud className="w-4 h-4" /> Change Photo</span>
-                         </div>
-                     </div>
-                 ) : (
-                     <div className="flex flex-col items-center justify-center py-5 text-muted">
-                          <div className="w-12 h-12 bg-surface rounded-full shadow-sm flex items-center justify-center mb-3">
-                             <Camera className="w-5 h-5 text-accent" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {filePreviews.map((preview, idx) => (
+                  <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden border border-subtle bg-raised">
+                      <img src={preview} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none shadow-lg"
+                      >
+                         <X className="w-3 h-3" />
+                      </button>
+                  </div>
+              ))}
+              
+              {files.length < 3 && (
+                  <div className="relative aspect-square">
+                      <input 
+                        type="file" 
+                        id="file-upload" 
+                        className="hidden" 
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileChange} 
+                      />
+                      <label 
+                        htmlFor="file-upload" 
+                        className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-subtle bg-raised hover:bg-muted-fill rounded-xl cursor-pointer transition-all"
+                      >
+                          <div className="w-10 h-10 bg-surface rounded-full shadow-sm flex items-center justify-center mb-2">
+                             <Camera className="w-4 h-4 text-accent" />
                           </div>
-                         <p className="text-sm font-medium text-primary">Click to upload a photo</p>
-                         <p className="text-xs text-muted mt-1">PNG, JPG, GIF up to 5MB</p>
-                     </div>
-                 )}
-              </label>
+                          <span className="text-[10px] font-bold text-primary">Add Photo</span>
+                          <span className="text-[9px] text-muted">{3 - files.length} slots left</span>
+                      </label>
+                  </div>
+              )}
           </div>
         </div>
 
