@@ -11,11 +11,12 @@ const getHeaders = () => {
     return headers;
 };
 
-export const getTickets = async (status, resourceId) => {
+export const getTickets = async ({ status, resourceId, userId } = {}) => {
     let url = API_BASE_URL;
     const params = new URLSearchParams();
     if (status) params.append('status', status);
     if (resourceId) params.append('resourceId', resourceId);
+    if (userId) params.append('userId', userId);
 
     if (params.toString()) {
         url += `?${params.toString()}`;

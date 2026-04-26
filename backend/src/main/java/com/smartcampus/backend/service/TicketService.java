@@ -51,9 +51,18 @@ public class TicketService {
         return toDTO(ticketRepository.save(ticket));
     }
 
-    public List<TicketResponseDTO> getAllTickets(String status, Long resourceId) {
+    public List<TicketResponseDTO> getAllTickets(String status, Long resourceId, String userId) {
         List<IncidentTicket> tickets;
-        if (status != null && !status.isEmpty()) {
+        if (userId != null && !userId.isEmpty()) {
+            tickets = ticketRepository.findByUser_SupabaseUid(userId);
+            // Optionally filter the user's tickets by status or resourceId in memory or via separate repo methods
+            if (status != null && !status.isEmpty()) {
+                tickets = tickets.stream().filter(t -> t.getStatus().equals(status)).collect(Collectors.toList());
+            }
+            if (resourceId != null) {
+                tickets = tickets.stream().filter(t -> t.getResource().getId().equals(resourceId)).collect(Collectors.toList());
+            }
+        } else if (status != null && !status.isEmpty()) {
             tickets = ticketRepository.findByStatus(status);
         } else if (resourceId != null) {
             tickets = ticketRepository.findByResource_Id(resourceId);

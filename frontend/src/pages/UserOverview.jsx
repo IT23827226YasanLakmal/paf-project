@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { fetchBookings, fetchResources } from '../services/api';
+import { getTickets } from '../services/ticketApi';
 import {
   Calendar, CheckCircle, Clock, AlertCircle, ArrowRight,
   PlusCircle, LifeBuoy, Bookmark, Sparkles, LayoutGrid, Shield
@@ -23,6 +24,12 @@ const UserOverview = () => {
         queryKey: ['resources'],
         queryFn: () => fetchResources(null),
     });
+    
+    // Fetch Tickets
+    const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
+        queryKey: ['tickets', 'my', user?.id],
+        queryFn: () => getTickets({ userId: user?.id }),
+    });
 
     const activeBookings = useMemo(() => 
         bookings.filter(b => b.status === 'APPROVED' && new Date(b.endTime) >= new Date()),
@@ -32,6 +39,16 @@ const UserOverview = () => {
     const pendingBookings = useMemo(() => 
         bookings.filter(b => b.status === 'PENDING'),
         [bookings]
+    );
+
+    const activeTickets = useMemo(() => 
+        tickets.filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS'),
+        [tickets]
+    );
+
+    const recentTickets = useMemo(() => 
+        [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3),
+        [tickets]
     );
 
     const getGreeting = () => {
@@ -73,7 +90,7 @@ const UserOverview = () => {
                     </div>
                     <div className="flex flex-wrap gap-3 flex-shrink-0">
                         <button 
-                            onClick={() => navigate('/app/my-bookings')} 
+                            onClick={() => navigate('/app/user/bookings')} 
                             className="inline-flex items-center px-5 py-3 bg-accent hover-bg-accent text-white text-sm font-bold rounded-2xl shadow-sm transition-all cursor-pointer border-none"
                         >
                             <Calendar className="w-4 h-4 mr-2" strokeWidth={2.5} /> View My Bookings
@@ -84,7 +101,7 @@ const UserOverview = () => {
             </div>
 
             {/* ── Key Metrics ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 
                 {/* Active Bookings */}
                 <div className="bg-surface rounded-2xl p-6 border border-subtle shadow-sm flex items-center justify-between">
@@ -128,6 +145,20 @@ const UserOverview = () => {
                     </div>
                 </div>
 
+                {/* Active Tickets */}
+                <div className="bg-surface rounded-2xl p-6 border border-subtle shadow-sm flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted">Active Tickets</p>
+                        <h3 className="text-2xl font-black mt-1 text-rose-500">
+                            {activeTickets.length}
+                        </h3>
+                        <p className="text-xs text-secondary mt-1 font-medium">Support requests</p>
+                    </div>
+                    <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 flex-shrink-0">
+                        <AlertCircle className="w-6 h-6" />
+                    </div>
+                </div>
+
             </div>
 
             {/* ── Layout Break ── */}
@@ -138,7 +169,7 @@ const UserOverview = () => {
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold tracking-tight">Your Upcoming Reservations</h2>
                         <button 
-                            onClick={() => navigate('/app/my-bookings')}
+                            onClick={() => navigate('/app/user/bookings')}
                             className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none"
                         >
                             View history <ArrowRight className="w-3.5 h-3.5" />
@@ -178,27 +209,69 @@ const UserOverview = () => {
                     )}
                 </div>
 
-                {/* 2. Self Service Actions */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-bold tracking-tight">Help Center</h2>
-                    
-                    <div className="bg-surface rounded-2xl border border-subtle p-5 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent/10 text-accent flex items-center justify-center rounded-xl">
-                                <LifeBuoy className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold">Support Resolution</h4>
-                                <p className="text-xs text-muted mt-0.5">Report hardware or logistics issues.</p>
-                            </div>
+                {/* 2. Self Service & Tickets */}
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold tracking-tight">Recent Tickets</h2>
+                            <button 
+                                onClick={() => navigate('/app/user/tickets')}
+                                className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none"
+                            >
+                                All tickets <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
                         </div>
 
-                        <button 
-                            onClick={() => navigate('/app/user/tickets')} 
-                            className="w-full flex items-center justify-center gap-2 py-3 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-primary text-sm font-bold transition-all cursor-pointer"
-                        >
-                            Open Ticketing Workspace
-                        </button>
+                        {ticketsLoading ? (
+                            <div className="bg-surface p-4 rounded-2xl border border-subtle text-center text-muted text-xs">
+                                Loading tickets...
+                            </div>
+                        ) : recentTickets.length === 0 ? (
+                            <div className="bg-surface p-6 rounded-2xl border border-subtle text-center">
+                                <p className="text-muted text-xs">No active tickets</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {recentTickets.map((t) => (
+                                    <div key={t.id} className="bg-surface rounded-2xl p-3 border border-subtle group hover:shadow-sm transition-all duration-200">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="text-[11px] font-bold text-primary truncate max-w-[120px]">{t.category}</p>
+                                            <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded-md ${
+                                                t.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' : 
+                                                t.status === 'IN_PROGRESS' ? 'bg-blue-500/10 text-blue-500' : 
+                                                'bg-amber-500/10 text-amber-500'
+                                            }`}>
+                                                {t.status.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] text-muted line-clamp-1">{t.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-bold tracking-tight">Help Center</h2>
+                        
+                        <div className="bg-surface rounded-2xl border border-subtle p-5 space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-accent/10 text-accent flex items-center justify-center rounded-xl">
+                                    <LifeBuoy className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold">Support Resolution</h4>
+                                    <p className="text-xs text-muted mt-0.5">Report hardware or logistics issues.</p>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={() => navigate('/app/user/tickets')} 
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-primary text-sm font-bold transition-all cursor-pointer"
+                            >
+                                Open Ticketing Workspace
+                            </button>
+                        </div>
                     </div>
                 </div>
 

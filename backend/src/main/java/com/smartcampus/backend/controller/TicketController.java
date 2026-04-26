@@ -40,8 +40,9 @@ public class TicketController {
     @GetMapping
     public ResponseEntity<List<TicketResponseDTO>> getTickets(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) Long resourceId) {
-        return ResponseEntity.ok(ticketService.getAllTickets(status, resourceId));
+            @RequestParam(required = false) Long resourceId,
+            @RequestParam(required = false) String userId) {
+        return ResponseEntity.ok(ticketService.getAllTickets(status, resourceId, userId));
     }
 
     @GetMapping("/{id}")
