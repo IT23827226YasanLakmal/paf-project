@@ -49,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
         // Verify Resource and User exist
         Resource resource = resourceRepository.findById(req.getResourceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
-        
+
         User user = userRepository.findById(req.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -130,7 +130,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (!req.getEndTime().isAfter(req.getStartTime()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End time must be after start time.");
-        
+
         boolean conflict = bookingRepository.existsConflictExcluding(
                 booking.getResource().getId(), req.getStartTime(), req.getEndTime(), id);
         if (conflict) {
@@ -160,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
             if (req.getStatus() != BookingStatus.CANCELLED)
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users can only cancel");
-            
+
             booking.setStatus(BookingStatus.CANCELLED);
             booking.setAdminNote(req.getAdminNote());
             booking.setReviewedBy(userId);
@@ -181,12 +181,11 @@ public class BookingServiceImpl implements BookingService {
 
         // LOG ACTION
         auditService.logAction(
-            userId, 
-            "BOOKING_STATUS_UPDATE", 
-            "BOOKING", 
-            id.toString(), 
-            "Status changed from " + oldStatus + " to " + req.getStatus()
-        );
+                userId,
+                "BOOKING_STATUS_UPDATE",
+                "BOOKING",
+                id.toString(),
+                "Status changed from " + oldStatus + " to " + req.getStatus());
 
         return toDTO(saved);
     }
@@ -209,11 +208,13 @@ public class BookingServiceImpl implements BookingService {
 
     private void validateTransition(BookingStatus from, BookingStatus to) {
         boolean ok = switch (from) {
-            case PENDING -> to == BookingStatus.APPROVED || to == BookingStatus.REJECTED || to == BookingStatus.CANCELLED;
+            case PENDING ->
+                to == BookingStatus.APPROVED || to == BookingStatus.REJECTED || to == BookingStatus.CANCELLED;
             case APPROVED -> to == BookingStatus.CANCELLED;
             default -> false;
         };
-        if (!ok) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transition");
+        if (!ok)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transition");
     }
 
     private BookingResponseDTO toDTO(Booking b) {
@@ -238,10 +239,14 @@ public class BookingServiceImpl implements BookingService {
 
     public static class BookingConflictException extends RuntimeException {
         private final List<BookingResponseDTO> conflicts;
+
         public BookingConflictException(String msg, List<BookingResponseDTO> conflicts) {
             super(msg);
             this.conflicts = conflicts;
         }
-        public List<BookingResponseDTO> getConflicts() { return conflicts; }
+
+        public List<BookingResponseDTO> getConflicts() {
+            return conflicts;
+        }
     }
 }
