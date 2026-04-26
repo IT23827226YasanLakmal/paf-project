@@ -230,6 +230,12 @@ export const fetchUsers = async () => {
   return response.json();
 };
 
+export const fetchAdminStats = async () => {
+  const response = await authFetch(`${API_BASE_URL}/admin/stats`);
+  if (!response.ok) throw new Error("Failed to fetch admin stats");
+  return response.json();
+};
+
 export const updateUserRole = async (id, role) => {
   const response = await authFetch(`${API_BASE_URL}/users/${id}/role`, {
     method: "PUT",
