@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import com.smartcampus.backend.dto.CommentResponseDTO;
+import com.smartcampus.backend.dto.TechnicianStatsDTO;
 import com.smartcampus.backend.model.TicketComment;
 
 @RestController
@@ -136,6 +137,12 @@ public class ResourceController {
             @RequestParam(required = false) Long resourceId,
             @RequestParam(required = false) String userId) {
         return ResponseEntity.ok(ticketService.getAllTickets(status, resourceId, userId));
+    }
+
+    @Operation(summary = "Get technician statistics")
+    @GetMapping("/tickets/stats")
+    public ResponseEntity<TechnicianStatsDTO> getTicketStats() {
+        return ResponseEntity.ok(ticketService.getTechnicianStats());
     }
 
     @GetMapping("/tickets/{id}")

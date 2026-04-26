@@ -18,6 +18,12 @@ export const getTickets = async ({ status, resourceId, userId } = {}) => {
     return response.json();
 };
 
+export const getTicketStats = async () => {
+    const response = await authFetch(`${API_BASE_URL}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch ticket stats');
+    return response.json();
+};
+
 export const createTicket = async (ticket) => {
     console.log("[TicketAPI] Creating ticket at:", API_BASE_URL);
     const response = await authFetch(API_BASE_URL, {

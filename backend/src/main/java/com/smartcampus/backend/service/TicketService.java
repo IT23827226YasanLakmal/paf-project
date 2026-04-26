@@ -17,7 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.TreeMap;
+import com.smartcampus.backend.dto.TechnicianStatsDTO;
+import com.smartcampus.backend.dto.DailyTrendDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -215,6 +222,72 @@ public class TicketService {
         }
         comment.setText(newText);
         return toCommentDTO(commentRepository.save(comment));
+    }
+
+    public TechnicianStatsDTO getTechnicianStats() {
+        List<IncidentTicket> allTickets = ticketRepository.findAll();
+        
+        long total = allTickets.size();
+        long active = allTickets.stream().filter(t -> !"RESOLVED".equals(t.getStatus())).count();
+        long resolved = allTickets.stream().filter(t -> "RESOLVED".equals(t.getStatus())).count();
+        long urgent = allTickets.stream().filter(t -> "URGENT".equals(t.getPriority())).count();
+
+        // Distributions
+        Map<String, Long> categoryMap = allTickets.stream()
+                .collect(Collectors.groupingBy(t -> t.getCategory() != null ? t.getCategory() : "Unknown", Collectors.counting()));
+        
+        List<Map<String, Object>> categoryDistribution = categoryMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                }).collect(Collectors.toList());
+
+        Map<String, Long> priorityMap = allTickets.stream()
+                .collect(Collectors.groupingBy(t -> t.getPriority() != null ? t.getPriority() : "Unknown", Collectors.counting()));
+        
+        List<Map<String, Object>> priorityDistribution = priorityMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                }).collect(Collectors.toList());
+
+        // Trend (last 7 days)
+        LocalDate today = LocalDate.now();
+        Map<LocalDate, DailyTrendDTO> trendMap = new TreeMap<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            String dayLabel = date.getDayOfWeek().toString().substring(0, 3);
+            trendMap.put(date, new DailyTrendDTO(dayLabel, 0, 0));
+        }
+
+        for (IncidentTicket t : allTickets) {
+            if (t.getCreatedAt() != null) {
+                LocalDate createdDate = t.getCreatedAt().toLocalDate();
+                if (trendMap.containsKey(createdDate)) {
+                    trendMap.get(createdDate).setOpen(trendMap.get(createdDate).getOpen() + 1);
+                }
+            }
+            if (t.getResolvedAt() != null) {
+                LocalDate resolvedDate = t.getResolvedAt().toLocalDate();
+                if (trendMap.containsKey(resolvedDate)) {
+                    trendMap.get(resolvedDate).setSolved(trendMap.get(resolvedDate).getSolved() + 1);
+                }
+            }
+        }
+
+        return TechnicianStatsDTO.builder()
+                .totalTickets(total)
+                .activeTickets(active)
+                .resolvedTickets(resolved)
+                .urgentTickets(urgent)
+                .categoryDistribution(categoryDistribution)
+                .priorityDistribution(priorityDistribution)
+                .trend(new ArrayList<>(trendMap.values()))
+                .build();
     }
 
     private TicketResponseDTO toDTO(IncidentTicket t) {
