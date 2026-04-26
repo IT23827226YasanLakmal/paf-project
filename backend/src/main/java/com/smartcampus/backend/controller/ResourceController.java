@@ -44,6 +44,12 @@ public class ResourceController {
         return ResponseEntity.ok(resourceService.getAllResources(type));
     }
 
+    @Operation(summary = "Get facility management stats")
+    @GetMapping("/facility-stats")
+    public ResponseEntity<com.smartcampus.backend.dto.FacilityStatsDTO> getFacilityStats() {
+        return ResponseEntity.ok(resourceService.getFacilityStats());
+    }
+
     @Operation(summary = "Get a single resource by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ResourceDTO> getResourceById(@PathVariable Long id) {

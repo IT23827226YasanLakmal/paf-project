@@ -1,26 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchResources } from '../services/api';
+import { fetchResources, fetchFacilityStats } from '../services/api';
 import {
   Users, Activity, Calendar, Shield, MapPin, Sparkles, 
   Clock, CheckCircle, AlertTriangle, Building, ArrowUpRight
 } from 'lucide-react';
 
 const FacilityDashboard = () => {
-    const { data: resources = [], isLoading } = useQuery({
+    const { data: resources = [], isLoading: isResourcesLoading } = useQuery({
         queryKey: ['resources', null],
         queryFn: () => fetchResources(null)
+    });
+
+    const { data: facilityStats, isLoading: isStatsLoading } = useQuery({
+        queryKey: ['facilityStats'],
+        queryFn: () => fetchFacilityStats()
     });
 
     const [timeRange, setTimeRange] = useState('This week');
 
     // Derived analytics
-    const totalNodes = resources.length;
-    const lectureHalls = resources.filter(r => r.type === 'LECTURE_HALL').length;
-    const labs = resources.filter(r => r.type === 'LAB').length;
+    const totalNodes = useMemo(() => facilityStats?.totalResources ?? resources.length, [facilityStats, resources]);
+    const lectureHalls = useMemo(() => facilityStats?.lectureHalls ?? resources.filter(r => r.type === 'LECTURE_HALL').length, [facilityStats, resources]);
+    const labs = useMemo(() => facilityStats?.labs ?? resources.filter(r => r.type === 'LAB').length, [facilityStats, resources]);
+    const healthScore = useMemo(() => facilityStats?.healthScore ?? '98%', [facilityStats]);
+    const interactionIncrease = useMemo(() => facilityStats?.interactionIncrease ?? '+180%', [facilityStats]);
 
-    // Simulated occupancy breakdown
-    const occupancy = [
+    // Occupancy breakdown
+    const occupancy = useMemo(() => facilityStats?.occupancy ?? [
         { day: 'Mon', count: 45 },
         { day: 'Tue', count: 72 },
         { day: 'Wed', count: 68 },
@@ -28,7 +35,9 @@ const FacilityDashboard = () => {
         { day: 'Fri', count: 50 },
         { day: 'Sat', count: 12 },
         { day: 'Sun', count: 8 }
-    ];
+    ], [facilityStats]);
+
+    if (isResourcesLoading || isStatsLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -113,7 +122,7 @@ const FacilityDashboard = () => {
                             />
                         </div>
                         <div className="text-center mt-4">
-                            <span className="text-3xl font-black text-primary tracking-tight">+180%</span>
+                            <span className="text-3xl font-black text-primary tracking-tight">{interactionIncrease}</span>
                             <p className="text-xs text-secondary font-medium mt-0.5">Interaction increase</p>
                         </div>
                     </div>
@@ -138,7 +147,7 @@ const FacilityDashboard = () => {
                     { title: 'Total Resources', value: totalNodes, desc: 'Managed assets', icon: Building, color: 'text-blue-500' },
                     { title: 'Lecture Halls', value: lectureHalls, desc: 'Ready for use', icon: Users, color: 'text-violet-500' },
                     { title: 'Labs', value: labs, desc: 'Allocated blocks', icon: Activity, color: 'text-emerald-500' },
-                    { title: 'Health Score', value: '98%', desc: 'Optimal operations', icon: Shield, color: 'text-accent' }
+                    { title: 'Health Score', value: healthScore, desc: 'Optimal operations', icon: Shield, color: 'text-accent' }
                 ].map((item, i) => {
                     const Icon = item.icon;
                     return (
