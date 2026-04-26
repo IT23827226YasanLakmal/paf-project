@@ -107,11 +107,19 @@ const FacilitiesPage = () => {
         return res.type === 'LECTURE_HALL' || res.type === 'LAB';
     });
 
+    const totalPages = Math.ceil(filteredResources.length / itemsPerPage);
+
+    React.useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        } else if (totalPages === 0) {
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
+
     React.useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery, filterType]);
-
-    const totalPages = Math.ceil(filteredResources.length / itemsPerPage);
     const paginatedItems = filteredResources.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage

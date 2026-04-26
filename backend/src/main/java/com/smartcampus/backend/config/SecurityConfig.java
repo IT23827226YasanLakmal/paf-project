@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/tickets/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/resources/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
 
                         // Special authenticated endpoints (must come before broad patterns)
                         .requestMatchers("/api/users/me").authenticated()

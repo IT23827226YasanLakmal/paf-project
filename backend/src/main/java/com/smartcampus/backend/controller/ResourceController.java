@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,7 +76,7 @@ public class ResourceController {
         Path filePath = uploadPath.resolve(filename);
         
         // Save file
-        Files.copy(file.getInputStream(), filePath);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         // Update resource with static URL
         String imageUrl = "/uploads/" + filename;

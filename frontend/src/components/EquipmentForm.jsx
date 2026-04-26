@@ -19,6 +19,7 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
     const [errors, setErrors] = useState({});
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(resource?.imageUrl || null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -75,13 +76,17 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                 capacity: null // Equipment typically has no capacity metric
             };
             
+            setIsUploading(true);
             const savedResource = await onSubmit(data);
 
             if (imageFile && savedResource?.id) {
                 await uploadResourceImage(savedResource.id, imageFile);
             }
+            setIsUploading(false);
         } catch (error) {
+            setIsUploading(false);
             console.error('Equipment onboarding failed', error);
+            alert('Operation failed. Please check your network or file size.');
         }
     };
 
@@ -231,9 +236,17 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                     </button>
                     <button 
                         type="submit" 
-                        className="px-4 py-2 text-xs font-bold text-white bg-accent hover-bg-accent rounded-lg shadow-sm transition-all cursor-pointer border-none"
+                        disabled={isUploading}
+                        className="px-4 py-2 text-xs font-bold text-white bg-accent hover-bg-accent rounded-lg shadow-sm transition-all cursor-pointer border-none disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
                     >
-                        {resource ? 'Update Asset' : 'Onboard Asset'}
+                        {isUploading ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            resource ? 'Update Asset' : 'Onboard Asset'
+                        )}
                     </button>
                 </div>
             </form>
