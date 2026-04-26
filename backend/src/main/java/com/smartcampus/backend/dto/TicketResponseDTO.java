@@ -19,6 +19,11 @@ public class TicketResponseDTO {
     private String priority;
     private String status;
     private String imageUrl;
+    private String imageUrl2;
+    private String imageUrl3;
+    private String rejectionReason;
+    private String assignedToId;
+    private String assignedToName;
     private LocalDateTime firstResponseAt;
     private LocalDateTime resolvedAt;
     private LocalDateTime createdAt;

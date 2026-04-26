@@ -81,12 +81,7 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
     };
 
     return (
-        <div className="bg-surface rounded-2xl p-6 border border-subtle text-primary animate-fade-in">
-            <h2 className="text-xl font-black tracking-tight text-primary mb-6">
-                {resource ? 'Update Operational Asset' : 'Onboard Equipment Asset'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
                 
                 {/* Photo Upload Area */}
                 <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-subtle rounded-2xl bg-raised hover:bg-muted-fill transition-colors group relative overflow-hidden">
@@ -180,7 +175,6 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                     </button>
                 </div>
             </form>
-        </div>
     );
 };
 

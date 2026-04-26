@@ -27,4 +27,6 @@ public class TicketRequestDTO {
     private String userId; // Set by controller or context
 
     private String imageUrl;
+    private String imageUrl2;
+    private String imageUrl3;
 }

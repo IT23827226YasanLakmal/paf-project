@@ -35,18 +35,19 @@ const AppLayout = () => {
   const { user } = useAuthStore();
   const { initTheme } = useThemeStore();
   const [bookingTarget, setBookingTarget] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     initTheme();
   }, []);
 
   return (
-    <div className="min-h-screen bg-canvas text-primary font-sans antialiased flex">
+    <div className="min-h-screen bg-canvas text-primary font-sans antialiased flex glossy-mesh">
       {/* ── Left Sidebar (w-56 = 224px) ── */}
-      <Sidebar />
+      <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} />
 
       {/* ── Main content area offset by sidebar ── */}
-      <div className="flex-1 ml-56 flex flex-col min-h-screen glossy-mesh">
+      <div className={`flex-1 ${isSidebarCollapsed ? 'ml-28' : 'ml-72'} flex flex-col min-h-screen transition-all duration-300`}>
 
         {/* ── Page content ── */}
         <main className="flex-1 px-6 py-5 max-w-[1400px] w-full mx-auto">
@@ -73,7 +74,8 @@ const AppLayout = () => {
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="reports" element={<ReportsPage />} />
-              <Route path="tickets" element={<TicketingPage />} />
+              <Route path="technician/tickets" element={<TicketingPage />} />
+              <Route path="user/tickets" element={<TicketingPage />} />
               <Route path="dashboard" element={<DashboardPage onBookResource={(r) => setBookingTarget(r)} />} />
             </Route>
 

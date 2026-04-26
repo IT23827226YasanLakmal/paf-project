@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { fetchBookings, fetchResources } from '../services/api';
 import {
   Calendar, CheckCircle, Clock, AlertCircle, ArrowRight,
-  PlusCircle, LifeBuoy, Bookmark, Sparkles, LayoutGrid
+  PlusCircle, LifeBuoy, Bookmark, Sparkles, LayoutGrid, Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -44,6 +44,19 @@ const UserOverview = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-primary">
             
+            {/* ── Page Header ── */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+                        <LayoutGrid className="w-8 h-8 text-accent animate-pulse" />
+                        User Dashboard
+                    </h1>
+                    <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+                        <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+                    </p>
+                </div>
+            </div>
+
             {/* ── Welcome Banner ── */}
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-accent/20 via-accent/5 to-surface border border-subtle p-8 md:p-10">
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -181,7 +194,7 @@ const UserOverview = () => {
                         </div>
 
                         <button 
-                            onClick={() => navigate('/app/tickets')} 
+                            onClick={() => navigate('/app/user/tickets')} 
                             className="w-full flex items-center justify-center gap-2 py-3 bg-raised hover:bg-muted-fill border border-subtle rounded-xl text-primary text-sm font-bold transition-all cursor-pointer"
                         >
                             Open Ticketing Workspace

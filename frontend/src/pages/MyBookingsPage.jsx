@@ -8,12 +8,14 @@ import BookingForm from '../components/BookingForm';
 import {
   Search, Plus, Eye, Pencil, Trash2, RefreshCw,
   BookOpen, ChevronRight, Loader2, Ban, X,
+  CalendarCheck, Shield
 } from 'lucide-react';
 
 //Helpers
-const fmtBid  = id  => `B${String(id).padStart(4, '0')}`;
-const fmtDate = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-const fmtTime = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+const shortenId = id => (id && String(id).length > 8) ? `${String(id).slice(0, 4)}...${String(id).slice(-4)}` : id;
+const fmtBid    = id => `B${shortenId(String(id).padStart(4, '0'))}`;
+const fmtDate   = iso => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtTime   = iso => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
 const STATUS_CFG = {
   PENDING:   { label: 'Pending',   bg: 'bg-amber-500/10',  text: 'text-amber-500',  border: 'border-amber-500/20' },
@@ -196,20 +198,20 @@ const MyBookingsPage = () => {
   ];
 
   return (
-    <div className="bg-canvas">
+    <>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-muted mb-3">
-          <span>Home</span><ChevronRight className="w-4 h-4" />
-          <span className="text-secondary font-medium">My Bookings</span>
-        </div>
 
         {/* Header */}
-        <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-primary tracking-tight">My Bookings</h1>
-            <p className="text-secondary text-sm mt-1">Track and manage your resource reservations.</p>
+            <h1 className="text-3xl font-black text-primary flex items-center gap-2.5">
+              <CalendarCheck className="w-8 h-8 text-accent animate-pulse" />
+              My Bookings
+            </h1>
+            <p className="text-sm text-muted mt-1 flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-accent" /> Role perspective: <span className="font-bold text-accent uppercase">{user?.role}</span>
+            </p>
           </div>
           <button 
             onClick={() => setShowSelector(true)}
@@ -329,7 +331,7 @@ const MyBookingsPage = () => {
                         </td>
                         <td className="px-4 py-3.5">
                           <p className="text-sm font-semibold text-primary">
-                            {booking.resourceName || `Resource #${booking.resourceId}`}
+                            {booking.resourceName || `Resource #${shortenId(booking.resourceId)}`}
                           </p>
                           <p className="text-xs text-muted mt-0.5 truncate max-w-[160px]">{booking.purpose}</p>
                         </td>
@@ -452,7 +454,7 @@ const MyBookingsPage = () => {
           onSuccess={() => { queryClient.invalidateQueries({ queryKey: ['bookings'] }); setBookingTarget(null); }} 
         />
       )}
-    </div>
+    </>
   );
 };
 

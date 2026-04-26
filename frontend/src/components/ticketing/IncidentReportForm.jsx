@@ -94,16 +94,16 @@ const IncidentReportForm = ({ onReportComplete }) => {
 
   return (
     <div className="bg-surface rounded-2xl shadow-sm overflow-hidden max-w-2xl mx-auto mt-8" style={{ border: '1px solid var(--border-subtle)' }}>
-      <div className="bg-raised px-8 py-5 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-        <AlertCircle className="text-accent w-6 h-6" />
-        <h2 className="text-xl font-bold tracking-tight text-primary">Report an Incident</h2>
+      <div className="bg-gradient-to-r from-accent/20 via-accent/5 to-raised px-8 py-5 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+        <AlertCircle className="text-accent w-6 h-6 animate-pulse" />
+        <h2 className="text-xl font-black tracking-tight text-primary">Report an Incident</h2>
       </div>
       
       <form onSubmit={handleSubmit} className="p-8 space-y-6">
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Affected Resource ID</label>
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Affected Resource ID</label>
             <input 
                 type="number" 
                 value={formData.resourceId}
@@ -116,7 +116,7 @@ const IncidentReportForm = ({ onReportComplete }) => {
             </div>
 
             <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Category</label>
+            <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Category</label>
             <select 
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -130,7 +130,7 @@ const IncidentReportForm = ({ onReportComplete }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-primary">Priority Level</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Priority Level</label>
           <div className="grid grid-cols-4 gap-3">
             {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(level => (
                <label 
@@ -155,7 +155,7 @@ const IncidentReportForm = ({ onReportComplete }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-primary">Description</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Description</label>
           <textarea 
             rows={4}
             value={formData.description}
@@ -167,7 +167,7 @@ const IncidentReportForm = ({ onReportComplete }) => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-primary block">Photo Evidence (Optional)</label>
+          <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-1">Photo Evidence (Optional)</label>
           
           <div className="relative">
               <input 

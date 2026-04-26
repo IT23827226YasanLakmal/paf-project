@@ -11,6 +11,8 @@ import { useAuthStore } from '../../store/authStore';
 import { useTicketUiStore } from '../../store/ticketUiStore';
 import toast from 'react-hot-toast';
 
+const shortenId = id => (id && String(id).length > 8) ? `${String(id).slice(0, 4)}...${String(id).slice(-4)}` : id;
+
 /* ── Priority Config ── */
 const PRIORITY_CONFIG = {
   URGENT: { label: 'High',   dot: 'bg-red-500',    badge: 'bg-red-500/10 text-red-500 border-red-500/20' },
@@ -194,7 +196,7 @@ const TicketBoard = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-raised text-[10px] font-black text-muted uppercase tracking-widest border-b border-subtle">
-                <th className="px-4 py-4 w-10">
+                <th className="px-6 py-4 w-10">
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -202,29 +204,29 @@ const TicketBoard = () => {
                     className="w-4 h-4 accent-accent rounded cursor-pointer"
                   />
                 </th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors whitespace-nowrap" onClick={() => toggleSort('id')}>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors whitespace-nowrap" onClick={() => toggleSort('id')}>
                   <span className="flex items-center gap-1">Ticket ID <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('description')}>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('description')}>
                   <span className="flex items-center gap-1">Subject <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 whitespace-nowrap">Reported By</th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('category')}>
+                <th className="px-6 py-4 whitespace-nowrap">Reported By</th>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('category')}>
                   <span className="flex items-center gap-1">Category <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('priority')}>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('priority')}>
                   <span className="flex items-center gap-1">Priority <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('status')}>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('status')}>
                   <span className="flex items-center gap-1">Status <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 cursor-pointer hover:text-primary transition-colors whitespace-nowrap" onClick={() => toggleSort('createdAt')}>
+                <th className="px-6 py-4 cursor-pointer hover:text-primary transition-colors whitespace-nowrap" onClick={() => toggleSort('createdAt')}>
                   <span className="flex items-center gap-1">Date <ArrowUpDown className="w-3 h-3" /></span>
                 </th>
-                <th className="px-4 py-4 text-right">Action</th>
+                <th className="px-6 py-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-subtle">
+            <tbody>
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="text-center py-16 text-muted italic text-sm">
@@ -241,10 +243,10 @@ const TicketBoard = () => {
                 return (
                   <tr
                     key={ticket.id}
-                    className={`hover:bg-raised/50 transition-colors group ${isSelected ? 'bg-accent/5' : ''}`}
+                    className={`border-b border-subtle hover:bg-raised/50 transition-colors group ${isSelected ? 'bg-accent/5' : ''}`}
                   >
                     {/* Checkbox */}
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -254,12 +256,12 @@ const TicketBoard = () => {
                     </td>
 
                     {/* Ticket ID */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="text-xs font-black text-accent">#{String(ticket.id).padStart(3, '0')}</span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-xs font-black text-accent">#{shortenId(String(ticket.id).padStart(3, '0'))}</span>
                     </td>
 
                     {/* Subject */}
-                    <td className="px-4 py-4 max-w-[260px]">
+                    <td className="px-6 py-4 max-w-[260px]">
                       <button
                         onClick={() => setSelectedTicket(ticket)}
                         className="text-sm font-bold text-primary hover:text-accent transition-colors text-left truncate block max-w-full cursor-pointer"
@@ -277,26 +279,25 @@ const TicketBoard = () => {
                     </td>
 
                     {/* Reported by */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center" title={`User #${ticket.userId}`}>
                         <img
                           src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${ticket.userId || ticket.id}`}
-                          className="w-7 h-7 rounded-full bg-raised flex-shrink-0"
+                          className="w-8 h-8 rounded-full bg-raised flex-shrink-0 border border-subtle"
                           alt="user"
                         />
-                        <span className="text-xs font-bold text-secondary">User #{ticket.userId}</span>
                       </div>
                     </td>
 
                     {/* Category */}
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border border-subtle bg-raised text-secondary">
                         {ticket.category || 'General'}
                       </span>
                     </td>
 
                     {/* Priority */}
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide border ${priority.badge}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${priority.dot}`} />
                         {priority.label}
@@ -304,7 +305,7 @@ const TicketBoard = () => {
                     </td>
 
                     {/* Status */}
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       {canManage ? (
                         <select
                           value={ticket.status}
@@ -324,7 +325,7 @@ const TicketBoard = () => {
                     </td>
 
                     {/* Date */}
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <p className="text-xs font-bold text-primary">
                         {new Date(ticket.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                       </p>
@@ -334,7 +335,7 @@ const TicketBoard = () => {
                     </td>
 
                     {/* Action */}
-                    <td className="px-4 py-4 text-right relative">
+                    <td className="px-6 py-4 text-right relative">
                       <button
                         onClick={() => setActionMenuId(actionMenuId === ticket.id ? null : ticket.id)}
                         className="p-1.5 text-muted hover:text-primary hover:bg-raised rounded-lg transition-all cursor-pointer bg-transparent border-none"
@@ -496,7 +497,7 @@ const TicketBoard = () => {
               </div>
             </div>
             <p className="text-sm text-secondary mb-6">
-              Are you sure you want to delete ticket <span className="font-bold text-accent">#{ticketToDelete.id}</span>?
+              Are you sure you want to delete ticket <span className="font-bold text-accent">#{shortenId(ticketToDelete.id)}</span>?
             </p>
             <div className="flex gap-3">
               <button

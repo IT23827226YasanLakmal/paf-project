@@ -46,7 +46,7 @@ const RoleNav = () => {
             {renderNavLink('/app/dashboard', 'Dashboard')}
             {renderNavLink('/app/catalogue', 'Catalogue')}
             {renderNavLink('/app/my-bookings', 'My Bookings')}
-            {renderNavLink('/app/tickets', 'My Tickets')}
+            {renderNavLink('/app/user/tickets', 'My Tickets')}
           </>
         )}
         {role === 'FACILITY_MANAGER' && (
@@ -59,7 +59,7 @@ const RoleNav = () => {
           <>{renderNavLink('/app/admin-review', 'Booking Requests')}</>
         )}
         {role === 'TECHNICIAN' && (
-          <>{renderNavLink('/app/tickets', 'Support Tickets')}</>
+          <>{renderNavLink('/app/technician/tickets', 'Support Tickets')}</>
         )}
         {role === 'ADMIN' && (
           <>
@@ -67,7 +67,7 @@ const RoleNav = () => {
             {renderNavLink('/app/catalogue', 'Catalogue')}
             {renderNavLink('/app/facility', 'Facility')}
             {renderNavLink('/app/admin-review', 'Requests')}
-            {renderNavLink('/app/tickets', 'Tickets')}
+            {renderNavLink('/app/technician/tickets', 'Tickets')}
             {renderNavLink('/app/users', 'Users')}
           </>
         )}

@@ -44,6 +44,8 @@ public class TicketService {
         ticket.setDescription(req.getDescription());
         ticket.setPriority(req.getPriority());
         ticket.setImageUrl(req.getImageUrl());
+        ticket.setImageUrl2(req.getImageUrl2());
+        ticket.setImageUrl3(req.getImageUrl3());
         ticket.setStatus("OPEN");
 
         return toDTO(ticketRepository.save(ticket));
@@ -136,6 +138,34 @@ public class TicketService {
         commentRepository.deleteById(commentId);
     }
 
+    @Transactional
+    public TicketResponseDTO assignTicket(Long ticketId, String technicianId) {
+        IncidentTicket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        User technician = userRepository.findById(technicianId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + technicianId));
+        ticket.setAssignedTo(technician);
+        if ("OPEN".equals(ticket.getStatus())) {
+            ticket.setStatus("IN_PROGRESS");
+            if (ticket.getFirstResponseAt() == null) {
+                ticket.setFirstResponseAt(java.time.LocalDateTime.now());
+            }
+        }
+        return toDTO(ticketRepository.save(ticket));
+    }
+
+    @Transactional
+    public CommentResponseDTO updateComment(Long commentId, String newText, String requestingUserId) {
+        TicketComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
+        if (!comment.getUser().getSupabaseUid().equals(requestingUserId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "You can only edit your own comments.");
+        }
+        comment.setText(newText);
+        return toCommentDTO(commentRepository.save(comment));
+    }
+
     private TicketResponseDTO toDTO(IncidentTicket t) {
         return TicketResponseDTO.builder()
                 .id(t.getId())
@@ -148,6 +178,11 @@ public class TicketService {
                 .priority(t.getPriority())
                 .status(t.getStatus())
                 .imageUrl(t.getImageUrl())
+                .imageUrl2(t.getImageUrl2())
+                .imageUrl3(t.getImageUrl3())
+                .rejectionReason(t.getRejectionReason())
+                .assignedToId(t.getAssignedTo() != null ? t.getAssignedTo().getSupabaseUid() : null)
+                .assignedToName(t.getAssignedTo() != null ? t.getAssignedTo().getName() : null)
                 .firstResponseAt(t.getFirstResponseAt())
                 .resolvedAt(t.getResolvedAt())
                 .createdAt(t.getCreatedAt())
