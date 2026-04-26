@@ -19,4 +19,6 @@ public interface BookingService {
     void deleteBooking(Long id, String userId, boolean isAdmin);
 
     BookingResponseDTO verifyQrToken(String token);
+
+    com.smartcampus.backend.dto.BookingOfficerStatsDTO getBookingOfficerStats(int days);
 }

@@ -19,9 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.stream.Collectors;
+import com.smartcampus.backend.dto.BookingOfficerStatsDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -196,6 +199,100 @@ public class BookingServiceImpl implements BookingService {
         if (!isAdmin && !booking.getUser().getSupabaseUid().equals(userId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         bookingRepository.delete(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BookingOfficerStatsDTO getBookingOfficerStats(int days) {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
+        List<Booking> allBookings = bookingRepository.findAll();
+        
+        List<Booking> filtered = allBookings.stream()
+                .filter(b -> b.getCreatedAt() != null && b.getCreatedAt().isAfter(cutoff))
+                .collect(Collectors.toList());
+
+        long total = filtered.size();
+        long approved = filtered.stream().filter(b -> b.getStatus() == BookingStatus.APPROVED).count();
+        long pending = filtered.stream().filter(b -> b.getStatus() == BookingStatus.PENDING).count();
+        long cancelled = filtered.stream().filter(b -> b.getStatus() == BookingStatus.CANCELLED || b.getStatus() == BookingStatus.REJECTED).count();
+
+        // Trend (last 7 points)
+        LocalDate today = LocalDate.now();
+        Map<LocalDate, Map<String, Long>> trendMap = new TreeMap<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            Map<String, Long> vals = new HashMap<>();
+            vals.put("approved", 0L);
+            vals.put("pending", 0L);
+            trendMap.put(date, vals);
+        }
+
+        for (Booking b : filtered) {
+            LocalDate date = b.getCreatedAt().toLocalDate();
+            if (trendMap.containsKey(date)) {
+                if (b.getStatus() == BookingStatus.APPROVED) {
+                    trendMap.get(date).put("approved", trendMap.get(date).get("approved") + 1);
+                } else if (b.getStatus() == BookingStatus.PENDING) {
+                    trendMap.get(date).put("pending", trendMap.get(date).get("pending") + 1);
+                }
+            }
+        }
+
+        List<Map<String, Object>> trend = trendMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
+                    m.put("approved", e.getValue().get("approved"));
+                    m.put("pending", e.getValue().get("pending"));
+                    return m;
+                }).collect(Collectors.toList());
+
+        // Top Resources
+        Map<String, Long> resourceMap = filtered.stream()
+                .collect(Collectors.groupingBy(b -> b.getResource().getName(), Collectors.counting()));
+        
+        List<Map<String, Object>> topResources = resourceMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                })
+                .sorted((a, b) -> Long.compare((long) b.get("value"), (long) a.get("value")))
+                .limit(5)
+                .collect(Collectors.toList());
+
+        // Peak Days
+        String[] dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        Map<String, Long> peakDaysMap = new LinkedHashMap<>();
+        for (String d : dayNames) peakDaysMap.put(d, 0L);
+
+        for (Booking b : filtered) {
+            if (b.getStartTime() != null) {
+                String dayName = b.getStartTime().getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+                if (peakDaysMap.containsKey(dayName)) {
+                    peakDaysMap.put(dayName, peakDaysMap.get(dayName) + 1);
+                }
+            }
+        }
+
+        List<Map<String, Object>> peakDays = peakDaysMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                }).collect(Collectors.toList());
+
+        return BookingOfficerStatsDTO.builder()
+                .totalRequests(total)
+                .approvedRequests(approved)
+                .pendingRequests(pending)
+                .cancelledRejectedRequests(cancelled)
+                .trend(trend)
+                .topResources(topResources)
+                .peakDays(peakDays)
+                .build();
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────

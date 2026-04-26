@@ -236,6 +236,12 @@ export const fetchAdminStats = async () => {
   return response.json();
 };
 
+export const fetchBookingStats = async (days = 7) => {
+  const response = await authFetch(`${API_BASE_URL}/bookings/stats?days=${days}`);
+  if (!response.ok) throw new Error("Failed to fetch booking stats");
+  return response.json();
+};
+
 export const updateUserRole = async (id, role) => {
   const response = await authFetch(`${API_BASE_URL}/users/${id}/role`, {
     method: "PUT",
