@@ -196,7 +196,7 @@ const DashboardPage = ({ onBookResource }) => {
           {/* Action buttons */}
           <div className="flex items-center gap-2.5 flex-shrink-0 mt-1">
             <button
-              onClick={() => window.location.href = '/app/catalogue'}
+              onClick={() => window.location.href = '/app/dashboard'}
               className="flex items-center gap-2 px-4 py-2 bg-accent hover-bg-accent text-white text-sm font-semibold rounded-xl shadow-sm transition-colors cursor-pointer border-none"
             >
               <Plus className="w-4 h-4" strokeWidth={2.5} />
@@ -284,7 +284,7 @@ const DashboardPage = ({ onBookResource }) => {
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-primary">My Bookings</h3>
               <button
-                onClick={() => window.location.href = '/app/my-bookings'}
+                onClick={() => window.location.href = '/app/user/bookings'}
                 className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer"
               >
                 View All <ArrowRight className="w-3 h-3" />

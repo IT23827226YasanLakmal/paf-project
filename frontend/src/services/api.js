@@ -1,6 +1,6 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://127.0.0.1:8080/api';
 
-const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
+export const authFetch = async (url, options = {}, retries = 3, backoff = 300) => {
     const token = localStorage.getItem('token');
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
@@ -227,6 +227,24 @@ export const uploadResourceImage = async (id, file) => {
 export const fetchUsers = async () => {
   const response = await authFetch(`${API_BASE_URL}/users`);
   if (!response.ok) throw new Error("Failed to fetch users");
+  return response.json();
+};
+
+export const fetchAdminStats = async () => {
+  const response = await authFetch(`${API_BASE_URL}/admin/stats`);
+  if (!response.ok) throw new Error("Failed to fetch admin stats");
+  return response.json();
+};
+
+export const fetchBookingStats = async (days = 7) => {
+  const response = await authFetch(`${API_BASE_URL}/bookings/stats?days=${days}`);
+  if (!response.ok) throw new Error("Failed to fetch booking stats");
+  return response.json();
+};
+
+export const fetchFacilityStats = async () => {
+  const response = await authFetch(`${API_BASE_URL}/resources/facility-stats`);
+  if (!response.ok) throw new Error("Failed to fetch facility stats");
   return response.json();
 };
 

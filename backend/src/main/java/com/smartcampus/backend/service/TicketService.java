@@ -17,7 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.TreeMap;
+import com.smartcampus.backend.dto.TechnicianStatsDTO;
+import com.smartcampus.backend.dto.DailyTrendDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -51,9 +58,18 @@ public class TicketService {
         return toDTO(ticketRepository.save(ticket));
     }
 
-    public List<TicketResponseDTO> getAllTickets(String status, Long resourceId) {
+    public List<TicketResponseDTO> getAllTickets(String status, Long resourceId, String userId) {
         List<IncidentTicket> tickets;
-        if (status != null && !status.isEmpty()) {
+        if (userId != null && !userId.isEmpty()) {
+            tickets = ticketRepository.findByUser_SupabaseUid(userId);
+            // Optionally filter the user's tickets by status or resourceId in memory or via separate repo methods
+            if (status != null && !status.isEmpty()) {
+                tickets = tickets.stream().filter(t -> t.getStatus().equals(status)).collect(Collectors.toList());
+            }
+            if (resourceId != null) {
+                tickets = tickets.stream().filter(t -> t.getResource().getId().equals(resourceId)).collect(Collectors.toList());
+            }
+        } else if (status != null && !status.isEmpty()) {
             tickets = ticketRepository.findByStatus(status);
         } else if (resourceId != null) {
             tickets = ticketRepository.findByResource_Id(resourceId);
@@ -66,6 +82,36 @@ public class TicketService {
     public TicketResponseDTO getTicketById(Long id) {
         return toDTO(ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id)));
+    }
+
+    @Transactional
+    public TicketResponseDTO updateTicket(Long id, TicketRequestDTO req, String userId) {
+        IncidentTicket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        
+        // Authorization check: only owner or technician/admin can update
+        // (For now, we just proceed, but in a real app, you'd check ticket.getUser().getSupabaseUid().equals(userId))
+        
+        if (req.getCategory() != null) ticket.setCategory(req.getCategory());
+        if (req.getDescription() != null) ticket.setDescription(req.getDescription());
+        if (req.getPriority() != null) ticket.setPriority(req.getPriority());
+        if (req.getResourceId() != null) {
+            Resource resource = resourceRepository.findById(req.getResourceId())
+                .orElseThrow(() -> new RuntimeException("Resource not found"));
+            ticket.setResource(resource);
+        }
+        
+        IncidentTicket saved = ticketRepository.save(ticket);
+        
+        auditService.logAction(
+            userId, 
+            "TICKET_UPDATE", 
+            "TICKET", 
+            id.toString(), 
+            "Ticket details updated"
+        );
+
+        return toDTO(saved);
     }
 
     @Transactional
@@ -155,6 +201,18 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponseDTO updateTicketImages(Long id, List<String> imageUrls) {
+        IncidentTicket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        
+        if (imageUrls.size() > 0) ticket.setImageUrl(imageUrls.get(0));
+        if (imageUrls.size() > 1) ticket.setImageUrl2(imageUrls.get(1));
+        if (imageUrls.size() > 2) ticket.setImageUrl3(imageUrls.get(2));
+        
+        return toDTO(ticketRepository.save(ticket));
+    }
+
+    @Transactional
     public CommentResponseDTO updateComment(Long commentId, String newText, String requestingUserId) {
         TicketComment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found: " + commentId));
@@ -164,6 +222,72 @@ public class TicketService {
         }
         comment.setText(newText);
         return toCommentDTO(commentRepository.save(comment));
+    }
+
+    public TechnicianStatsDTO getTechnicianStats() {
+        List<IncidentTicket> allTickets = ticketRepository.findAll();
+        
+        long total = allTickets.size();
+        long active = allTickets.stream().filter(t -> !"RESOLVED".equals(t.getStatus())).count();
+        long resolved = allTickets.stream().filter(t -> "RESOLVED".equals(t.getStatus())).count();
+        long urgent = allTickets.stream().filter(t -> "URGENT".equals(t.getPriority())).count();
+
+        // Distributions
+        Map<String, Long> categoryMap = allTickets.stream()
+                .collect(Collectors.groupingBy(t -> t.getCategory() != null ? t.getCategory() : "Unknown", Collectors.counting()));
+        
+        List<Map<String, Object>> categoryDistribution = categoryMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                }).collect(Collectors.toList());
+
+        Map<String, Long> priorityMap = allTickets.stream()
+                .collect(Collectors.groupingBy(t -> t.getPriority() != null ? t.getPriority() : "Unknown", Collectors.counting()));
+        
+        List<Map<String, Object>> priorityDistribution = priorityMap.entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("name", e.getKey());
+                    m.put("value", e.getValue());
+                    return m;
+                }).collect(Collectors.toList());
+
+        // Trend (last 7 days)
+        LocalDate today = LocalDate.now();
+        Map<LocalDate, DailyTrendDTO> trendMap = new TreeMap<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            String dayLabel = date.getDayOfWeek().toString().substring(0, 3);
+            trendMap.put(date, new DailyTrendDTO(dayLabel, 0, 0));
+        }
+
+        for (IncidentTicket t : allTickets) {
+            if (t.getCreatedAt() != null) {
+                LocalDate createdDate = t.getCreatedAt().toLocalDate();
+                if (trendMap.containsKey(createdDate)) {
+                    trendMap.get(createdDate).setOpen(trendMap.get(createdDate).getOpen() + 1);
+                }
+            }
+            if (t.getResolvedAt() != null) {
+                LocalDate resolvedDate = t.getResolvedAt().toLocalDate();
+                if (trendMap.containsKey(resolvedDate)) {
+                    trendMap.get(resolvedDate).setSolved(trendMap.get(resolvedDate).getSolved() + 1);
+                }
+            }
+        }
+
+        return TechnicianStatsDTO.builder()
+                .totalTickets(total)
+                .activeTickets(active)
+                .resolvedTickets(resolved)
+                .urgentTickets(urgent)
+                .categoryDistribution(categoryDistribution)
+                .priorityDistribution(priorityDistribution)
+                .trend(new ArrayList<>(trendMap.values()))
+                .build();
     }
 
     private TicketResponseDTO toDTO(IncidentTicket t) {

@@ -8,12 +8,18 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
         type: 'EQUIPMENT',
         location: resource?.location || '',
         availabilityWindows: resource?.availabilityWindows || '',
-        status: resource?.status || 'ACTIVE'
+        status: resource?.status || 'ACTIVE',
+        brand: resource?.brand || '',
+        modelNumber: resource?.modelNumber || '',
+        serialNumber: resource?.serialNumber || '',
+        purchaseDate: resource?.purchaseDate || '',
+        warrantyExpiry: resource?.warrantyExpiry || ''
     });
 
     const [errors, setErrors] = useState({});
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(resource?.imageUrl || null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -70,13 +76,17 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                 capacity: null // Equipment typically has no capacity metric
             };
             
+            setIsUploading(true);
             const savedResource = await onSubmit(data);
 
             if (imageFile && savedResource?.id) {
                 await uploadResourceImage(savedResource.id, imageFile);
             }
+            setIsUploading(false);
         } catch (error) {
+            setIsUploading(false);
             console.error('Equipment onboarding failed', error);
+            alert('Operation failed. Please check your network or file size.');
         }
     };
 
@@ -100,78 +110,143 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                             </div>
                         </div>
                     ) : (
-                        <label className="cursor-pointer flex flex-col items-center py-8 w-full">
-                            <div className="p-3.5 bg-accent/10 text-accent rounded-2xl mb-3 flex items-center justify-center">
-                                <Upload className="w-6 h-6" />
+                        <label className="cursor-pointer flex flex-col items-center py-4 w-full">
+                            <div className="p-2.5 bg-accent/10 text-accent rounded-xl mb-2 flex items-center justify-center">
+                                <Upload className="w-5 h-5" />
                             </div>
-                            <span className="text-sm font-bold text-primary">Upload Gear Photo</span>
-                            <span className="text-xs text-muted mt-1 font-medium">PNG, JPG up to 5MB</span>
+                            <span className="text-xs font-bold text-primary">Upload Gear Photo</span>
+                            <span className="text-[10px] text-muted mt-0.5 font-medium">PNG, JPG up to 5MB</span>
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
                     )}
                 </div>
 
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">Item Label / Name</label>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            value={formData.name} 
-                            onChange={handleChange} 
-                            placeholder="e.g. Sony A7 III Camera"
-                            className={`w-full px-4 py-3 bg-raised border text-sm text-primary rounded-xl outline-none focus:ring-2 transition-all ${errors.name ? 'border-red-500/50 focus:ring-red-400' : 'border-subtle focus:ring-accent'}`} 
-                        />
-                        {errors.name && (
-                            <p className="text-xs text-red-500 mt-1 flex items-center gap-1 font-semibold">
-                                <AlertCircle className="w-3 h-3" /> {errors.name}
-                            </p>
-                        )}
-                    </div>
-                    
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">Primary Storage Location</label>
-                        <input 
-                            type="text" 
-                            name="location" 
-                            value={formData.location} 
-                            onChange={handleChange} 
-                            placeholder="e.g. Media Lab Tech-Closet"
-                            className="w-full px-4 py-3 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
-                        />
+                <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="md:col-span-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Item Label / Name</label>
+                            <input 
+                                type="text" 
+                                name="name" 
+                                value={formData.name} 
+                                onChange={handleChange} 
+                                placeholder="e.g. Sony A7 III"
+                                className={`w-full px-3.5 py-2.5 bg-raised border text-sm text-primary rounded-xl outline-none focus:ring-2 transition-all ${errors.name ? 'border-red-500/50 focus:ring-red-400' : 'border-subtle focus:ring-accent'}`} 
+                            />
+                            {errors.name && (
+                                <p className="text-[10px] text-red-500 mt-1 flex items-center gap-1 font-semibold">
+                                    <AlertCircle className="w-2.5 h-2.5" /> {errors.name}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Storage Location</label>
+                            <input 
+                                type="text" 
+                                name="location" 
+                                value={formData.location} 
+                                onChange={handleChange} 
+                                placeholder="e.g. Media Lab"
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-2">Reservation window</label>
-                        <input 
-                            type="text" 
-                            name="availabilityWindows" 
-                            placeholder="e.g. 09:00 - 18:00" 
-                            value={formData.availabilityWindows} 
-                            onChange={handleChange} 
-                            className={`w-full px-4 py-3 bg-raised border text-sm text-primary rounded-xl outline-none focus:ring-2 transition-all ${errors.availabilityWindows ? 'border-red-500/50 focus:ring-red-400' : 'border-subtle focus:ring-accent'}`} 
-                        />
-                        {errors.availabilityWindows && (
-                            <p className="text-xs text-red-500 mt-1 flex items-center gap-1 font-semibold">
-                                <AlertCircle className="w-3 h-3" /> {errors.availabilityWindows}
-                            </p>
-                        )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Brand</label>
+                            <input 
+                                type="text" 
+                                name="brand" 
+                                value={formData.brand} 
+                                onChange={handleChange} 
+                                placeholder="e.g. Sony"
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Model Number</label>
+                            <input 
+                                type="text" 
+                                name="modelNumber" 
+                                value={formData.modelNumber} 
+                                onChange={handleChange} 
+                                placeholder="e.g. A7-III"
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Serial Number</label>
+                            <input 
+                                type="text" 
+                                name="serialNumber" 
+                                value={formData.serialNumber} 
+                                onChange={handleChange} 
+                                placeholder="S/N: 123..."
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Res. Window</label>
+                            <input 
+                                type="text" 
+                                name="availabilityWindows" 
+                                placeholder="09:00 - 18:00" 
+                                value={formData.availabilityWindows} 
+                                onChange={handleChange} 
+                                className={`w-full px-3.5 py-2.5 bg-raised border text-sm text-primary rounded-xl outline-none focus:ring-2 transition-all ${errors.availabilityWindows ? 'border-red-500/50 focus:ring-red-400' : 'border-subtle focus:ring-accent'}`} 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Purchase Date</label>
+                            <input 
+                                type="date" 
+                                name="purchaseDate" 
+                                value={formData.purchaseDate} 
+                                onChange={handleChange} 
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Warranty Expiry</label>
+                            <input 
+                                type="date" 
+                                name="warrantyExpiry" 
+                                value={formData.warrantyExpiry} 
+                                onChange={handleChange} 
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent transition-all" 
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-subtle">
+                <div className="flex justify-end space-x-3 mt-4 pt-3 border-t border-subtle">
                     <button 
                         type="button" 
                         onClick={onCancel} 
-                        className="px-5 py-2.5 text-sm font-bold text-primary bg-raised hover:bg-muted-fill rounded-xl transition-colors cursor-pointer border border-subtle"
+                        className="px-4 py-2 text-xs font-bold text-primary bg-raised hover:bg-muted-fill rounded-lg transition-colors cursor-pointer border border-subtle"
                     >
                         Dismiss
                     </button>
                     <button 
                         type="submit" 
-                        className="px-5 py-2.5 text-sm font-bold text-white bg-accent hover-bg-accent rounded-xl shadow-sm transition-all cursor-pointer border-none"
+                        disabled={isUploading}
+                        className="px-4 py-2 text-xs font-bold text-white bg-accent hover-bg-accent rounded-lg shadow-sm transition-all cursor-pointer border-none disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
                     >
-                        Onboard Asset
+                        {isUploading ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            resource ? 'Update Asset' : 'Onboard Asset'
+                        )}
                     </button>
                 </div>
             </form>

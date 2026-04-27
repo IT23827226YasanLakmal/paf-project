@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchBookings } from '../services/api';
+import { fetchBookings, fetchBookingStats } from '../services/api';
 import { Link } from 'react-router-dom';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, 
@@ -31,73 +31,31 @@ const BookingOfficerOverview = () => {
     queryFn: () => fetchBookings({})
   });
 
+  const { data: bookingStats, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['bookingStats', range],
+    queryFn: () => fetchBookingStats(parseInt(range)),
+  });
+
   /* ---------- Calculations ---------- */
-  const filteredBookings = useMemo(() => {
-    const now = new Date();
-    const days = parseInt(range);
-    return bookings.filter(b => {
-      if (!b.createdAt) return false;
-      const d = new Date(b.createdAt);
-      return (now - d) / (1000 * 60 * 60 * 24) <= days;
-    });
-  }, [bookings, range]);
-
   const stats = useMemo(() => {
-    const total = filteredBookings.length;
-    const approved = filteredBookings.filter(b => b.status === 'APPROVED').length;
-    const pending = filteredBookings.filter(b => b.status === 'PENDING').length;
-    const cancelled = filteredBookings.filter(b => ['CANCELLED', 'REJECTED'].includes(b.status)).length;
-    return { total, approved, pending, cancelled };
-  }, [filteredBookings]);
+    if (!bookingStats) return { total: 0, approved: 0, pending: 0, cancelled: 0 };
+    return { 
+      total: bookingStats.totalRequests, 
+      approved: bookingStats.approvedRequests, 
+      pending: bookingStats.pendingRequests, 
+      cancelled: bookingStats.cancelledRejectedRequests 
+    };
+  }, [bookingStats]);
 
-  const trendData = useMemo(() => {
-    const daysMap = {};
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      daysMap[d.toLocaleDateString('en-US', { weekday: 'short' })] = { name: d.toLocaleDateString('en-US', { weekday: 'short' }), approved: 0, pending: 0 };
-    }
-
-    filteredBookings.forEach(b => {
-      const dayName = new Date(b.createdAt).toLocaleDateString('en-US', { weekday: 'short' });
-      if (daysMap[dayName]) {
-        if (b.status === 'APPROVED') daysMap[dayName].approved += 1;
-        if (b.status === 'PENDING') daysMap[dayName].pending += 1;
-      }
-    });
-    return Object.values(daysMap);
-  }, [filteredBookings]);
-
-  const topResources = useMemo(() => {
-    const map = {};
-    filteredBookings.forEach(b => {
-      const key = b.resourceName || `Resource ${b.resourceId}`;
-      map[key] = (map[key] || 0) + 1;
-    });
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a,b) => b.value - a.value)
-      .slice(0,5);
-  }, [filteredBookings]);
-
-  const dayOfWeekData = useMemo(() => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const map = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
-    
-    filteredBookings.forEach(b => {
-      if (!b.startTime) return;
-      const dayName = days[new Date(b.startTime).getDay()];
-      map[dayName] += 1;
-    });
-    
-    return Object.keys(map).map(name => ({ name, value: map[name] }));
-  }, [filteredBookings]);
+  const trendData = bookingStats?.trend || [];
+  const topResources = bookingStats?.topResources || [];
+  const dayOfWeekData = bookingStats?.peakDays || [];
 
   const recentBookings = useMemo(() => {
     return [...bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6);
   }, [bookings]);
 
-  if (isLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
+  if (isLoading || isStatsLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 animate-in fade-in duration-500 min-h-0 text-primary">
@@ -231,7 +189,7 @@ const BookingOfficerOverview = () => {
         <div className="bg-surface p-6 rounded-3xl border border-subtle shadow-sm">
           <h3 className="font-bold text-primary mb-6">Peak Booking Days</h3>
           <div className="h-64 min-h-[256px]">
-            {filteredBookings.length > 0 ? (
+            {dayOfWeekData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                 <BarChart data={dayOfWeekData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />

@@ -45,7 +45,7 @@ const RoleNav = () => {
           <>
             {renderNavLink('/app/dashboard', 'Dashboard')}
             {renderNavLink('/app/catalogue', 'Catalogue')}
-            {renderNavLink('/app/my-bookings', 'My Bookings')}
+            {renderNavLink('/app/user/bookings', 'My Bookings')}
             {renderNavLink('/app/user/tickets', 'My Tickets')}
           </>
         )}

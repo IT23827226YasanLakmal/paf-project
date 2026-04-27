@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTicketComments, createTicketComment, deleteTicketComment } from '../../services/ticketApi';
-import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon, MessageSquare, Timer, Zap, ZoomIn, ExternalLink } from 'lucide-react';
+import { getTicketComments, createTicketComment, deleteTicketComment, updateTicket } from '../../services/ticketApi';
+import { X, Send, Trash2, Clock, MapPin, User, FileText, Image as ImageIcon, MessageSquare, Timer, Zap, ZoomIn, ExternalLink, Edit2, Save } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 const TicketDetailsModal = ({ ticket, onClose }) => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-  const [lightbox, setLightbox] = useState(false);
+  const [lightbox, setLightbox] = useState(null); // stores the URL of the image in lightbox
 
   const formatDuration = (start, end) => {
     if (!start || !end) return null;
@@ -50,6 +50,28 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
     }
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    description: ticket.description,
+    priority: ticket.priority,
+    category: ticket.category
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => updateTicket(ticket.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      setIsEditing(false);
+      // Optional: update local ticket state or just rely on query invalidation
+      // Since TicketBoard owns the 'ticket' prop, we might need a way to refresh it.
+      // For now, let's assume the user will close and reopen or the query will refetch.
+    }
+  });
+
+  const handleUpdate = () => {
+    updateMutation.mutate(editData);
+  };
+
   const handleCreateComment = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -71,18 +93,67 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
                    <span className="bg-primary text-canvas text-xs font-mono font-bold px-2.5 py-1 rounded-md tracking-wider">
                      #{ticket.id}
                    </span>
-                   <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
-                       ticket.priority === 'URGENT' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                       ticket.priority === 'HIGH' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                       'bg-blue-500/10 text-accent border-blue-500/20'
-                   }`}>
-                     {ticket.priority}
-                   </span>
-                   <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-surface border border-subtle text-primary">
-                     {ticket.category}
-                   </span>
+                   {isEditing ? (
+                     <div className="flex gap-2">
+                       <select 
+                         value={editData.priority} 
+                         onChange={e => setEditData({...editData, priority: e.target.value})}
+                         className="text-xs font-bold px-2 py-1 rounded-md bg-surface border border-subtle text-primary outline-none focus:ring-1 focus:ring-accent"
+                       >
+                         <option value="LOW">LOW</option>
+                         <option value="MEDIUM">MEDIUM</option>
+                         <option value="HIGH">HIGH</option>
+                         <option value="URGENT">URGENT</option>
+                       </select>
+                       <select 
+                         value={editData.category} 
+                         onChange={e => setEditData({...editData, category: e.target.value})}
+                         className="text-xs font-bold px-2 py-1 rounded-md bg-surface border border-subtle text-primary outline-none focus:ring-1 focus:ring-accent"
+                       >
+                         <option value="HARDWARE">HARDWARE</option>
+                         <option value="SOFTWARE">SOFTWARE</option>
+                         <option value="CLEANING">CLEANING</option>
+                         <option value="SECURITY">SECURITY</option>
+                       </select>
+                     </div>
+                   ) : (
+                     <>
+                       <span className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
+                           ticket.priority === 'URGENT' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                           ticket.priority === 'HIGH' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                           'bg-blue-500/10 text-accent border-blue-500/20'
+                       }`}>
+                         {ticket.priority}
+                       </span>
+                       <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-surface border border-subtle text-primary">
+                         {ticket.category}
+                       </span>
+                     </>
+                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-primary mt-4 leading-tight">Ticket Details</h2>
+                <div className="flex items-center gap-4 mt-4">
+                  <h2 className="text-2xl font-bold text-primary leading-tight">Ticket Details</h2>
+                  {(ticket.userId === user?.id || user?.role === 'ADMIN') && (
+                    <button 
+                      onClick={() => isEditing ? handleUpdate() : setIsEditing(true)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                        isEditing 
+                          ? 'bg-green-500 text-white border-green-600 hover:bg-green-600' 
+                          : 'bg-surface text-secondary border-subtle hover:text-primary hover:border-accent/40'
+                      }`}
+                    >
+                      {isEditing ? <><Save className="w-3.5 h-3.5" /> Save Changes</> : <><Edit2 className="w-3.5 h-3.5" /> Edit Details</>}
+                    </button>
+                  )}
+                  {isEditing && (
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-muted-fill text-secondary border border-subtle hover:bg-raised transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </div>
               
               <button 
@@ -93,37 +164,33 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
               </button>
             </div>
 
-            {/* ── Attached Image ── */}
-            {ticket.imageUrl ? (
-              <div className="rounded-2xl overflow-hidden border border-subtle shadow-sm relative group">
-                <div className="bg-raised px-4 py-2.5 flex items-center justify-between border-b border-subtle">
-                  <span className="text-xs font-black text-primary flex items-center gap-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-accent" /> Attached Evidence
-                  </span>
-                  <a
-                    href={ticket.imageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-accent flex items-center gap-1 hover:underline"
-                  >
-                    <ExternalLink className="w-3 h-3" /> Open full size
-                  </a>
-                </div>
-                <div className="relative bg-black/30 flex justify-center">
-                  <img
-                    src={ticket.imageUrl}
-                    alt="Incident Report Evidence"
-                    className="w-full max-h-56 object-contain cursor-zoom-in hover:opacity-90 transition-opacity"
-                    loading="lazy"
-                    onClick={() => setLightbox(true)}
-                  />
-                  <button
-                    onClick={() => setLightbox(true)}
-                    className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none"
-                    title="View full size"
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </button>
+            {/* ── Attached Images (Up to 3) ── */}
+            {(ticket.imageUrl || ticket.imageUrl2 || ticket.imageUrl3) ? (
+              <div className="space-y-3">
+                <span className="text-xs font-black text-primary flex items-center gap-1.5 px-1">
+                  <ImageIcon className="w-3.5 h-3.5 text-accent" /> Attached Evidence
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[ticket.imageUrl, ticket.imageUrl2, ticket.imageUrl3].filter(Boolean).map((url, idx) => {
+                    const fullUrl = url.startsWith('http') ? url : `http://localhost:8080${url}`;
+                    return (
+                      <div key={idx} className="rounded-2xl overflow-hidden border border-subtle shadow-sm relative group aspect-video bg-black/20">
+                        <img
+                          src={fullUrl}
+                          alt={`Evidence ${idx + 1}`}
+                          className="w-full h-full object-cover cursor-zoom-in hover:opacity-90 transition-opacity"
+                          loading="lazy"
+                          onClick={() => setLightbox(fullUrl)}
+                        />
+                        <button
+                          onClick={() => setLightbox(fullUrl)}
+                          className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none"
+                        >
+                          <ZoomIn className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -135,10 +202,21 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
 
             <div className="space-y-5">
               <div className="bg-surface p-5 rounded-2xl shadow-sm" style={{ border: '1px solid var(--border-subtle)' }}>
-                <h3 className="text-sm font-semibold flex items-center gap-2 text-primary mb-3 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                   <FileText className="w-4 h-4 text-accent" /> Description
+                <h3 className="text-sm font-semibold flex items-center justify-between gap-2 text-primary mb-3 pb-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                   <span className="flex items-center gap-2">
+                     <FileText className="w-4 h-4 text-accent" /> Description
+                   </span>
                 </h3>
-                <p className="text-secondary text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
+                {isEditing ? (
+                  <textarea
+                    value={editData.description}
+                    onChange={e => setEditData({...editData, description: e.target.value})}
+                    className="w-full min-h-[120px] p-3 text-sm text-primary bg-raised border border-subtle rounded-xl focus:ring-1 focus:ring-accent outline-none transition-all resize-none"
+                    placeholder="Detailed description of the issue..."
+                  />
+                ) : (
+                  <p className="text-secondary text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -269,22 +347,22 @@ const TicketDetailsModal = ({ ticket, onClose }) => {
       {lightbox && (
         <div
           className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightbox(false)}
+          onClick={() => setLightbox(null)}
         >
           <button
-            onClick={() => setLightbox(false)}
+            onClick={() => setLightbox(null)}
             className="absolute top-4 right-4 text-white/70 hover:text-white p-2 bg-white/10 rounded-xl cursor-pointer border-none"
           >
             <X className="w-6 h-6" />
           </button>
           <img
-            src={ticket.imageUrl}
+            src={lightbox}
             alt="Full size evidence"
             className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
             onClick={e => e.stopPropagation()}
           />
           <a
-            href={ticket.imageUrl}
+            href={lightbox}
             target="_blank"
             rel="noopener noreferrer"
             className="absolute bottom-6 text-white/70 hover:text-white text-xs font-bold flex items-center gap-1.5 bg-white/10 px-4 py-2 rounded-xl"

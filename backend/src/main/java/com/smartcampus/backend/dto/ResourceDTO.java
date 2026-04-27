@@ -2,6 +2,7 @@ package com.smartcampus.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class ResourceDTO {
@@ -21,4 +22,11 @@ public class ResourceDTO {
     private String status;
 
     private String imageUrl;
+
+    // Inventory Metadata
+    private String brand;
+    private String modelNumber;
+    private String serialNumber;
+    private LocalDate purchaseDate;
+    private LocalDate warrantyExpiry;
 }

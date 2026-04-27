@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchBookings, fetchResources } from '../services/api';
-import { getTickets } from '../services/ticketApi';
+import { fetchAdminStats } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid
@@ -17,31 +16,25 @@ const AdminOverview = () => {
     const navigate = useNavigate();
     const [chartRange, setChartRange] = useState('Month');
 
-    // Queries
-    const { data: bookings = [] } = useQuery({
-        queryKey: ['bookings'],
-        queryFn: () => fetchBookings({}),
+    const { data: adminStats, isLoading } = useQuery({
+        queryKey: ['adminStats'],
+        queryFn: () => fetchAdminStats(),
     });
-
-    const { data: resources = [] } = useQuery({
-        queryKey: ['resources'],
-        queryFn: () => fetchResources(null),
-    });
-
-    const { data: tickets = [] } = useQuery({
-        queryKey: ['tickets'],
-        queryFn: () => getTickets(),
-    });
-
+    
     // Stats calculations
     const stats = useMemo(() => {
-        const totalBookings = bookings.length;
-        const pendingBookings = bookings.filter(b => b.status === 'PENDING').length;
-        const activeResources = resources.filter(r => r.status === 'ACTIVE').length;
-        const openTickets = tickets.filter(t => t.status === 'OPEN').length;
+        if (!adminStats) return { totalBookings: 0, pendingBookings: 0, activeResources: 0, openTickets: 0 };
+        return { 
+            totalBookings: adminStats.totalBookings, 
+            pendingBookings: adminStats.pendingBookings, 
+            activeResources: adminStats.activeResources, 
+            openTickets: adminStats.openTickets 
+        };
+    }, [adminStats]);
 
-        return { totalBookings, pendingBookings, activeResources, openTickets };
-    }, [bookings, resources, tickets]);
+    const bookingFlowData = adminStats?.bookingFlow || [];
+
+    if (isLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-primary">
@@ -135,14 +128,7 @@ const AdminOverview = () => {
 
                     <div className="h-64 flex-1">
                         <ResponsiveContainer width="100%" height="100%" minHeight={256}>
-                            <AreaChart data={[
-                                { name: 'P1', val: 12 },
-                                { name: 'P2', val: 24 },
-                                { name: 'P3', val: 18 },
-                                { name: 'P4', val: 35 },
-                                { name: 'P5', val: 28 },
-                                { name: 'P6', val: 45 },
-                            ]}>
+                            <AreaChart data={bookingFlowData}>
                                 <defs>
                                     <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4}/>

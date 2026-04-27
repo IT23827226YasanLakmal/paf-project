@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getTickets } from '../services/ticketApi';
+import { getTickets, getTicketStats } from '../services/ticketApi';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, 
   PieChart, Pie, Cell, BarChart, Bar
@@ -30,39 +30,36 @@ const PRIORITY_COLORS = {
 const TechnicianOverview = () => {
   const { user } = useAuthStore();
   
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading: ticketsLoading } = useQuery({
     queryKey: ['tickets'],
     queryFn: () => getTickets()
   });
 
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['ticketStats'],
+    queryFn: () => getTicketStats()
+  });
+
   /* ---------- Calculations ---------- */
   const stats = useMemo(() => {
-    const total = tickets.length;
-    const active = tickets.filter(t => ['OPEN', 'IN_PROGRESS'].includes(t.status)).length;
-    const resolved = tickets.filter(t => t.status === 'RESOLVED').length;
-    const urgent = tickets.filter(t => t.priority === 'URGENT').length;
-    return { total, active, resolved, urgent };
-  }, [tickets]);
+    if (!statsData) return { total: 0, active: 0, resolved: 0, urgent: 0 };
+    return { 
+      total: statsData.totalTickets, 
+      active: statsData.activeTickets, 
+      resolved: statsData.resolvedTickets, 
+      urgent: statsData.urgentTickets 
+    };
+  }, [statsData]);
 
-  const categoryData = useMemo(() => {
-    const counts = tickets.reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + 1;
-      return acc;
-    }, {});
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [tickets]);
-
-  const priorityData = useMemo(() => {
-    const counts = tickets.reduce((acc, t) => {
-      acc[t.priority] = (acc[t.priority] || 0) + 1;
-      return acc;
-    }, {});
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [tickets]);
+  const categoryData = statsData?.categoryDistribution || [];
+  const priorityData = statsData?.priorityDistribution || [];
+  const trendData = statsData?.trend || [];
 
   const recentTickets = useMemo(() => {
     return [...tickets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 6);
   }, [tickets]);
+
+  const isLoading = ticketsLoading || statsLoading;
 
   if (isLoading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>;
 
@@ -120,19 +117,11 @@ const TechnicianOverview = () => {
           </div>
           
           <div className="h-64 w-full min-h-[256px]">
-            {tickets.length > 0 ? (
+            {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
-                <LineChart data={[
-                  { name: 'Mon', solved: 4, open: 6 },
-                  { name: 'Tue', solved: 7, open: 5 },
-                  { name: 'Wed', solved: 5, open: 8 },
-                  { name: 'Thu', solved: 10, open: 4 },
-                  { name: 'Fri', solved: 8, open: 7 },
-                  { name: 'Sat', solved: 3, open: 2 },
-                  { name: 'Sun', solved: 4, open: 3 },
-                ]}>
+                <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
                   <Tooltip contentStyle={{ background: 'var(--bg-overlay)', color: 'var(--text-primary)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }} />
                   <Line type="monotone" dataKey="solved" stroke="#10b981" strokeWidth={4} dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />

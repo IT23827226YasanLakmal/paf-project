@@ -33,6 +33,8 @@ public class Resource {
     private String imageUrl;
 
     // Inventory Metadata
+    private String brand;
+    private String modelNumber;
     private String serialNumber;
     private java.time.LocalDate purchaseDate;
     private java.time.LocalDate warrantyExpiry;

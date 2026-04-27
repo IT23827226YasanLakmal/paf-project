@@ -4,6 +4,7 @@ import com.smartcampus.backend.dto.BookingRequestDTO;
 import com.smartcampus.backend.dto.BookingResponseDTO;
 import com.smartcampus.backend.dto.BookingStatusUpdateDTO;
 import com.smartcampus.backend.dto.BookingUpdateDTO;
+import com.smartcampus.backend.dto.BookingOfficerStatsDTO;
 import com.smartcampus.backend.model.BookingStatus;
 import com.smartcampus.backend.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,13 @@ public class BookingController {
 
         String effectiveUserId = (isAdmin && userId != null) ? userId : currentUserId;
         return ResponseEntity.ok(bookingService.getBookings(effectiveUserId, resourceId, status, isAdmin));
+    }
+
+    @GetMapping("/stats")
+    @Operation(summary = "Get booking statistics for officers")
+    public ResponseEntity<BookingOfficerStatsDTO> getBookingStats(
+            @RequestParam(defaultValue = "7") int days) {
+        return ResponseEntity.ok(bookingService.getBookingOfficerStats(days));
     }
 
     // GET /api/bookings/verify-qr/{token}
