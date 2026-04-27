@@ -76,6 +76,7 @@ const AppLayout = () => {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="technician/tickets" element={<TicketingPage />} />
               <Route path="user/tickets" element={<TicketingPage />} />
+              <Route path="user/my-bookings" element={<MyBookingsPage />} />
               <Route path="dashboard" element={<DashboardPage onBookResource={(r) => setBookingTarget(r)} />} />
             </Route>
 

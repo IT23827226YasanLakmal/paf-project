@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchBookings, fetchResources, deleteBooking, updateBookingStatus } from '../services/api';
 import { useAuthStore } from '../store/authStore';
@@ -143,6 +143,8 @@ const MyBookingsPage = () => {
   const [cancelTarget, setCancelTarget]   = useState(null);
   const [showSelector, setShowSelector]   = useState(false);
   const [bookingTarget, setBookingTarget] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const { data: bookings = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['bookings', 'my', user?.id || 'fake-user-1', statusFilter],
@@ -190,6 +192,15 @@ const MyBookingsPage = () => {
       (b.resourceName || '').toLowerCase().includes(q)
     );
   }, [bookings, search]);
+
+  const paginatedBookings = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage, itemsPerPage]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+
+  useEffect(() => { setCurrentPage(1); }, [statusFilter, search]);
 
   const TABS = [
     { key: '', label: 'All' }, { key: 'PENDING', label: 'Pending' },
@@ -320,7 +331,7 @@ const MyBookingsPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map(booking => {
+                  paginatedBookings.map(booking => {
                     const isDelDisabled = deleteDisabled(booking);
                     return (
                       <tr key={booking.id} className="hover:bg-raised transition-colors">
@@ -403,6 +414,33 @@ const MyBookingsPage = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Footer */}
+          {!isLoading && filtered.length > 0 && (
+            <div className="px-6 py-4 border-t border-subtle flex items-center justify-between bg-raised/10">
+              <p className="text-xs text-muted font-medium">
+                Showing <span className="font-bold text-primary">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                <span className="font-bold text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of{' '}
+                <span className="font-bold text-primary">{filtered.length}</span> results
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 bg-surface border border-subtle rounded-xl text-xs font-bold text-secondary hover:text-primary hover:bg-raised transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage >= totalPages}
+                  className="px-3 py-1.5 bg-surface border border-subtle rounded-xl text-xs font-bold text-secondary hover:text-primary hover:bg-raised transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

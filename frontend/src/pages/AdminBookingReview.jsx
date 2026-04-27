@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import {
   Search, Eye, Pencil, Trash2, RefreshCw, 
   Loader2, CheckCircle, XCircle, Clock3, Ban, AlertCircle, Shield, Calendar,
-  Users, Building2, Laptop
+  Users, Building2
 } from 'lucide-react';
 
 // Helpers 
@@ -72,7 +72,7 @@ const RejectModal = ({ onConfirm, onClose, isPending }) => {
   );
 };
 
-// Cancel modal — APPROVED bookings only, reason required 
+// Cancel modal
 const CancelModal = ({ booking, onConfirm, onClose, isPending }) => {
   const [reason, setReason] = useState('');
   return (
@@ -165,7 +165,7 @@ const AdminBookingReview = () => {
   const [rejectTarget, setRejectTarget] = useState(null);
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 8; // ✅ Increased to 8
 
   useEffect(() => {
     setCurrentPage(1);
@@ -194,21 +194,13 @@ const AdminBookingReview = () => {
   });
 
   // Actions
-  const approve = id =>
-    statusMutation.mutate({ id, status: 'APPROVED' });
+  const approve = id => statusMutation.mutate({ id, status: 'APPROVED' });
+  const reject = reason => statusMutation.mutate({ id: rejectTarget.id, status: 'REJECTED', rejectionReason: reason });
+  const cancel = reason => statusMutation.mutate({ id: cancelTarget.id, status: 'CANCELLED', adminNote: reason });
 
-  const reject = reason =>
-    statusMutation.mutate({ id: rejectTarget.id, status: 'REJECTED', rejectionReason: reason });
-
-  // Admin cancels APPROVED booking only — reason stored in adminNote
-  const cancel = reason =>
-    statusMutation.mutate({ id: cancelTarget.id, status: 'CANCELLED', adminNote: reason });
-
-  // Button enable/disable rules 
   const editDisabled    = b => b.status !== 'PENDING';
   const approveDisabled = b => b.status !== 'PENDING';
   const rejectDisabled  = b => b.status !== 'PENDING';
-  // FIXED: cancel is for APPROVED only — PENDING should use approve/reject
   const cancelDisabled  = b => b.status !== 'APPROVED';
   const deleteDisabled  = b => {
     if (b.status === 'REJECTED' || b.status === 'CANCELLED') return false;
@@ -277,12 +269,17 @@ const AdminBookingReview = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
-            { label: 'Pending',   count: counts.PENDING,   accent: 'border-l-amber-400', Icon: Clock3 },
-            { label: 'Approved',  count: counts.APPROVED,  accent: 'border-l-green-400', Icon: CheckCircle },
-            { label: 'Rejected',  count: counts.REJECTED,  accent: 'border-l-red-400',   Icon: XCircle },
-            { label: 'Cancelled', count: counts.CANCELLED, accent: 'border-l-slate-300', Icon: Ban },
+            { label: 'Pending',   count: counts.PENDING,   accent: 'border-l-amber-500',   Icon: Clock3 },
+            { label: 'Approved',  count: counts.APPROVED,  accent: 'border-l-emerald-500', Icon: CheckCircle },
+            { label: 'Rejected',  count: counts.REJECTED,  accent: 'border-l-red-500',     Icon: XCircle },
+            { label: 'Cancelled', count: counts.CANCELLED, accent: 'border-l-muted',       Icon: Ban },
           ].map(({ label, count, accent, Icon }) => (
-            <div key={label} className={`bg-surface rounded-xl border border-subtle border-l-4 ${accent} p-4 shadow-sm`}>
+            // ✅ Updated class/styles to match MyBookingsPage
+            <div 
+              key={label} 
+              className={`bg-surface rounded-xl border-l-4 ${accent} p-4 shadow-sm`}
+              style={{ borderTop: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}
+            >
               <p className="text-2xl font-bold text-primary">{isLoading ? '—' : count}</p>
               <p className="text-xs text-muted mt-0.5 flex items-center gap-1"><Icon className="w-3 h-3" />{label}</p>
             </div>
@@ -313,8 +310,8 @@ const AdminBookingReview = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-surface rounded-2xl border border-subtle shadow-sm overflow-hidden">
+        {/* Table & Pagination Wrapper */}
+        <div className="bg-surface rounded-2xl border border-subtle shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -386,55 +383,37 @@ const AdminBookingReview = () => {
                       {/* Actions */}
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-
-                          {/* View — always enabled */}
+                          {/* View */}
                           <button onClick={() => setViewTarget(booking)} title="View details"
                             className="p-2 text-blue-500 hover:bg-raised rounded-xl transition-all cursor-pointer bg-transparent border-none">
                             <Eye className="w-4 h-4" />
                           </button>
-
-                          {/* Edit — PENDING only */}
-                          <button
-                            onClick={() => !editDisabled(booking) && setEditTarget(booking)}
-                            disabled={editDisabled(booking)}
+                          {/* Edit */}
+                          <button onClick={() => !editDisabled(booking) && setEditTarget(booking)} disabled={editDisabled(booking)}
                             title={editDisabled(booking) ? 'Only PENDING bookings can be edited' : 'Edit booking'}
                             className={`p-2 rounded-xl transition-all border-none ${editDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-indigo-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
                             <Pencil className="w-4 h-4" />
                           </button>
-
-                          {/* Approve — PENDING only */}
-                          <button
-                            onClick={() => !approveDisabled(booking) && approve(booking.id)}
-                            disabled={approveDisabled(booking) || busy}
+                          {/* Approve */}
+                          <button onClick={() => !approveDisabled(booking) && approve(booking.id)} disabled={approveDisabled(booking) || busy}
                             title={approveDisabled(booking) ? 'Can only approve PENDING bookings' : 'Approve — generates QR code'}
                             className={`p-2 rounded-xl transition-all border-none ${approveDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-green-600 hover:bg-raised cursor-pointer bg-transparent'}`}>
-                            {busy && !approveDisabled(booking)
-                              ? <Loader2 className="w-4 h-4 animate-spin" />
-                              : <CheckCircle className="w-4 h-4" />}
+                            {busy && !approveDisabled(booking) ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                           </button>
-
-                          {/* Reject — PENDING only */}
-                          <button
-                            onClick={() => !rejectDisabled(booking) && setRejectTarget(booking)}
-                            disabled={rejectDisabled(booking)}
+                          {/* Reject */}
+                          <button onClick={() => !rejectDisabled(booking) && setRejectTarget(booking)} disabled={rejectDisabled(booking)}
                             title={rejectDisabled(booking) ? 'Can only reject PENDING bookings' : 'Reject booking'}
                             className={`p-2 rounded-xl transition-all border-none ${rejectDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-red-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
                             <XCircle className="w-4 h-4" />
                           </button>
-
-                          {/* Cancel — APPROVED only */}
-                          <button
-                            onClick={() => !cancelDisabled(booking) && setCancelTarget(booking)}
-                            disabled={cancelDisabled(booking)}
+                          {/* Cancel */}
+                          <button onClick={() => !cancelDisabled(booking) && setCancelTarget(booking)} disabled={cancelDisabled(booking)}
                             title={cancelDisabled(booking) ? 'Cancel is only for APPROVED bookings' : 'Cancel approved booking'}
                             className={`p-2 rounded-xl transition-all border-none ${cancelDisabled(booking) ? 'text-muted cursor-not-allowed bg-transparent' : 'text-orange-500 hover:bg-raised cursor-pointer bg-transparent'}`}>
                             <Ban className="w-4 h-4" />
                           </button>
-
-                          {/* Delete — REJECTED / CANCELLED / overdue APPROVED */}
-                          <button
-                            onClick={() => !deleteDisabled(booking) && setDeleteTarget(booking)}
-                            disabled={deleteDisabled(booking)}
+                          {/* Delete */}
+                          <button onClick={() => !deleteDisabled(booking) && setDeleteTarget(booking)} disabled={deleteDisabled(booking)}
                             title={deleteDisabled(booking) ? 'Cannot delete PENDING or active bookings' : 'Delete record'}
                             className={`p-1.5 rounded-lg transition-colors ${deleteDisabled(booking) ? 'text-muted cursor-not-allowed' : 'text-red-400 hover:bg-accent-subtle cursor-pointer'}`}>
                             <Trash2 className="w-3.5 h-3.5" />
@@ -447,6 +426,8 @@ const AdminBookingReview = () => {
               </tbody>
             </table>
           </div>
+          
+          {/* ✅ Pagination Footer */}
           {!isLoading && filtered.length > 0 && (
             <div className="px-6 py-4 border-t border-subtle flex items-center justify-between bg-raised/10">
               <p className="text-xs text-muted font-medium">

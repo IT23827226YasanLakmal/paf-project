@@ -251,7 +251,7 @@ const BookingOfficerOverview = () => {
         <div className="lg:col-span-2 bg-surface rounded-3xl border border-subtle shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 border-b border-subtle flex justify-between items-center">
             <h3 className="font-bold text-primary">Recent Bookings</h3>
-            <Link to="/app/admin-review" className="text-xs font-bold text-muted hover:text-accent transition-colors flex items-center gap-1">
+            <Link to="/app/booking-officer/review" className="text-xs font-bold text-muted hover:text-accent transition-colors flex items-center gap-1">
               View all <ChevronRight className="w-3 h-3" />
             </Link>
           </div>

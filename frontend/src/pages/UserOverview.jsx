@@ -73,7 +73,7 @@ const UserOverview = () => {
                     </div>
                     <div className="flex flex-wrap gap-3 flex-shrink-0">
                         <button 
-                            onClick={() => navigate('/app/my-bookings')} 
+                            onClick={() => navigate('/app/user/my-bookings')} 
                             className="inline-flex items-center px-5 py-3 bg-accent hover-bg-accent text-white text-sm font-bold rounded-2xl shadow-sm transition-all cursor-pointer border-none"
                         >
                             <Calendar className="w-4 h-4 mr-2" strokeWidth={2.5} /> View My Bookings
@@ -138,7 +138,7 @@ const UserOverview = () => {
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-bold tracking-tight">Your Upcoming Reservations</h2>
                         <button 
-                            onClick={() => navigate('/app/my-bookings')}
+                            onClick={() => navigate('/app/user/my-bookings')}
                             className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none"
                         >
                             View history <ArrowRight className="w-3.5 h-3.5" />
