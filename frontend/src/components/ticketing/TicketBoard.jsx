@@ -30,6 +30,20 @@ const STATUS_CONFIG = {
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 15, 20, 30];
 
+const calculateDuration = (start, end) => {
+    if (!start || !end) return null;
+    const diffMs = new Date(end) - new Date(start);
+    if (diffMs < 0) return '0m';
+    
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) return `${diffDays}d ${diffHours % 24}h`;
+    if (diffHours > 0) return `${diffHours}h ${diffMins % 60}m`;
+    return `${diffMins}m`;
+};
+
 const TicketBoard = () => {
   const { user } = useAuthStore();
   const canManage = ['TECHNICIAN', 'ADMIN'].includes(user?.role);
@@ -300,14 +314,10 @@ const TicketBoard = () => {
                     {/* Date */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <p className="text-xs font-bold text-primary">
-                        {ticket.createdAt 
-                          ? new Date(ticket.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                          : 'N/A'}
+                        {new Date(ticket.createdAt || ticket.updatedAt || new Date()).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                       </p>
                       <p className="text-[10px] text-muted">
-                        {ticket.createdAt 
-                          ? new Date(ticket.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-                          : ''}
+                        {new Date(ticket.createdAt || ticket.updatedAt || new Date()).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </td>
 

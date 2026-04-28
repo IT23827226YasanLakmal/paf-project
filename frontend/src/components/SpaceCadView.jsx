@@ -15,8 +15,38 @@ const SpaceCadView = ({ resources = [], onBookResource, isAdmin }) => {
     noiseLevel: 32
   });
 
+  const availableFloors = React.useMemo(() => {
+    const floors = new Set();
+    resources.forEach(r => {
+      if (r.location?.includes('Basement')) floors.add('B');
+      else {
+        const match = r.location?.match(/(\d+)(st|nd|rd|th)/);
+        if (match) floors.add(match[1]);
+      }
+    });
+    return Array.from(floors).sort((a, b) => {
+      if (a === 'B') return -1;
+      if (b === 'B') return 1;
+      return parseInt(a) - parseInt(b);
+    });
+  }, [resources]);
+
+  useEffect(() => {
+    if (availableFloors.length > 0 && !availableFloors.includes(activeFloor)) {
+      setActiveFloor(availableFloors[0]);
+    }
+  }, [availableFloors]);
+
   // Map resources to custom high-fidelity layouts
-  const spaces = resources.map((r, index) => {
+  const spaces = resources
+    .filter(r => {
+      if (activeFloor === 'B') return r.location?.includes('Basement');
+      return r.location?.includes(`${activeFloor}st`) || 
+             r.location?.includes(`${activeFloor}nd`) || 
+             r.location?.includes(`${activeFloor}rd`) || 
+             r.location?.includes(`${activeFloor}th`);
+    })
+    .map((r, index) => {
     const layouts = [
       { id: 'LH-101', x: '8%', y: '12%', w: '28%', h: '34%', defaultTemp: 21.2, defaultHumidity: 44, noise: 45, light: 85 },
       { id: 'LH-102', x: '40%', y: '12%', w: '24%', h: '34%', defaultTemp: 22.0, defaultHumidity: 41, noise: 50, light: 90 },
@@ -68,21 +98,21 @@ const SpaceCadView = ({ resources = [], onBookResource, isAdmin }) => {
             </div>
           </div>
 
-          <div className="flex bg-raised border border-subtle p-1 rounded-xl">
-            {['1', '2'].map(floor => (
+          <div className="flex bg-raised border border-subtle p-1 rounded-xl overflow-x-auto max-w-md">
+            {availableFloors.map(floor => (
               <button
                 key={floor}
                 onClick={() => {
                   setActiveFloor(floor);
                   setSelectedSpace(null);
                 }}
-                className={`px-5 py-2 text-xs font-black rounded-lg cursor-pointer transition-all border-none flex items-center gap-1.5 ${
+                className={`px-4 py-1.5 text-xs font-black rounded-lg cursor-pointer transition-all border-none flex items-center gap-1.5 whitespace-nowrap ${
                   activeFloor === floor
                     ? 'bg-accent text-white shadow-lg shadow-accent/20'
                     : 'text-muted hover:text-primary bg-transparent'
                 }`}
               >
-                Floor {floor}
+                {floor === 'B' ? 'Basement' : `Floor ${floor}`}
               </button>
             ))}
           </div>
@@ -102,7 +132,7 @@ const SpaceCadView = ({ resources = [], onBookResource, isAdmin }) => {
 
           {/* Map Frame */}
           <div className="absolute inset-6 border border-subtle rounded-2xl overflow-hidden flex items-center justify-center bg-surface/40 backdrop-blur-md">
-            {activeFloor === '1' ? (
+            {spaces.length > 0 ? (
               <div className="relative w-full h-full p-4">
                 
                 {/* Structural Outer Boundary walls */}
@@ -170,8 +200,8 @@ const SpaceCadView = ({ resources = [], onBookResource, isAdmin }) => {
                 <div className="w-16 h-16 bg-raised rounded-3xl flex items-center justify-center shadow-md">
                   <Building2 className="w-8 h-8 opacity-40 text-accent" />
                 </div>
-                <p className="text-sm font-black text-primary">Spatial Layout Unavailable</p>
-                <p className="text-xs text-muted max-w-xs text-center">Floor 2 architecture schemas are waiting administrative mapping routines.</p>
+                <p className="text-sm font-black text-primary">Layout Unavailable</p>
+                <p className="text-xs text-muted max-w-xs text-center">No structural spaces mapped for this level in the asset deployment index.</p>
               </div>
             )}
           </div>

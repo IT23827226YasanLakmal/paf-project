@@ -144,6 +144,11 @@ const FacilityForm = ({ onSubmit, onCancel, defaultType = 'LECTURE_HALL', resour
                         >
                             <option value="LECTURE_HALL">Lecture Hall</option>
                             <option value="LAB">Laboratory</option>
+                            <option value="CAFE">Cafe</option>
+                            <option value="LIBRARY">Library</option>
+                            <option value="SPORT">Sports Facility</option>
+                            <option value="AUDITORIUM">Auditorium</option>
+                            <option value="STAFF">Staff Workspace</option>
                         </select>
                     </div>
                     <div>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchBookings } from '../services/api';
+import { fetchBookings, fetchResources } from '../services/api';
 import { getTickets } from '../services/ticketApi';
 import { useAuthStore } from '../store/authStore';
 import {
@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import {
   BarChart2, FileText, Download, Calendar, PieChart as PieIcon,
-  TrendingUp, HardHat, CheckCircle2, AlertCircle, Sparkles, Filter, Shield
+  TrendingUp, HardHat, CheckCircle2, AlertCircle, Sparkles, Filter, Shield, Laptop
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -29,7 +29,10 @@ const ReportsPage = () => {
   const { user } = useAuthStore();
   const [timeRange, setTimeRange] = useState('30'); 
   const [reportType, setReportType] = useState('OVERVIEW'); 
-
+  const [facilityTypeFilter, setFacilityTypeFilter] = useState('ALL');
+  const [facilityStatusFilter, setFacilityStatusFilter] = useState('ALL'); 
+  const [equipmentStatusFilter, setEquipmentStatusFilter] = useState('ALL');
+  const [equipmentLocationFilter, setEquipmentLocationFilter] = useState('ALL');
   // Enforce role perspectives
   useEffect(() => {
     if (user?.role === 'TECHNICIAN') setReportType('MAINTENANCE');
@@ -41,12 +44,20 @@ const ReportsPage = () => {
   /* ── Queries ── */
   const { data: bookings = [] } = useQuery({
     queryKey: ['bookings'],
-    queryFn: () => fetchBookings({})
+    queryFn: () => fetchBookings({}),
+    refetchInterval: 5000
   });
 
   const { data: tickets = [] } = useQuery({
     queryKey: ['tickets'],
-    queryFn: () => getTickets()
+    queryFn: () => getTickets(),
+    refetchInterval: 5000
+  });
+
+  const { data: resources = [] } = useQuery({
+    queryKey: ['resources', null],
+    queryFn: () => fetchResources(null),
+    refetchInterval: 5000
   });
 
   /* ── Derived Reports State ── */
@@ -101,6 +112,64 @@ const ReportsPage = () => {
     });
     const categoryBreakdown = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
 
+    /* 5. Filter for Space Inventory (Exclude Equipment) */
+    let spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
+
+    if (facilityTypeFilter !== 'ALL') {
+      spaceResources = spaceResources.filter(r => r.type === facilityTypeFilter);
+    }
+    if (facilityStatusFilter !== 'ALL') {
+      spaceResources = spaceResources.filter(r => r.status === facilityStatusFilter);
+    }
+
+    /* 6. Resource Type Breakdown */
+    const resourceTypeMap = {};
+    spaceResources.forEach(r => {
+      const type = r.type?.replace('_', ' ') || 'Other';
+      resourceTypeMap[type] = (resourceTypeMap[type] || 0) + 1;
+    });
+    const resourceTypeData = Object.entries(resourceTypeMap).map(([name, value]) => ({ name, value }));
+
+    /* 7. Resource Status Breakdown */
+    const resourceStatusMap = { ACTIVE: 0, MAINTENANCE: 0, OUT_OF_ORDER: 0 };
+    spaceResources.forEach(r => {
+      if (resourceStatusMap[r.status] !== undefined) resourceStatusMap[r.status]++;
+      else resourceStatusMap[r.status] = (resourceStatusMap[r.status] || 0) + 1;
+    });
+    const resourceStatusData = Object.entries(resourceStatusMap).map(([name, value]) => ({ name, value }));
+
+    /* 8. Capacity by Type */
+    const capacityTypeMap = {};
+    spaceResources.forEach(r => {
+      const type = r.type?.replace('_', ' ') || 'Other';
+      if (!capacityTypeMap[type]) capacityTypeMap[type] = { name: type, total: 0, count: 0 };
+      capacityTypeMap[type].total += r.capacity || 0;
+      capacityTypeMap[type].count++;
+    });
+    const capacityTypeData = Object.values(capacityTypeMap).map(d => ({
+      name: d.name,
+      avgCapacity: d.count > 0 ? Math.round(d.total / d.count) : 0
+    }));
+
+    /* 9. Equipment Metrics */
+    const allEquip = resources.filter(r => r.type === 'EQUIPMENT');
+    const equipmentLocations = Array.from(new Set(allEquip.map(r => r.location).filter(Boolean)));
+
+    let equipmentResources = [...allEquip];
+    if (equipmentStatusFilter !== 'ALL') {
+      equipmentResources = equipmentResources.filter(r => r.status === equipmentStatusFilter);
+    }
+    if (equipmentLocationFilter !== 'ALL') {
+      equipmentResources = equipmentResources.filter(r => r.location === equipmentLocationFilter);
+    }
+
+    const equipmentStatusMap = { ACTIVE: 0, MAINTENANCE: 0, OUT_OF_ORDER: 0 };
+    equipmentResources.forEach(r => {
+      if (equipmentStatusMap[r.status] !== undefined) equipmentStatusMap[r.status]++;
+      else equipmentStatusMap[r.status] = (equipmentStatusMap[r.status] || 0) + 1;
+    });
+    const equipmentStatusData = Object.entries(equipmentStatusMap).map(([name, value]) => ({ name, value }));
+
     return {
       totalBookings: filteredBookings.length,
       approvedBookings: bookingStatusMap.APPROVED,
@@ -109,16 +178,108 @@ const ReportsPage = () => {
       bookingStatusData,
       ticketStatusData,
       timelineTrend,
-      categoryBreakdown
+      categoryBreakdown,
+      resourceTypeData,
+      resourceStatusData,
+      capacityTypeData,
+      totalFacilities: spaceResources.length,
+      activeFacilities: spaceResources.filter(r => r.status === 'ACTIVE').length,
+      equipmentStatusData,
+      totalEquipment: equipmentResources.length,
+      activeEquipment: equipmentResources.filter(r => r.status === 'ACTIVE').length,
+      equipmentLocations
     };
-  }, [bookings, tickets, timeRange]);
+  }, [bookings, tickets, resources, timeRange, facilityTypeFilter, facilityStatusFilter, equipmentStatusFilter, equipmentLocationFilter]);
 
   /* ── Simulation Export ── */
   const handleExport = (format) => {
     const toastId = toast.loading(`Generating ${format.toUpperCase()} Report...`);
-    setTimeout(() => {
+    
+    try {
+      const escapeCSV = (val) => {
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      let csvContent = '';
+      let filename = `report_${reportType.toLowerCase()}_${new Date().toISOString().split('T')[0]}.csv`;
+
+      if (reportType === 'BOOKINGS') {
+        const headers = ['Booking ID', 'User ID', 'Resource ID', 'Status', 'Created At'];
+        const rows = bookings.map(b => [
+          escapeCSV(b.id),
+          escapeCSV(b.userId),
+          escapeCSV(b.resourceId),
+          escapeCSV(b.status),
+          escapeCSV(b.createdAt ? new Date(b.createdAt).toLocaleString() : '')
+        ]);
+        csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+      } else if (reportType === 'MAINTENANCE') {
+        const headers = ['Ticket ID', 'Title', 'Status', 'Category', 'Created At'];
+        const rows = tickets.map(t => [
+          escapeCSV(t.id),
+          escapeCSV(t.title),
+          escapeCSV(t.status),
+          escapeCSV(t.category),
+          escapeCSV(t.createdAt ? new Date(t.createdAt).toLocaleString() : '')
+        ]);
+        csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+      } else if (reportType === 'FACILITIES') {
+        const spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
+        const headers = ['Facility ID', 'Name', 'Type', 'Capacity', 'Location', 'Status'];
+        const rows = spaceResources.map(r => [
+          escapeCSV(r.id),
+          escapeCSV(r.name),
+          escapeCSV(r.type),
+          escapeCSV(r.capacity),
+          escapeCSV(r.location),
+          escapeCSV(r.status)
+        ]);
+        csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+      } else if (reportType === 'EQUIPMENT') {
+        const equipmentResources = resources.filter(r => r.type === 'EQUIPMENT');
+        const headers = ['Asset ID', 'Name', 'Status', 'Location'];
+        const rows = equipmentResources.map(r => [
+          escapeCSV(r.id),
+          escapeCSV(r.name),
+          escapeCSV(r.status),
+          escapeCSV(r.location)
+        ]);
+        csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+      } else {
+        // OVERVIEW
+        const spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
+        const headers = ['Metric', 'Value'];
+        const rows = [
+          ['Total Bookings', reportData.totalBookings],
+          ['Approved Bookings', reportData.approvedBookings],
+          ['Total Issues', reportData.totalIssues],
+          ['Resolved Issues', reportData.resolvedIssues],
+          ['Total Facilities', spaceResources.length],
+          ['Active Facilities', spaceResources.filter(r => r.status === 'ACTIVE').length]
+        ];
+        csvContent = [headers, ...rows].map(e => [escapeCSV(e[0]), escapeCSV(e[1])].join(",")).join("\n");
+      }
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast.success(`${format.toUpperCase()} Report downloaded successfully`, { id: toastId });
-    }, 1200);
+    } catch (error) {
+      console.error('Export failed', error);
+      toast.error('Failed to generate report', { id: toastId });
+    }
   };
 
   /* ── Visibility mapping ── */
@@ -128,6 +289,7 @@ const ReportsPage = () => {
     if (tab === 'BOOKINGS' && ['BOOKING_OFFICER', 'ADMIN'].includes(user?.role)) return true;
     if (tab === 'MAINTENANCE' && ['TECHNICIAN', 'ADMIN'].includes(user?.role)) return true;
     if (tab === 'FACILITIES' && ['FACILITY_MANAGER', 'ADMIN'].includes(user?.role)) return true;
+    if (tab === 'EQUIPMENT' && ['FACILITY_MANAGER', 'ADMIN'].includes(user?.role)) return true;
     return false;
   };
 
@@ -150,6 +312,62 @@ const ReportsPage = () => {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Space Inventory Filters */}
+          {reportType === 'FACILITIES' && (
+            <div className="flex items-center gap-2 bg-raised border border-subtle p-1 rounded-xl">
+              <select 
+                value={facilityTypeFilter} 
+                onChange={(e) => setFacilityTypeFilter(e.target.value)}
+                className="bg-transparent border-none text-xs font-bold text-muted hover:text-primary outline-none cursor-pointer px-2 py-1"
+              >
+                <option value="ALL" className="bg-surface">All Types</option>
+                <option value="LECTURE_HALL" className="bg-surface">Lecture Halls</option>
+                <option value="LAB" className="bg-surface">Laboratories</option>
+                <option value="CAFE" className="bg-surface">Cafes</option>
+                <option value="LIBRARY" className="bg-surface">Libraries</option>
+                <option value="SPORT" className="bg-surface">Sports Areas</option>
+                <option value="AUDITORIUM" className="bg-surface">Auditoriums</option>
+                <option value="STAFF" className="bg-surface">Staff Spaces</option>
+              </select>
+              <div className="w-px h-4 bg-subtle" />
+              <select 
+                value={facilityStatusFilter} 
+                onChange={(e) => setFacilityStatusFilter(e.target.value)}
+                className="bg-transparent border-none text-xs font-bold text-muted hover:text-primary outline-none cursor-pointer px-2 py-1"
+              >
+                <option value="ALL" className="bg-surface">All Statuses</option>
+                <option value="ACTIVE" className="bg-surface">Active</option>
+                <option value="MAINTENANCE" className="bg-surface">Maintenance</option>
+                <option value="OUT_OF_ORDER" className="bg-surface">Out of Order</option>
+              </select>
+            </div>
+          )}
+          {/* Equipment Filters */}
+          {reportType === 'EQUIPMENT' && (
+            <div className="flex items-center gap-2 bg-raised border border-subtle p-1 rounded-xl">
+              <select 
+                value={equipmentStatusFilter} 
+                onChange={(e) => setEquipmentStatusFilter(e.target.value)}
+                className="bg-transparent border-none text-xs font-bold text-muted hover:text-primary outline-none cursor-pointer px-2 py-1"
+              >
+                <option value="ALL" className="bg-surface">All Statuses</option>
+                <option value="ACTIVE" className="bg-surface">Active</option>
+                <option value="MAINTENANCE" className="bg-surface">Maintenance</option>
+                <option value="OUT_OF_ORDER" className="bg-surface">Out of Order</option>
+              </select>
+              <div className="w-px h-4 bg-subtle" />
+              <select 
+                value={equipmentLocationFilter} 
+                onChange={(e) => setEquipmentLocationFilter(e.target.value)}
+                className="bg-transparent border-none text-xs font-bold text-muted hover:text-primary outline-none cursor-pointer px-2 py-1"
+              >
+                <option value="ALL" className="bg-surface">All Locations</option>
+                {reportData.equipmentLocations?.map(loc => (
+                  <option key={loc} value={loc} className="bg-surface">{loc}</option>
+                ))}
+              </select>
+            </div>
+          )}
           {/* Time range picker */}
           <div className="flex bg-raised border border-subtle p-1 rounded-xl">
             {[
@@ -186,7 +404,8 @@ const ReportsPage = () => {
           { id: 'OVERVIEW', label: 'General Overview', icon: FileText },
           { id: 'BOOKINGS', label: 'Booking Stats', icon: Calendar },
           { id: 'MAINTENANCE', label: 'Incident Workflows', icon: HardHat },
-          { id: 'FACILITIES', label: 'Space Inventory', icon: PieIcon }
+          { id: 'FACILITIES', label: 'Space Inventory', icon: PieIcon },
+          { id: 'EQUIPMENT', label: 'Equipment Assets', icon: Laptop }
         ]
         .filter(t => canSeeTab(t.id))
         .map(type => {
@@ -219,6 +438,32 @@ const ReportsPage = () => {
             <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
               <p className="text-[10px] font-black text-muted uppercase tracking-wider mb-1">Approved reservations</p>
               <h3 className="text-3xl font-black text-emerald-500">{reportData.approvedBookings}</h3>
+            </div>
+          </>
+        )}
+
+        {(user?.role === 'ADMIN' || user?.role === 'FACILITY_MANAGER') && (
+          <>
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <p className="text-[10px] font-black text-muted uppercase tracking-wider mb-1">Total Facilities</p>
+              <h3 className="text-3xl font-black text-primary">{reportData.totalFacilities}</h3>
+            </div>
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <p className="text-[10px] font-black text-muted uppercase tracking-wider mb-1">Active Spaces</p>
+              <h3 className="text-3xl font-black text-emerald-500">{reportData.activeFacilities}</h3>
+            </div>
+          </>
+        )}
+
+        {(user?.role === 'ADMIN' || user?.role === 'FACILITY_MANAGER') && (
+          <>
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <p className="text-[10px] font-black text-muted uppercase tracking-wider mb-1">Total Equipment</p>
+              <h3 className="text-3xl font-black text-primary">{reportData.totalEquipment}</h3>
+            </div>
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <p className="text-[10px] font-black text-muted uppercase tracking-wider mb-1">Active Equipment</p>
+              <h3 className="text-3xl font-black text-emerald-500">{reportData.activeEquipment}</h3>
             </div>
           </>
         )}
@@ -325,11 +570,114 @@ const ReportsPage = () => {
 
         {/* Space Capacity (Facilities) */}
         {reportType === 'FACILITIES' && (
-          <div className="lg:col-span-3 bg-surface border border-subtle rounded-3xl p-6 shadow-md text-center py-20 text-muted">
-            <PieIcon className="w-12 h-12 text-accent mx-auto mb-4 opacity-50" />
-            <h5 className="font-bold text-primary mb-1">Space Optimization Modules</h5>
-            <p className="text-xs max-w-sm mx-auto">Tracking architectural deployments and spatial safety protocols securely.</p>
-          </div>
+          <>
+            {/* Resource Type Breakdown (Pie) */}
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md flex flex-col justify-between">
+              <h4 className="text-sm font-black text-primary mb-6">Facility Type Mix</h4>
+              <div className="h-56 w-full flex-1">
+                {reportData.resourceTypeData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={224}>
+                    <PieChart>
+                      <Pie data={reportData.resourceTypeData} innerRadius={50} outerRadius={75} paddingAngle={6} dataKey="value">
+                        {reportData.resourceTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-muted italic">No data</div>
+                )}
+              </div>
+            </div>
+
+            {/* Resource Status Breakdown (Bar) */}
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <h4 className="text-sm font-black text-primary mb-4">Operational Status</h4>
+              <div className="h-64 w-full">
+                {reportData.resourceStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+                    <BarChart data={reportData.resourceStatusData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                      <Bar dataKey="value" fill={THEME_COLORS.primary} radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-muted italic">No data</div>
+                )}
+              </div>
+            </div>
+
+            {/* Average Capacity by Type (Bar) */}
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md">
+              <h4 className="text-sm font-black text-primary mb-4">Average Seating Capacity</h4>
+              <div className="h-64 w-full">
+                {reportData.capacityTypeData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+                    <BarChart data={reportData.capacityTypeData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                      <Bar dataKey="avgCapacity" fill={THEME_COLORS.secondary} radius={[6, 6, 0, 0]} name="Avg Pax" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-muted italic">No data</div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Equipment Assets */}
+        {reportType === 'EQUIPMENT' && (
+          <>
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md flex flex-col justify-between">
+              <h4 className="text-sm font-black text-primary mb-6">Equipment Availability</h4>
+              <div className="h-56 w-full flex-1">
+                {reportData.equipmentStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={224}>
+                    <PieChart>
+                      <Pie data={reportData.equipmentStatusData} innerRadius={50} outerRadius={75} paddingAngle={6} dataKey="value">
+                        {reportData.equipmentStatusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-muted italic">No data</div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-surface border border-subtle rounded-3xl p-6 shadow-md lg:col-span-2">
+              <h4 className="text-sm font-black text-primary mb-4">Asset Distribution</h4>
+              <div className="h-64 w-full">
+                {reportData.equipmentStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+                    <BarChart data={reportData.equipmentStatusData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+                      <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }} />
+                      <Bar dataKey="value" fill={THEME_COLORS.secondary} radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-muted italic">No data</div>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
       </div>

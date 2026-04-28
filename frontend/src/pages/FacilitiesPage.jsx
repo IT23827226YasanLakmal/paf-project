@@ -104,7 +104,7 @@ const FacilitiesPage = () => {
         
         if (!matchesSearch) return false;
 
-        return res.type === 'LECTURE_HALL' || res.type === 'LAB';
+        return res.type !== 'EQUIPMENT';
     });
 
     const totalPages = Math.ceil(filteredResources.length / itemsPerPage);
@@ -116,6 +116,10 @@ const FacilitiesPage = () => {
             setCurrentPage(1);
         }
     }, [totalPages, currentPage]);
+
+    React.useEffect(() => {
+        setFilterType('');
+    }, [setFilterType]);
 
     React.useEffect(() => {
         setCurrentPage(1);
@@ -209,6 +213,11 @@ const FacilitiesPage = () => {
                         <option value="" className="bg-surface">All Types</option>
                         <option value="LECTURE_HALL" className="bg-surface">Lecture Halls</option>
                         <option value="LAB" className="bg-surface">Laboratories</option>
+                        <option value="CAFE" className="bg-surface">Cafes</option>
+                        <option value="LIBRARY" className="bg-surface">Libraries</option>
+                        <option value="SPORT" className="bg-surface">Sports Areas</option>
+                        <option value="AUDITORIUM" className="bg-surface">Auditoriums</option>
+                        <option value="STAFF" className="bg-surface">Staff Spaces</option>
                     </select>
 
                     {isAdmin && (
