@@ -57,6 +57,7 @@ const ROLE_NAV_CONFIG = {
     { to: "/app/facility-manager/overview", icon: LayoutDashboard, label: "Overview" },
     { to: "/app/facility-manager/facilities", icon: Building2, label: "Facilities" },
     { to: "/app/facility-manager/assets", icon: Laptop, label: "Equipments" },
+    { to: "/app/reports", icon: BarChart3, label: "Reports" },
   ],
   TECHNICIAN: [
     { to: "/app/technician/overview", icon: LayoutDashboard, label: "Overview" },
