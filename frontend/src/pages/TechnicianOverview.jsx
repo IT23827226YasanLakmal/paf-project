@@ -73,11 +73,6 @@ const TechnicianOverview = () => {
           <ChevronRight className="w-4 h-4 text-muted" />
           <span className="text-primary font-bold">Technician Overview</span>
         </div>
-        
-        <button className="flex items-center gap-2 bg-accent hover-bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all border-none cursor-pointer">
-          <Plus className="w-4 h-4" />
-          Add New
-        </button>
       </div>
 
       {/* ── Stats Row ── */}
