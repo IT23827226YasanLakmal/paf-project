@@ -165,7 +165,7 @@ const AdminBookingReview = () => {
   const [rejectTarget, setRejectTarget] = useState(null);
   
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // ✅ Increased to 8
+  const itemsPerPage = 8; 
 
   useEffect(() => {
     setCurrentPage(1);
@@ -274,7 +274,7 @@ const AdminBookingReview = () => {
             { label: 'Rejected',  count: counts.REJECTED,  accent: 'border-l-red-500',     Icon: XCircle },
             { label: 'Cancelled', count: counts.CANCELLED, accent: 'border-l-muted',       Icon: Ban },
           ].map(({ label, count, accent, Icon }) => (
-            // ✅ Updated class/styles to match MyBookingsPage
+            
             <div 
               key={label} 
               className={`bg-surface rounded-xl border-l-4 ${accent} p-4 shadow-sm`}
@@ -427,7 +427,7 @@ const AdminBookingReview = () => {
             </table>
           </div>
           
-          {/* ✅ Pagination Footer */}
+          {/*  Pagination Footer */}
           {!isLoading && filtered.length > 0 && (
             <div className="px-6 py-4 border-t border-subtle flex items-center justify-between bg-raised/10">
               <p className="text-xs text-muted font-medium">

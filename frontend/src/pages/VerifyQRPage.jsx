@@ -214,7 +214,7 @@ const VerifyQrPage = () => {
             <p className="text-xs text-gray-400">
               Verified at {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <Link to="/app/catalogue"
+            <Link to="/app/user/bookings"
               className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium">
               <ArrowLeft className="w-3.5 h-3.5" />
               Smart Campus
