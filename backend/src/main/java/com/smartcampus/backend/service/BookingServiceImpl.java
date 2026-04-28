@@ -324,6 +324,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingResponseDTO.builder()
                 .id(b.getId())
                 .resourceId(b.getResource().getId())
+                .resourceName(b.getResource() != null ? b.getResource().getName() : null)
                 .userId(b.getUser().getSupabaseUid())
                 .startTime(b.getStartTime())
                 .endTime(b.getEndTime())
