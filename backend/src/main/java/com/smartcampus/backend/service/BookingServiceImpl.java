@@ -198,6 +198,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = findOrThrow(id);
         if (!isAdmin && !booking.getUser().getSupabaseUid().equals(userId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        if (booking.getStatus() == BookingStatus.PENDING || booking.getStatus() == BookingStatus.APPROVED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Cannot delete " + booking.getStatus() + " bookings. Cancel or Reject them first.");
+        }
         bookingRepository.delete(booking);
     }
 
@@ -206,7 +210,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingOfficerStatsDTO getBookingOfficerStats(int days) {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(days);
         List<Booking> allBookings = bookingRepository.findAll();
-        
+
         List<Booking> filtered = allBookings.stream()
                 .filter(b -> b.getCreatedAt() != null && b.getCreatedAt().isAfter(cutoff))
                 .collect(Collectors.toList());
@@ -214,7 +218,9 @@ public class BookingServiceImpl implements BookingService {
         long total = filtered.size();
         long approved = filtered.stream().filter(b -> b.getStatus() == BookingStatus.APPROVED).count();
         long pending = filtered.stream().filter(b -> b.getStatus() == BookingStatus.PENDING).count();
-        long cancelled = filtered.stream().filter(b -> b.getStatus() == BookingStatus.CANCELLED || b.getStatus() == BookingStatus.REJECTED).count();
+        long cancelled = filtered.stream()
+                .filter(b -> b.getStatus() == BookingStatus.CANCELLED || b.getStatus() == BookingStatus.REJECTED)
+                .count();
 
         // Trend (last 7 points)
         LocalDate today = LocalDate.now();
@@ -250,7 +256,7 @@ public class BookingServiceImpl implements BookingService {
         // Top Resources
         Map<String, Long> resourceMap = filtered.stream()
                 .collect(Collectors.groupingBy(b -> b.getResource().getName(), Collectors.counting()));
-        
+
         List<Map<String, Object>> topResources = resourceMap.entrySet().stream()
                 .map(e -> {
                     Map<String, Object> m = new HashMap<>();
@@ -263,9 +269,10 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
 
         // Peak Days
-        String[] dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        String[] dayNames = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
         Map<String, Long> peakDaysMap = new LinkedHashMap<>();
-        for (String d : dayNames) peakDaysMap.put(d, 0L);
+        for (String d : dayNames)
+            peakDaysMap.put(d, 0L);
 
         for (Booking b : filtered) {
             if (b.getStartTime() != null) {
@@ -317,6 +324,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingResponseDTO.builder()
                 .id(b.getId())
                 .resourceId(b.getResource().getId())
+                .resourceName(b.getResource() != null ? b.getResource().getName() : null)
                 .userId(b.getUser().getSupabaseUid())
                 .startTime(b.getStartTime())
                 .endTime(b.getEndTime())
