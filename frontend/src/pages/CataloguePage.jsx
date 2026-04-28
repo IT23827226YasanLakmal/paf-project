@@ -76,7 +76,7 @@ const CataloguePage = ({ defaultTab = 'facilities' }) => {
         if (!matchesSearch) return false;
 
         if (categoryTab === 'facilities') {
-            return res.type === 'LECTURE_HALL' || res.type === 'LAB';
+            return res.type !== 'EQUIPMENT';
         } else {
             return res.type === 'EQUIPMENT';
         }
@@ -169,6 +169,11 @@ const CataloguePage = ({ defaultTab = 'facilities' }) => {
                             <>
                                 <option value="LECTURE_HALL" className="bg-surface">Lecture Halls</option>
                                 <option value="LAB" className="bg-surface">Laboratories</option>
+                                <option value="CAFE" className="bg-surface">Cafes</option>
+                                <option value="LIBRARY" className="bg-surface">Libraries</option>
+                                <option value="SPORT" className="bg-surface">Sports Areas</option>
+                                <option value="AUDITORIUM" className="bg-surface">Auditoriums</option>
+                                <option value="STAFF" className="bg-surface">Staff Workspace</option>
                             </>
                         ) : (
                             <option value="EQUIPMENT" className="bg-surface">Equipment Assets</option>

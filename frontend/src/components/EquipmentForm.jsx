@@ -6,6 +6,7 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
     const [formData, setFormData] = useState({
         name: resource?.name || '',
         type: 'EQUIPMENT',
+        category: 'LAPTOPS',
         location: resource?.location || '',
         availabilityWindows: resource?.availabilityWindows || '',
         status: resource?.status || 'ACTIVE',
@@ -71,8 +72,10 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
         if (!validate()) return;
 
         try {
+            const cleanName = formData.name.replace(/\s*\[.*?\]$/, '');
             const data = {
                 ...formData,
+                name: `${cleanName} [${formData.category}]`,
                 capacity: null // Equipment typically has no capacity metric
             };
             
@@ -138,6 +141,21 @@ const EquipmentForm = ({ onSubmit, onCancel, resource = null }) => {
                                     <AlertCircle className="w-2.5 h-2.5" /> {errors.name}
                                 </p>
                             )}
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Asset Category</label>
+                            <select 
+                                name="category" 
+                                value={formData.category} 
+                                onChange={handleChange}
+                                className="w-full px-3.5 py-2.5 bg-raised border border-subtle text-sm text-primary rounded-xl outline-none focus:ring-2 focus:ring-accent cursor-pointer transition-all"
+                            >
+                                <option value="LAPTOPS">Laptops & Computers</option>
+                                <option value="MONITORS">Monitors & Displays</option>
+                                <option value="PROJECTORS">Projectors & AV</option>
+                                <option value="CAMERAS">Cameras & Media</option>
+                                <option value="SMARTBOARDS">Smart Boards</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5">Storage Location</label>

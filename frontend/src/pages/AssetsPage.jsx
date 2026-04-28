@@ -109,6 +109,7 @@ const AssetsPage = () => {
         if (subCategory === 'MONITORS') return nameLower.includes('monitor') || nameLower.includes('display') || nameLower.includes('screen');
         if (subCategory === 'PROJECTORS') return nameLower.includes('projector');
         if (subCategory === 'CAMERAS') return nameLower.includes('camera') || nameLower.includes('lens') || nameLower.includes('gimbal');
+        if (subCategory === 'SMARTBOARDS') return nameLower.includes('smart board') || nameLower.includes('interactive');
         
         return true;
     });
@@ -122,6 +123,10 @@ const AssetsPage = () => {
             setCurrentPage(1);
         }
     }, [totalPages, currentPage]);
+
+    React.useEffect(() => {
+        setFilterType('');
+    }, [setFilterType]);
 
     React.useEffect(() => {
         setCurrentPage(1);
@@ -194,6 +199,7 @@ const AssetsPage = () => {
                         <option value="MONITORS" className="bg-surface">Monitors & Displays</option>
                         <option value="PROJECTORS" className="bg-surface">Projectors & AV</option>
                         <option value="CAMERAS" className="bg-surface">Cameras & Media</option>
+                        <option value="SMARTBOARDS" className="bg-surface">Smart Boards</option>
                     </select>
 
                     {isAdmin && (

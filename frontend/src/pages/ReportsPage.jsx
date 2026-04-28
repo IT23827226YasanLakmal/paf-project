@@ -113,7 +113,7 @@ const ReportsPage = () => {
     const categoryBreakdown = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
 
     /* 5. Filter for Space Inventory (Exclude Equipment) */
-    let spaceResources = resources.filter(r => r.type === 'LECTURE_HALL' || r.type === 'LAB');
+    let spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
 
     if (facilityTypeFilter !== 'ALL') {
       spaceResources = spaceResources.filter(r => r.type === facilityTypeFilter);
@@ -229,7 +229,7 @@ const ReportsPage = () => {
         ]);
         csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
       } else if (reportType === 'FACILITIES') {
-        const spaceResources = resources.filter(r => r.type === 'LECTURE_HALL' || r.type === 'LAB');
+        const spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
         const headers = ['Facility ID', 'Name', 'Type', 'Capacity', 'Location', 'Status'];
         const rows = spaceResources.map(r => [
           escapeCSV(r.id),
@@ -252,7 +252,7 @@ const ReportsPage = () => {
         csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
       } else {
         // OVERVIEW
-        const spaceResources = resources.filter(r => r.type === 'LECTURE_HALL' || r.type === 'LAB');
+        const spaceResources = resources.filter(r => r.type !== 'EQUIPMENT');
         const headers = ['Metric', 'Value'];
         const rows = [
           ['Total Bookings', reportData.totalBookings],
@@ -323,6 +323,11 @@ const ReportsPage = () => {
                 <option value="ALL" className="bg-surface">All Types</option>
                 <option value="LECTURE_HALL" className="bg-surface">Lecture Halls</option>
                 <option value="LAB" className="bg-surface">Laboratories</option>
+                <option value="CAFE" className="bg-surface">Cafes</option>
+                <option value="LIBRARY" className="bg-surface">Libraries</option>
+                <option value="SPORT" className="bg-surface">Sports Areas</option>
+                <option value="AUDITORIUM" className="bg-surface">Auditoriums</option>
+                <option value="STAFF" className="bg-surface">Staff Spaces</option>
               </select>
               <div className="w-px h-4 bg-subtle" />
               <select 
