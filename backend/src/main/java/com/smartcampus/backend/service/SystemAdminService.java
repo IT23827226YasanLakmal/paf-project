@@ -3,8 +3,6 @@ package com.smartcampus.backend.service;
 import com.smartcampus.backend.dto.AdminStatsDTO;
 import com.smartcampus.backend.model.Booking;
 import com.smartcampus.backend.model.BookingStatus;
-import com.smartcampus.backend.model.IncidentTicket;
-import com.smartcampus.backend.model.Resource;
 import com.smartcampus.backend.repository.BookingRepository;
 import com.smartcampus.backend.repository.IncidentTicketRepository;
 import com.smartcampus.backend.repository.ResourceRepository;
